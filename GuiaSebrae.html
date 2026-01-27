@@ -356,6 +356,8 @@
       position: relative;
       overflow: hidden;
       background: white;
+      width: 100%;
+      max-width: 100%;
       border-radius: 1rem;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       margin-left: 1rem;
@@ -590,9 +592,16 @@
       }
     }
 
+    /* Responsividade para banners */
+    @media (max-width: 640px) {
+      .trilha-fluxograma {
+        padding: 1rem 0.5rem !important;
+      }
+    }
+
     @media (max-width: 480px) {
       .trilha-fluxograma {
-        padding: 1rem 0.5rem;
+        padding: 0.75rem 0.25rem;
       }
 
       .trilha-assessoria-chevron {
@@ -600,11 +609,43 @@
       }
 
       .trilha-assessoria-text {
-        font-size: 1rem;
+        font-size: 0.9rem;
+        padding: 0 0.5rem;
       }
 
       .trilha-step-content {
         margin-top: 40px;
+      }
+
+      .trilha-solucao-card {
+        padding: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+      }
+
+      .modal-content {
+        padding: 1rem;
+        margin: 0.5rem;
+        width: 95%;
+      }
+    }
+
+    /* Ajustes adicionais para telas muito pequenas */
+    @media (max-width: 360px) {
+      .trilha-assessoria-text {
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+      }
+
+      .trilha-solucao-card {
+        padding: 0.5rem !important;
+      }
+
+      .trilha-solucao-card h5 {
+        font-size: 0.875rem;
+      }
+
+      .trilha-solucao-card p {
+        font-size: 0.75rem;
       }
     }
 
@@ -694,9 +735,10 @@
     .modal-content {
       background: white;
       border-radius: 20px;
-      padding: 2rem;
+      padding: 1.5rem;
       max-width: 400px;
       width: 90%;
+      margin: 1rem;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
       animation: slideUp 0.3s ease;
     }
@@ -2134,11 +2176,11 @@
           .concat(Object.keys(solucoesPorDorNoMomento).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
         
         return `
-          <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
+          <div class="bg-white rounded-xl shadow-lg border-2 p-4 md:p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
             <!-- Banner do Momento Empresarial -->
-            <div class="mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
-              <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); min-width: 200px;">
-                <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
+            <div class="mb-4 md:mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
+              <div class="inline-flex items-center px-4 py-3 md:px-8 md:py-4 rounded-xl shadow-lg w-full sm:w-auto" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);">
+                <span class="text-lg md:text-xl font-bold text-white text-center sm:text-left" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
               </div>
             </div>
             
@@ -2154,15 +2196,15 @@
                 <div class="mb-8 ${dorIndex > 0 ? 'mt-8' : ''}">
                   <!-- Nome da Dor - Banner acima dos fluxos -->
                   ${!isSemDor ? `
-                  <div class="mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
-                    <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: ${corDor.badgeGradiente}; min-width: 200px;">
-                      <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
+                  <div class="mb-4 md:mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
+                    <div class="inline-flex items-center px-4 py-3 md:px-8 md:py-4 rounded-xl shadow-lg w-full sm:w-auto" style="background: ${corDor.badgeGradiente};">
+                      <span class="text-lg md:text-xl font-bold text-white text-center sm:text-left" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
                     </div>
                   </div>
                   ` : ''}
                   
                   <!-- Fluxograma de Assessorias para esta Dor -->
-                  <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+                  <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 1rem 0.5rem; min-height: 300px;">
                     ${ordensOrdenadasNaDor.map((ordem, ordemIndex) => {
                       const solucoes = solucoesPorOrdemNaDor[ordem];
                       const isLast = ordemIndex === ordensOrdenadasNaDor.length - 1;
@@ -2192,24 +2234,24 @@
                                 const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
                                 
                                 return `
-                                  <div onclick="abrirDetalheSolucao(${assessoria.__index})" class="trilha-solucao-card card-clicavel p-5 mb-4 fade-in" style="animation-delay: ${(ordemIndex * 0.2) + (dorIndex * 0.15) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor};">
+                                  <div onclick="abrirDetalheSolucao(${assessoria.__index})" class="trilha-solucao-card card-clicavel p-4 md:p-5 mb-3 md:mb-4 fade-in" style="animation-delay: ${(ordemIndex * 0.2) + (dorIndex * 0.15) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor};">
                                     <!-- Destaque: Preço e Tipo de Produto -->
-                                    <div class="flex items-center justify-between mb-4 p-3 rounded-lg" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${infoMomento.cor};">
-                                      <div class="flex-1">
+                                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 md:mb-4 p-2 md:p-3 rounded-lg gap-2" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${infoMomento.cor};">
+                                      <div class="flex-1 w-full sm:w-auto">
                                         <p class="text-xs font-semibold mb-1" style="color: #00608B;">Tipo de Produto</p>
-                                        <p class="text-base font-bold" style="color: #00608B;">${instrumento}</p>
+                                        <p class="text-sm md:text-base font-bold" style="color: #00608B;">${instrumento}</p>
                                       </div>
-                                      <div class="text-right ml-4">
+                                      <div class="text-left sm:text-right w-full sm:w-auto sm:ml-4">
                                         <p class="text-xs font-semibold mb-1" style="color: #00608B;">Preço</p>
-                                        <span class="inline-block px-3 py-1 rounded-lg font-bold text-lg" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor};">
+                                        <span class="inline-block px-2 md:px-3 py-1 rounded-lg font-bold text-sm md:text-lg" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor};">
                                           ${valorTexto}
                                         </span>
                                       </div>
                                     </div>
                                     
-                                    <h3 class="text-xl font-bold mb-3" style="color: #1F2937;">${assessoria.assessoria_nome}</h3>
-                                    <p class="mb-4 leading-relaxed line-clamp-3" style="color: #4B5563;">${assessoria.assessoria_descricao || ''}</p>
-                                    ${assessoria.proxima_data ? `<div class="border-t-2 pt-3 mt-3" style="border-color: #E5E7EB;"><p class="text-xs" style="color: #6B7280;">📅 Próxima turma: <strong style="color: #1F2937;">${assessoria.proxima_data}</strong></p></div>` : ''}
+                                    <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3" style="color: #1F2937;">${assessoria.assessoria_nome}</h3>
+                                    <p class="mb-3 md:mb-4 leading-relaxed line-clamp-3 text-sm md:text-base" style="color: #4B5563;">${assessoria.assessoria_descricao || ''}</p>
+                                    ${assessoria.proxima_data ? `<div class="border-t-2 pt-2 md:pt-3 mt-2 md:mt-3" style="border-color: #E5E7EB;"><p class="text-xs" style="color: #6B7280;">📅 Próxima turma: <strong style="color: #1F2937;">${assessoria.proxima_data}</strong></p></div>` : ''}
                                   </div>
                                 `;
                               }).join('')}
@@ -2548,11 +2590,11 @@
                   .concat(Object.keys(solucoesPorDorNoMomento).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
                 
                 return `
-                  <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
+                  <div class="bg-white rounded-xl shadow-lg border-2 p-4 md:p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
                     <!-- Banner do Momento Empresarial -->
-                    <div class="mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
-                      <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); min-width: 200px;">
-                        <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
+                    <div class="mb-4 md:mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
+                      <div class="inline-flex items-center px-4 py-3 md:px-8 md:py-4 rounded-xl shadow-lg w-full sm:w-auto" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);">
+                        <span class="text-lg md:text-xl font-bold text-white text-center sm:text-left" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
                       </div>
                     </div>
                     
@@ -2568,15 +2610,15 @@
                         <div class="mb-8 ${dorIndex > 0 ? 'mt-8' : ''}">
                           <!-- Nome da Dor - Banner acima dos fluxos -->
                           ${!isSemDor ? `
-                          <div class="mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
-                            <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: ${corDor.badgeGradiente}; min-width: 200px;">
-                              <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
+                          <div class="mb-4 md:mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
+                            <div class="inline-flex items-center px-4 py-3 md:px-8 md:py-4 rounded-xl shadow-lg w-full sm:w-auto" style="background: ${corDor.badgeGradiente};">
+                              <span class="text-lg md:text-xl font-bold text-white text-center sm:text-left" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
                             </div>
                           </div>
                           ` : ''}
                           
                           <!-- Fluxograma de Assessorias para esta Dor -->
-                          <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+                          <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 1rem 0.5rem; min-height: 300px;">
                             ${ordensOrdenadasNaDor.map((ordem, ordemIndex) => {
                             const solucoes = solucoesPorOrdemNaDor[ordem];
                             const isLast = ordemIndex === ordensOrdenadasNaDor.length - 1;
