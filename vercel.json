@@ -1,8 +1,7 @@
 {
   "version": 2,
   "buildCommand": "",
-  "outputDirectory": ".",
-  "public": true,
+  "outputDirectory": "public",
   "rewrites": [
     {
       "source": "/",
