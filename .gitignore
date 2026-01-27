@@ -51,3 +51,7 @@ yarn-error.log*
 *.zip
 *.rar
 *.7z
+
+# Não ignorar o diretório public (necessário para Vercel)
+!public/
+!public/**/*
