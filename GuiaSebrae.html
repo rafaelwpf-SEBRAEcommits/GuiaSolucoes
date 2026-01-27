@@ -1048,7 +1048,7 @@
       <h3 class="text-xl font-bold mb-4" style="color: #00608B;">Sua seleção:</h3>
       <div class="flex flex-wrap gap-2" id="resumo-selecao"></div>
      </div>
-     <div class="mb-8" id="header-trilha-container">
+     <div class="mb-8 hidden" id="header-trilha-container">
       <h3 class="text-2xl md:text-3xl font-bold text-center mb-4" style="color: #00608B;">Sua Trilha de Soluções</h3>
       <p class="text-center mb-6 text-gray-600">As soluções estão organizadas em assessorias sequenciais. Complete cada etapa para avançar na sua jornada.</p>
       <div class="bg-gradient-to-r rounded-2xl p-6 md:p-8 mb-6 shadow-xl" id="header-trilha" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">
@@ -2004,6 +2004,98 @@
         'Sem Momento': { nome: 'Sem Momento', cor: '#00608B', emoji: '❓' }
       };
       
+      // Mapear cores para cada dor
+      const coresDor = {
+        'Marketing e Vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'Marketing e vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'marketing e vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'Financas': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'Finanças': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'financas': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'Planejamento': { 
+          primaria: '#0066CC', 
+          secundaria: '#0080FF',
+          gradiente: 'linear-gradient(90deg, #0066CC 0%, #0080FF 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #0066CC 0%, #0080FF 100%)'
+        },
+        'planejamento': { 
+          primaria: '#0066CC', 
+          secundaria: '#0080FF',
+          gradiente: 'linear-gradient(90deg, #0066CC 0%, #0080FF 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #0066CC 0%, #0080FF 100%)'
+        },
+        'Pessoas': { 
+          primaria: '#9B59B6', 
+          secundaria: '#BB6BD9',
+          gradiente: 'linear-gradient(90deg, #9B59B6 0%, #BB6BD9 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #9B59B6 0%, #BB6BD9 100%)'
+        },
+        'pessoas': { 
+          primaria: '#9B59B6', 
+          secundaria: '#BB6BD9',
+          gradiente: 'linear-gradient(90deg, #9B59B6 0%, #BB6BD9 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #9B59B6 0%, #BB6BD9 100%)'
+        },
+        'Operacoes': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        },
+        'Operações': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        },
+        'operacoes': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        }
+      };
+      
+      // Função para obter cor da dor (com fallback para laranja padrão)
+      const obterCorDor = (dor) => {
+        return coresDor[dor] || {
+          primaria: '#FF6B35',
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        };
+      };
+      
       const inst = (a) => (a.instrumento && String(a.instrumento).trim()) ? a.instrumento : 'Solução';
       
       // Renderizar containers separados para cada Momento Empresarial
@@ -2011,22 +2103,69 @@
         const infoMomento = momentosInfo[momento] || momentosInfo['Sem Momento'];
         const solucoesPorOrdem = solucoesPorMomento[momento];
         
-        // Ordenar assessorias (ordem)
-        const ordensOrdenadas = Object.keys(solucoesPorOrdem).map(Number).sort((a, b) => a - b);
+        // Agrupar soluções por dor dentro deste momento
+        const solucoesPorDorNoMomento = {};
+        Object.keys(solucoesPorOrdem).forEach(ordem => {
+          Object.keys(solucoesPorOrdem[ordem]).forEach(dor => {
+            if (!solucoesPorDorNoMomento[dor]) {
+              solucoesPorDorNoMomento[dor] = {};
+            }
+            if (!solucoesPorDorNoMomento[dor][ordem]) {
+              solucoesPorDorNoMomento[dor][ordem] = [];
+            }
+            solucoesPorDorNoMomento[dor][ordem].push(...solucoesPorOrdem[ordem][dor]);
+          });
+        });
         
-        if (ordensOrdenadas.length === 0) return '';
+        // Verificar se há soluções neste momento
+        const todasOrdens = new Set();
+        Object.keys(solucoesPorDorNoMomento).forEach(dor => {
+          Object.keys(solucoesPorDorNoMomento[dor]).forEach(ordem => {
+            todasOrdens.add(ordem);
+          });
+        });
+        
+        if (todasOrdens.size === 0) return '';
+        
+        // Ordenar dores (colocar "Nenhuma" por último)
+        const doresOrdenadasNoMomento = Object.keys(solucoesPorDorNoMomento)
+          .filter(dor => dor !== 'Nenhuma' && dor !== 'nenhuma')
+          .sort()
+          .concat(Object.keys(solucoesPorDorNoMomento).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
         
         return `
           <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
-            <!-- Fluxograma de Assessorias para este Momento -->
-            <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
-              ${ordensOrdenadas.map((ordem, ordemIndex) => {
-                const solucoesPorDor = solucoesPorOrdem[ordem];
-                const doresOrdenadas = Object.keys(solucoesPorDor)
-                  .filter(dor => dor !== 'Nenhuma' && dor !== 'nenhuma')
-                  .sort()
-                  .concat(Object.keys(solucoesPorDor).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
-                const isLast = ordemIndex === ordensOrdenadas.length - 1;
+            <!-- Banner do Momento Empresarial -->
+            <div class="mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
+              <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); min-width: 200px;">
+                <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
+              </div>
+            </div>
+            
+            ${doresOrdenadasNoMomento.map((dor, dorIndex) => {
+              const nomeDor = nomesDor[dor] || dor;
+              const isSemDor = dor === 'Nenhuma' || dor === 'nenhuma' || !dor || dor.trim() === '';
+              const solucoesPorOrdemNaDor = solucoesPorDorNoMomento[dor];
+              const ordensOrdenadasNaDor = Object.keys(solucoesPorOrdemNaDor).map(Number).sort((a, b) => a - b);
+              const corDor = obterCorDor(dor);
+              
+              return `
+                <!-- Container da Dor -->
+                <div class="mb-8 ${dorIndex > 0 ? 'mt-8' : ''}">
+                  <!-- Nome da Dor - Banner acima dos fluxos -->
+                  ${!isSemDor ? `
+                  <div class="mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
+                    <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: ${corDor.badgeGradiente}; min-width: 200px;">
+                      <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
+                    </div>
+                  </div>
+                  ` : ''}
+                  
+                  <!-- Fluxograma de Assessorias para esta Dor -->
+                  <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+                    ${ordensOrdenadasNaDor.map((ordem, ordemIndex) => {
+                      const solucoes = solucoesPorOrdemNaDor[ordem];
+                      const isLast = ordemIndex === ordensOrdenadasNaDor.length - 1;
                 
                 return `
                   <div class="trilha-step fade-in" style="animation-delay: ${ordemIndex * 0.2}s;">
@@ -2042,23 +2181,8 @@
                     <div class="trilha-hexagon" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
                     
                     <div class="trilha-step-content">
-                      ${doresOrdenadas.map((dor, dorIndex) => {
-                        const solucoes = solucoesPorDor[dor];
-                        const nomeDor = nomesDor[dor] || dor;
-                        const isSemDor = dor === 'Nenhuma' || dor === 'nenhuma';
-                        
-                        return `
-                          <div class="trilha-dor-container mb-4">
-                            ${!isSemDor ? `
-                            <div class="trilha-dor-header mb-3">
-                              <h4 class="text-base font-semibold" style="color: ${infoMomento.cor};">
-                                ${nomeDor}
-                              </h4>
-                            </div>
-                            ` : ''}
-                            
-                            <div class="trilha-dor-solucoes">
-                              ${solucoes.map((assessoria, solIndex) => {
+                      <div class="trilha-dor-solucoes">
+                        ${solucoes.map((assessoria, solIndex) => {
                                 const instrumento = inst(assessoria);
                                 const v = assessoria.valor;
                                 const n = (v != null && v !== '') ? Number(v) : NaN;
@@ -2089,10 +2213,7 @@
                                   </div>
                                 `;
                               }).join('')}
-                            </div>
-                          </div>
-                        `;
-                      }).join('')}
+                      </div>
                     </div>
                   </div>
                   ${!isLast ? `
@@ -2103,7 +2224,10 @@
                   ` : ''}
                 `;
               }).join('')}
-            </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
         `;
       }).filter(html => html !== '').join('');
@@ -2211,6 +2335,98 @@
         'nenhuma': '✨ Sem dor específica'
       };
       
+      // Mapear cores para cada dor
+      const coresDor = {
+        'Marketing e Vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'Marketing e vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'marketing e vendas': { 
+          primaria: '#FF6B35', 
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        },
+        'Financas': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'Finanças': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'financas': { 
+          primaria: '#00A859', 
+          secundaria: '#00C96B',
+          gradiente: 'linear-gradient(90deg, #00A859 0%, #00C96B 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #00A859 0%, #00C96B 100%)'
+        },
+        'Planejamento': { 
+          primaria: '#0066CC', 
+          secundaria: '#0080FF',
+          gradiente: 'linear-gradient(90deg, #0066CC 0%, #0080FF 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #0066CC 0%, #0080FF 100%)'
+        },
+        'planejamento': { 
+          primaria: '#0066CC', 
+          secundaria: '#0080FF',
+          gradiente: 'linear-gradient(90deg, #0066CC 0%, #0080FF 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #0066CC 0%, #0080FF 100%)'
+        },
+        'Pessoas': { 
+          primaria: '#9B59B6', 
+          secundaria: '#BB6BD9',
+          gradiente: 'linear-gradient(90deg, #9B59B6 0%, #BB6BD9 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #9B59B6 0%, #BB6BD9 100%)'
+        },
+        'pessoas': { 
+          primaria: '#9B59B6', 
+          secundaria: '#BB6BD9',
+          gradiente: 'linear-gradient(90deg, #9B59B6 0%, #BB6BD9 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #9B59B6 0%, #BB6BD9 100%)'
+        },
+        'Operacoes': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        },
+        'Operações': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        },
+        'operacoes': { 
+          primaria: '#2BB29D', 
+          secundaria: '#3DD4B8',
+          gradiente: 'linear-gradient(90deg, #2BB29D 0%, #3DD4B8 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)'
+        }
+      };
+      
+      // Função para obter cor da dor (com fallback para laranja padrão)
+      const obterCorDor = (dor) => {
+        return coresDor[dor] || {
+          primaria: '#FF6B35',
+          secundaria: '#FF8C5A',
+          gradiente: 'linear-gradient(90deg, #FF6B35 0%, #FF8C5A 100%)',
+          badgeGradiente: 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)'
+        };
+      };
+      
       // Mapeamento de cores e nomes para momentos empresariais
       const momentosInfo = {
         'Gerencie': { nome: 'Gerencie', cor: '#FF6B35', emoji: '📊' },
@@ -2299,30 +2515,71 @@
               ${momentosOrdenados.map((momento, momentoIndex) => {
                 const infoMomento = momentosInfo[momento] || momentosInfo['Sem Momento'];
                 
-                // Coletar todas as soluções deste momento de todas as dores
-                const todasSolucoesPorOrdem = {};
+                // Agrupar soluções por dor dentro deste momento (mantendo estrutura de dor)
+                const solucoesPorDorNoMomento = {};
                 Object.keys(solucoesPorDor).forEach(dor => {
                   if (solucoesPorDor[dor][momento]) {
                     Object.keys(solucoesPorDor[dor][momento]).forEach(ordem => {
-                      if (!todasSolucoesPorOrdem[ordem]) {
-                        todasSolucoesPorOrdem[ordem] = [];
+                      if (!solucoesPorDorNoMomento[dor]) {
+                        solucoesPorDorNoMomento[dor] = {};
                       }
-                      todasSolucoesPorOrdem[ordem].push(...solucoesPorDor[dor][momento][ordem]);
+                      if (!solucoesPorDorNoMomento[dor][ordem]) {
+                        solucoesPorDorNoMomento[dor][ordem] = [];
+                      }
+                      solucoesPorDorNoMomento[dor][ordem].push(...solucoesPorDor[dor][momento][ordem]);
                     });
                   }
                 });
                 
-                const ordensOrdenadas = Object.keys(todasSolucoesPorOrdem).map(Number).sort((a, b) => a - b);
+                // Verificar se há soluções neste momento
+                const todasOrdens = new Set();
+                Object.keys(solucoesPorDorNoMomento).forEach(dor => {
+                  Object.keys(solucoesPorDorNoMomento[dor]).forEach(ordem => {
+                    todasOrdens.add(ordem);
+                  });
+                });
                 
-                if (ordensOrdenadas.length === 0) return '';
+                if (todasOrdens.size === 0) return '';
+                
+                // Ordenar dores (colocar "Nenhuma" por último)
+                const doresOrdenadasNoMomento = Object.keys(solucoesPorDorNoMomento)
+                  .filter(dor => dor !== 'Nenhuma' && dor !== 'nenhuma')
+                  .sort()
+                  .concat(Object.keys(solucoesPorDorNoMomento).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
                 
                 return `
                   <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
-                    <!-- Fluxograma de Assessorias para este Momento -->
-                    <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
-                      ${ordensOrdenadas.map((ordem, ordemIndex) => {
-                        const solucoes = todasSolucoesPorOrdem[ordem];
-                        const isLast = ordemIndex === ordensOrdenadas.length - 1;
+                    <!-- Banner do Momento Empresarial -->
+                    <div class="mb-6 fade-in" style="animation-delay: ${momentoIndex * 0.1}s;">
+                      <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); min-width: 200px;">
+                        <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${infoMomento.nome}</span>
+                      </div>
+                    </div>
+                    
+                    ${doresOrdenadasNoMomento.map((dor, dorIndex) => {
+                      const nomeDor = nomesDor[dor] || dor;
+                      const isSemDor = dor === 'Nenhuma' || dor === 'nenhuma' || !dor || dor.trim() === '';
+                      const solucoesPorOrdemNaDor = solucoesPorDorNoMomento[dor];
+                      const ordensOrdenadasNaDor = Object.keys(solucoesPorOrdemNaDor).map(Number).sort((a, b) => a - b);
+                      const corDor = obterCorDor(dor);
+                      
+                      return `
+                        <!-- Container da Dor -->
+                        <div class="mb-8 ${dorIndex > 0 ? 'mt-8' : ''}">
+                          <!-- Nome da Dor - Banner acima dos fluxos -->
+                          ${!isSemDor ? `
+                          <div class="mb-6 fade-in" style="animation-delay: ${dorIndex * 0.1}s;">
+                            <div class="inline-flex items-center px-8 py-4 rounded-xl shadow-lg" style="background: ${corDor.badgeGradiente}; min-width: 200px;">
+                              <span class="text-xl font-bold text-white whitespace-nowrap" style="font-family: 'Montserrat', sans-serif; letter-spacing: 0.5px;">${nomeDor.replace(/^[📢💰🎯👥⚙️✨]\s*/, '')}</span>
+                            </div>
+                          </div>
+                          ` : ''}
+                          
+                          <!-- Fluxograma de Assessorias para esta Dor -->
+                          <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+                            ${ordensOrdenadasNaDor.map((ordem, ordemIndex) => {
+                            const solucoes = solucoesPorOrdemNaDor[ordem];
+                            const isLast = ordemIndex === ordensOrdenadasNaDor.length - 1;
                         
                         return `
                           <div class="trilha-step fade-in" style="animation-delay: ${ordemIndex * 0.2}s;">
@@ -2381,7 +2638,10 @@
                           ` : ''}
                         `;
                       }).join('')}
-                    </div>
+                          </div>
+                        </div>
+                      `;
+                    }).join('')}
                   </div>
                 `;
               }).filter(html => html !== '').join('')}
