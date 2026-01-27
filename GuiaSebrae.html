@@ -1,0 +1,3664 @@
+<!doctype html>
+<html lang="pt-BR" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argumento de Soluções Sebrae</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue: #00608B;
+      --secondary-blue: #0092BA;
+      --accent-cyan: #66C9D3;
+      --light-blue: #A0C5CF;
+      --very-light-blue: #E3ECEE;
+      --accent-green: #00A859;
+      --bg-gradient: linear-gradient(135deg, #00608B 0%, #0092BA 25%, #66C9D3 50%, #A0C5CF 100%);
+      --card-shadow: 0 10px 40px rgba(0, 96, 139, 0.1);
+      --card-shadow-hover: 0 20px 60px rgba(0, 96, 139, 0.2);
+    }
+
+    html {
+      height: 100%;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #ffffff 100%);
+      background-attachment: fixed;
+    }
+    
+    body {
+      box-sizing: border-box;
+      font-family: 'Inter', 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #ffffff 100%);
+      background-attachment: fixed;
+      min-height: 100%;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+
+    .sebrae-gradient {
+      background: var(--bg-gradient);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sebrae-gradient::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
+    }
+
+    .card-option {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-option::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s;
+    }
+
+    .card-option:hover::before {
+      left: 100%;
+    }
+
+    .card-option:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: var(--card-shadow-hover);
+      border-color: var(--primary-blue);
+    }
+
+    .card-option.selected {
+      border-color: var(--accent-green);
+      background: linear-gradient(135deg, #E8F7F0 0%, #ffffff 100%);
+      box-shadow: 0 0 0 3px rgba(0, 168, 89, 0.1);
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      background: #E0E0E0;
+      color: #666;
+      transition: all 0.3s ease;
+    }
+
+    .step-circle.active {
+      background: #00608B;
+      color: white;
+      transform: scale(1.15);
+    }
+
+    .step-circle.completed {
+      background: #00A859;
+      color: white;
+    }
+
+    .step-line {
+      flex: 1;
+      height: 3px;
+      background: #E0E0E0;
+      transition: all 0.3s ease;
+    }
+
+    .step-line.completed {
+      background: #00A859;
+    }
+
+    .btn-primary {
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(0, 92, 169, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .resultado-card {
+      transition: all 0.3s ease;
+    }
+
+    .resultado-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0, 92, 169, 0.15);
+    }
+
+    .resultado-card.card-clicavel {
+      cursor: pointer;
+    }
+
+    .fluxo-trilha {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+    }
+
+    .fluxo-etapa {
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: #E3ECEE;
+      color: #00608B;
+      border: 2px solid rgba(0,92,169,0.3);
+    }
+
+    .fluxo-etapa--destaque {
+      background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);
+      color: white;
+      border-color: #00608B;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.75rem;
+      box-shadow: 0 2px 8px rgba(0,92,169,0.35);
+    }
+
+    .fluxo-seta {
+      color: #00608B;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .trilha-timeline {
+      position: relative;
+      padding-left: 1.5rem;
+      border-left: 3px solid #00608B;
+    }
+
+    /* Estilos para o Fluxograma/Trilha Dinâmico - Design Moderno */
+    .trilha-fluxograma {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0;
+      padding: 2rem 1rem;
+      position: relative;
+      overflow-x: auto;
+      overflow-y: visible;
+      scroll-behavior: smooth;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-radius: 1.5rem;
+      min-height: 500px;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .trilha-step {
+      flex: 0 0 auto;
+      min-width: 350px;
+      max-width: 450px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 0 1.5rem;
+      box-sizing: border-box;
+    }
+
+    /* Chevron (Seta) para ASSESSORIA */
+    .trilha-assessoria-chevron {
+      position: relative;
+      width: 100%;
+      max-width: 280px;
+      height: 80px;
+      background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);
+      clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 50%, calc(100% - 30px) 100%, 0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .trilha-assessoria-chevron:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+    }
+
+    .trilha-assessoria-chevron::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      top: 0;
+      width: 0;
+      height: 0;
+      border-left: 30px solid var(--chevron-color, #0092BA);
+      border-top: 40px solid transparent;
+      border-bottom: 40px solid transparent;
+      opacity: 0.87;
+    }
+
+    .trilha-assessoria-text {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      z-index: 1;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Linha tracejada vertical */
+    .trilha-dashed-line {
+      position: absolute;
+      left: 50%;
+      top: 80px;
+      width: 2px;
+      height: 40px;
+      border-left: 2px dashed #9CA3AF;
+      transform: translateX(-50%);
+    }
+
+    /* Hexágono roxo como conector */
+    .trilha-hexagon {
+      position: absolute;
+      left: 50%;
+      top: 120px;
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);
+      clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+      transform: translateX(-50%);
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+      z-index: 3;
+    }
+
+    .trilha-step-content {
+      width: 100%;
+      margin-top: 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding-left: 1rem;
+      box-sizing: border-box;
+    }
+
+    /* Container de Dor */
+    .trilha-dor-container {
+      border: 2px solid #A0C5CF;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      background: #E3ECEE;
+      margin-bottom: 1.5rem;
+    }
+
+    .trilha-dor-header {
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+    }
+
+    .trilha-dor-solucoes {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .trilha-solucao-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      margin-left: 1rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .trilha-solucao-card::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      background: linear-gradient(135deg, var(--card-hexagon-color, #00608B) 0%, var(--card-hexagon-color, #00608B)dd 100%);
+      clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+      transform: translateY(-50%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+    }
+
+    .trilha-solucao-card:hover {
+      transform: translateY(-6px) translateX(4px);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+      border-color: #00608B;
+    }
+
+    /* Destaque de Preço e Tipo de Produto */
+    .trilha-solucao-card .destaque-preco-tipo {
+      background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%);
+      border: 2px solid #00608B;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Divisor vertical roxo entre steps */
+    .trilha-step-divider {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 3px;
+      height: 100%;
+      background: linear-gradient(180deg, #00608B 0%, #0092BA 100%);
+      opacity: 0.6;
+    }
+
+    /* Conector horizontal entre steps */
+    .trilha-connector {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      position: relative;
+      align-self: center;
+      min-width: 80px;
+      height: 80px;
+      flex-shrink: 0;
+    }
+
+    .trilha-connector-line {
+      width: 60px;
+      height: 4px;
+      background: linear-gradient(90deg, #00608B 0%, #0092BA 100%);
+      border-radius: 2px;
+      animation: flowRight 2s ease-in-out infinite;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+    }
+
+    @keyframes flowRight {
+      0%, 100% { opacity: 0.6; transform: scaleX(1); }
+      50% { opacity: 1; transform: scaleX(1.1); }
+    }
+
+    .trilha-connector-hexagon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);
+      clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+      margin-left: 0.5rem;
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+      animation: pulseHexagon 2s ease-in-out infinite;
+    }
+
+    @keyframes pulseHexagon {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Responsividade para o fluxograma */
+    @media (max-width: 1400px) {
+      .trilha-step {
+        min-width: 320px;
+        max-width: 380px;
+        padding: 0 1rem;
+      }
+      
+      .trilha-assessoria-chevron {
+        max-width: 240px;
+        height: 75px;
+      }
+
+      .trilha-assessoria-text {
+        font-size: 1.3rem;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .trilha-fluxograma {
+        padding: 1.5rem 0.5rem;
+      }
+
+      .trilha-step {
+        min-width: 300px;
+        max-width: 350px;
+        padding: 0 1rem;
+      }
+      
+      .trilha-assessoria-chevron {
+        max-width: 220px;
+        height: 70px;
+      }
+
+      .trilha-assessoria-text {
+        font-size: 1.2rem;
+      }
+      
+      .trilha-connector {
+        min-width: 50px;
+      }
+      
+      .trilha-connector-line {
+        width: 40px;
+      }
+
+      .trilha-step-content {
+        padding-left: 0.5rem;
+      }
+
+      .trilha-solucao-card {
+        margin-left: 0.5rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .trilha-fluxograma {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        padding: 1.5rem 1rem;
+        min-height: auto;
+        overflow-x: visible;
+      }
+
+      .trilha-step {
+        width: 100%;
+        max-width: 100%;
+        min-width: auto;
+        padding: 0 0.5rem;
+        align-items: center;
+      }
+
+      .trilha-step-divider {
+        display: none;
+      }
+
+      .trilha-assessoria-chevron {
+        width: 100%;
+        max-width: 100%;
+        height: 70px;
+        clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 50%, calc(100% - 20px) 100%, 0 100%);
+      }
+
+      .trilha-assessoria-chevron::after {
+        right: -20px;
+        border-left-width: 20px;
+        border-top-width: 35px;
+        border-bottom-width: 35px;
+      }
+
+      .trilha-assessoria-text {
+        font-size: 1.1rem;
+        padding: 0 1rem;
+      }
+
+      .trilha-step-content {
+        padding-left: 0;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 50px;
+      }
+
+      .trilha-solucao-card {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      .trilha-solucao-card::before {
+        display: none;
+      }
+
+      .trilha-connector {
+        flex-direction: column;
+        margin: 1rem 0;
+        min-width: auto;
+        height: auto;
+        width: 100%;
+      }
+
+      .trilha-connector-line {
+        width: 3px;
+        height: 40px;
+        background: linear-gradient(180deg, #00608B 0%, #0092BA 100%);
+      }
+
+      .trilha-connector-hexagon {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .trilha-dashed-line {
+        display: none;
+      }
+
+      .trilha-hexagon {
+        display: none;
+      }
+
+      .trilha-dor-container {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .trilha-fluxograma {
+        padding: 1rem 0.5rem;
+      }
+
+      .trilha-assessoria-chevron {
+        height: 60px;
+      }
+
+      .trilha-assessoria-text {
+        font-size: 1rem;
+      }
+
+      .trilha-step-content {
+        margin-top: 40px;
+      }
+    }
+
+    .trilha-timeline .etapa {
+      position: relative;
+      padding-bottom: 1rem;
+    }
+
+    .trilha-timeline .etapa::before {
+      content: '';
+      position: absolute;
+      left: -1.65rem;
+      top: 0.35rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00608B;
+    }
+
+    .trilha-timeline .etapa:last-child {
+      padding-bottom: 0;
+    }
+
+    .tab-button {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      position: relative;
+      background: transparent;
+    }
+
+    .tab-button::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 80%;
+      height: 3px;
+      background: var(--primary-blue);
+      transition: transform 0.3s ease;
+    }
+
+    .tab-button.active::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+
+    .tab-button.active {
+      color: var(--primary-blue);
+      font-weight: 700;
+      background: rgba(0, 92, 169, 0.05);
+    }
+
+    .tab-button:hover:not(.active) {
+      color: var(--primary-blue);
+      background: rgba(0, 92, 169, 0.03);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: var(--card-shadow);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-modern {
+      transition: all 0.3s ease;
+      border: 2px solid #e5e7eb;
+    }
+
+    .input-modern:focus {
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 4px rgba(0, 92, 169, 0.1);
+      outline: none;
+    }
+
+    .btn-modern {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-modern::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-modern:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-modern:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 92, 169, 0.3);
+    }
+
+    /* --- Sidebar lateral (UX/UI avançado) --- */
+    #app-root { display: flex; min-height: 100vh; }
+    #main-wrap { flex: 1; display: flex; flex-direction: column; min-width: 0; background: transparent; }
+    #app-wrapper { background: transparent; }
+
+    #sidebar {
+      width: 280px;
+      flex-shrink: 0;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border-right: 1px solid rgba(0,92,169,0.08);
+      box-shadow: 4px 0 24px rgba(0,92,169,0.04);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s ease;
+      z-index: 100;
+    }
+
+    .sidebar-brand {
+      padding: 1.5rem 1.25rem;
+      border-bottom: 1px solid rgba(0,92,169,0.06);
+    }
+    .sidebar-brand a {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .sidebar-brand a:hover { color: #0092BA; }
+    .sidebar-brand .logo-icon { font-size: 1.5rem; }
+
+    .sidebar-nav { padding: 1rem 0.75rem; flex: 1; }
+    .sidebar-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.25rem;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: #475569;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sidebar-nav-item:hover {
+      background: rgba(0,92,169,0.06);
+      color: var(--primary-blue);
+      transform: translateX(4px);
+    }
+    .sidebar-nav-item:focus-visible {
+      outline: 2px solid var(--primary-blue);
+      outline-offset: 2px;
+    }
+    .sidebar-nav-item.active {
+      background: linear-gradient(90deg, rgba(0,92,169,0.12) 0%, rgba(0,92,169,0.04) 100%);
+      color: var(--primary-blue);
+      border-left: 4px solid var(--primary-blue);
+      padding-left: calc(1rem - 4px);
+      box-shadow: 0 2px 8px rgba(0,92,169,0.08);
+    }
+    .sidebar-nav-item .nav-icon { font-size: 1.25rem; flex-shrink: 0; width: 1.5rem; text-align: center; }
+    .sidebar-nav-item .nav-icon--lock { opacity: 0.85; }
+
+    .sidebar-footer { padding: 1rem 0.75rem; border-top: 1px solid rgba(0,92,169,0.06); }
+    .sidebar-nav-item.sidebar-sair { color: #64748b; }
+    .sidebar-nav-item.sidebar-sair:hover { background: #FEF2F2; color: #DC2626; }
+
+    #sidebar-backdrop {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(2px);
+      z-index: 90;
+      animation: fadeIn 0.25s ease;
+    }
+    #sidebar-backdrop.backdrop--on { display: block; }
+
+    #topbar-mobile {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(0,92,169,0.1);
+      flex-shrink: 0;
+    }
+    #btn-menu-mobile {
+      padding: 0.5rem;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      color: var(--primary-blue);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    #btn-menu-mobile:hover { background: rgba(0,92,169,0.08); }
+    #btn-menu-mobile:active { transform: scale(0.96); }
+    #btn-menu-mobile svg { width: 24px; height: 24px; }
+    .topbar-logo { font-size: 1rem; font-weight: 700; color: var(--primary-blue); text-decoration: none; }
+
+    /* Desktop: sidebar sempre visível; mobile: oculto por padrão */
+    @media (max-width: 1023px) {
+      #sidebar {
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        transform: translateX(-100%);
+        box-shadow: none;
+      }
+      #sidebar.sidebar--open { transform: translateX(0); box-shadow: 8px 0 32px rgba(0,0,0,0.12); }
+      #main-wrap { margin-left: 0; }
+    }
+    @media (min-width: 1024px) {
+      #topbar-mobile { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #sidebar, .sidebar-nav-item, #sidebar-backdrop { transition: none; }
+      .sidebar-nav-item:hover { transform: none; }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app-root" class="flex min-h-screen">
+    <!-- Sidebar lateral -->
+    <aside id="sidebar" role="navigation" aria-label="Menu principal">
+     <div class="sidebar-brand">
+      <a href="#" onclick="trocarAba('consulta'); fecharSidebarMobile(); return false;">
+       <span class="logo-icon" aria-hidden="true"></span>
+       <span>Jornada de Soluções</span>
+      </a>
+     </div>
+     <nav class="sidebar-nav">
+      <button type="button" id="nav-busca" class="sidebar-nav-item active" onclick="trocarAba('consulta'); fecharSidebarMobile();" aria-current="page">
+       <span class="nav-icon" aria-hidden="true">🔍</span>
+       <span>Busca</span>
+      </button>
+      <button type="button" id="nav-jornadas" class="sidebar-nav-item" onclick="trocarAba('jornadas'); fecharSidebarMobile();">
+       <span class="nav-icon" aria-hidden="true">🗺️</span>
+       <span>Jornadas</span>
+      </button>
+      <button type="button" id="nav-gestao" class="sidebar-nav-item" onclick="verificarGestor(); fecharSidebarMobile();">
+       <span id="nav-gestao-lock" class="nav-icon nav-icon--lock" aria-hidden="true">🔒</span>
+       <span id="nav-gestao-ok" class="nav-icon hidden" aria-hidden="true">⚙️</span>
+       <span>Gestão</span>
+       <span class="text-xs ml-auto opacity-75" id="nav-gestao-hint">(login)</span>
+      </button>
+     </nav>
+     <div class="sidebar-footer" id="nav-sair-wrap" style="display: none;">
+      <button type="button" id="nav-sair" class="sidebar-nav-item sidebar-sair" onclick="desautenticarGestor(); fecharSidebarMobile();">
+       <span class="nav-icon" aria-hidden="true">🚪</span>
+       <span>Sair</span>
+      </button>
+     </div>
+    </aside>
+    <div id="sidebar-backdrop" onclick="fecharSidebarMobile();" aria-hidden="true"></div>
+
+    <div id="main-wrap" class="flex-1 flex flex-col min-w-0">
+     <header id="topbar-mobile" class="lg:hidden" role="banner">
+      <button type="button" id="btn-menu-mobile" onclick="abrirSidebarMobile();" aria-label="Abrir menu">
+       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <a href="#" onclick="trocarAba('consulta'); return false;" class="topbar-logo">Soluções de Diagnóstico</a>
+      <span style="width: 40px;"></span>
+     </header>
+     <main id="app-wrapper" class="flex-1 overflow-auto">
+      <div class="w-full max-w-7xl mx-auto px-4 py-6 md:py-10">
+    <!-- Modal de Login para Gestor -->
+    <div id="modal-login" class="modal-overlay hidden">
+     <div class="modal-content">
+      <div class="text-center mb-6">
+       <h2 class="text-2xl font-bold mb-2" style="color: var(--primary-blue);">Acesso de Gestor</h2>
+       <p class="text-sm" style="color: #666;">Digite suas credenciais para acessar o painel de gerenciamento</p>
+      </div>
+      <form id="form-login-gestor" class="space-y-4">
+       <div>
+        <label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Usuário</label>
+        <input type="text" id="login-usuario" required class="input-modern w-full px-4 py-3 rounded-xl" placeholder="Digite seu usuário">
+       </div>
+       <div>
+        <label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Senha</label>
+        <input type="password" id="login-senha" required class="input-modern w-full px-4 py-3 rounded-xl" placeholder="Digite sua senha">
+       </div>
+       <div id="login-erro" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg"></div>
+       <div class="flex gap-3">
+        <button type="submit" class="btn-modern flex-1 px-6 py-3 text-white font-bold rounded-xl" style="background: var(--primary-blue);">
+         Entrar
+        </button>
+        <button type="button" onclick="fecharLoginGestor()" class="px-6 py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl transition-all" style="color: #666;">
+         Cancelar
+        </button>
+       </div>
+      </form>
+     </div>
+    </div>
+    <!-- Modal Detalhes da Solução / Trilha -->
+    <div id="modal-detalhe-solucao" class="modal-overlay hidden" onclick="if(event.target===this)fecharDetalheSolucao()">
+     <div class="modal-content max-w-lg">
+      <div class="flex items-start justify-between mb-4">
+       <h2 id="detalhe-titulo" class="text-xl font-bold" style="color: var(--primary-blue);"></h2>
+       <button type="button" onclick="fecharDetalheSolucao()" class="text-2xl leading-none opacity-70 hover:opacity-100" style="color: #666;">&times;</button>
+      </div>
+      <p id="detalhe-descricao" class="text-sm mb-4" style="color: #666;"></p>
+      <div class="mb-4 p-3 rounded-xl border-2" style="background: #FFFBEB; border-color: #F59E0B;">
+       <p class="text-xs font-semibold mb-1" style="color: #B45309;">Próxima data</p>
+       <p id="detalhe-proxima-data" class="text-lg font-bold" style="color: #B45309;"></p>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-4" id="detalhe-badges"></div>
+      <div class="flex gap-3" id="detalhe-botoes">
+       <button type="button" onclick="fecharDetalheSolucao()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
+      </div>
+     </div>
+    </div>
+    <!-- Aba Consulta -->
+    <div id="aba-consulta" class="tab-content active">
+     <!-- Header -->
+     <header class="text-center mb-8 md:mb-12">
+     <div class="sebrae-gradient text-white py-8 md:py-12 px-4 md:px-8 rounded-3xl shadow-2xl relative overflow-hidden">
+      <div class="relative z-10">
+       <h1 id="titulo-principal" class="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">Jornada de Soluções</h1>
+       <p id="subtitulo" class="text-lg md:text-xl opacity-95 drop-shadow-md">Encontre a solução ideal para o diagnóstico</p>
+      </div>
+     </div>
+    </header><!-- Progress Indicator -->
+    <div class="glass-card rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
+     <div class="flex items-center justify-between max-w-3xl mx-auto">
+      <div class="step-indicator flex-1">
+       <div class="step-circle active" id="step-1">
+        1
+       </div>
+       <div class="step-line" id="line-1"></div>
+      </div>
+      <div class="step-indicator flex-1">
+       <div class="step-circle" id="step-2">
+        2
+       </div>
+       <div class="step-line" id="line-2"></div>
+      </div>
+      <div class="step-circle" id="step-3">
+       3
+      </div>
+     </div>
+     <div class="flex justify-between mt-3 text-xs md:text-sm font-semibold text-center" style="color: #00608B;"><span class="flex-1">Momento</span> <span class="flex-1">Porte</span> <span class="flex-1">Setor</span>
+     </div>
+    </div>    <!-- Step 1: Momento da Empresa -->
+    <section id="step-momento" class="fade-in">
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: var(--primary-blue);">Qual o momento da empresa?</h2>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><button onclick="selecionarMomento('empresarial')" class="card-option rounded-2xl p-6 text-left">
+       <div class="flex items-center gap-3 mb-3"><span class="text-3xl">🏢</span>
+        <h3 class="text-xl font-bold" style="color: var(--primary-blue);">Momento Empresarial</h3>
+       </div><p class="text-sm leading-relaxed" style="color: #666;">Para empresas focadas em estruturação e gestão</p></button> <button onclick="selecionarMomento('crescimento')" class="card-option rounded-2xl p-6 text-left">
+       <div class="flex items-center gap-3 mb-3"><span class="text-3xl">📈</span>
+        <h3 class="text-xl font-bold" style="color: var(--primary-blue);">Crescimento Empresarial</h3>
+       </div><p class="text-sm leading-relaxed" style="color: #666;">Para empresas em fase de expansão e escalabilidade</p></button>
+     </div>
+    </section><!-- Step 1.1: Cards Momento Empresarial -->
+    <section id="cards-empresarial" class="hidden fade-in"><button onclick="voltarEtapa('momento')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Selecione o foco principal</h2>
+     <div class="flex justify-center gap-4 mb-6 flex-wrap"><button onclick="selecionarTodos('empresarial')" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: var(--primary-blue); color: var(--primary-blue);"> ✓ Todos </button> <button onclick="selecionarNenhum('empresarial')" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: #DC2626; color: #DC2626;"> ✗ Nenhum </button>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" id="grid-empresarial"></div>
+     <div class="text-center"><button onclick="avancarParaPorte()" id="btn-avancar-momento" disabled class="btn-primary btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--primary-blue);"> Avançar para Porte → </button>
+     </div>
+    </section><!-- Step 1.2: Cards Crescimento Empresarial -->
+    <section id="cards-crescimento" class="hidden fade-in"><button onclick="voltarEtapa('momento')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Selecione a área de crescimento</h2>
+     <div class="flex justify-center gap-4 mb-6 flex-wrap"><button onclick="selecionarTodos('crescimento')" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: var(--primary-blue); color: var(--primary-blue);"> ✓ Todos </button> <button onclick="selecionarNenhum('crescimento')" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: #DC2626; color: #DC2626;"> ✗ Nenhum </button>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" id="grid-crescimento"></div>
+     <div class="text-center"><button onclick="avancarParaPorte()" id="btn-avancar-crescimento" disabled class="btn-primary btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--primary-blue);"> Avançar para Porte → </button>
+     </div>
+    </section><!-- Step 2: Porte -->
+    <section id="step-porte" class="hidden fade-in"><button onclick="voltarEtapa('cards')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o porte da empresa?</h2>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><button onclick="selecionarPorte('MEI')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">👤</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">MEI</h3><p class="text-sm" style="color: #666;">Microempreendedor Individual</p></button> <button onclick="selecionarPorte('ME')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">👥</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">ME</h3><p class="text-sm" style="color: #666;">Microempresa</p></button> <button onclick="selecionarPorte('EPP')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏢</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">EPP</h3><p class="text-sm" style="color: #666;">Empresa de Pequeno Porte</p></button>
+     </div>
+    </section><!-- Step 3: Setor -->
+    <section id="step-setor" class="hidden fade-in"><button onclick="voltarEtapa('porte')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o setor de atuação?</h2>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><button onclick="selecionarSetor('Comercio')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🛒</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Comércio</h3><p class="text-sm" style="color: #666;">Compra e venda de produtos</p></button> <button onclick="selecionarSetor('Industria')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏭</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Indústria</h3><p class="text-sm" style="color: #666;">Produção e transformação</p></button> <button onclick="selecionarSetor('Servicos')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">💼</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Serviços</h3><p class="text-sm" style="color: #666;">Prestação de serviços</p></button> <button onclick="selecionarSetor('Multisetorial')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🌐</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Multisetorial</h3><p class="text-sm" style="color: #666;">Múltiplos setores</p></button>
+     </div>
+    </section>    <!-- Resultados -->
+    <section id="step-resultados" class="hidden fade-in">
+     <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
+      <h3 class="text-xl font-bold mb-4" style="color: #00608B;">Sua seleção:</h3>
+      <div class="flex flex-wrap gap-2" id="resumo-selecao"></div>
+     </div>
+     <div class="mb-8" id="header-trilha-container">
+      <h3 class="text-2xl md:text-3xl font-bold text-center mb-4" style="color: #00608B;">Sua Trilha de Soluções</h3>
+      <p class="text-center mb-6 text-gray-600">As soluções estão organizadas em assessorias sequenciais. Complete cada etapa para avançar na sua jornada.</p>
+      <div class="bg-gradient-to-r rounded-2xl p-6 md:p-8 mb-6 shadow-xl" id="header-trilha" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">
+       <h2 class="text-3xl md:text-4xl font-bold text-white mb-2" id="header-trilha-titulo">Gerencie</h2>
+       <p class="text-purple-100 text-lg" id="header-trilha-desc">Processo simplificado de estruturação e gestão empresarial</p>
+      </div>
+     </div>
+     <div id="resultados-container" class="mb-8"></div>
+     <div id="mensagem-sem-resultados" class="hidden text-center py-12">
+      <svg class="w-20 h-20 mx-auto mb-4 opacity-50" fill="none" stroke="#00608B" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="text-xl font-semibold mb-3" style="color: #666;">Nenhuma Solução encontrada</p>
+      <p style="color: #999;">Não há solução cadastradas para esta combinação</p>
+     </div>
+     <!-- Box de Sugestão de Ferramenta -->
+     <div id="box-sugestao-ferramenta" class="hidden mt-12 mb-8">
+      <div class="bg-gradient-to-br rounded-2xl shadow-xl p-6 md:p-8 border-4" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border-color: #00608B;">
+       <div class="flex items-start gap-4 mb-4">
+        <div class="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">
+         💡
+        </div>
+        <div class="flex-1">
+         <h3 class="text-2xl font-bold mb-2" style="color: #00608B;">Ferramenta Recomendada</h3>
+         <p class="text-sm" style="color: #666;">Uma sugestão especial para o seu perfil</p>
+        </div>
+       </div>
+       <div id="sugestao-conteudo" class="space-y-4">
+        <!-- Conteúdo será preenchido dinamicamente -->
+       </div>
+      </div>
+     </div>
+     <!-- Botão Nova Consulta -->
+     <div class="text-center mt-12 mb-8">
+      <button onclick="reiniciar()" class="btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg shadow-lg hover:shadow-xl transition-all" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">
+       ← Nova Consulta
+      </button>
+     </div>
+    </section>
+    </div>
+    <!-- Aba Jornadas -->
+    <div id="aba-jornadas" class="tab-content">
+     <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4 mb-6" style="border-color: var(--primary-blue);">
+      <div class="text-center mb-8">
+       <h2 class="text-3xl md:text-4xl font-bold mb-4" style="color: var(--primary-blue);">Todas as Jornadas</h2>
+       <p class="text-lg" style="color: #666;">Explore todas as soluções disponíveis, organizadas por assessorias sequenciais</p>
+      </div>
+      <div id="jornadas-container" class="mb-8">
+       <div class="text-center py-12">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: var(--primary-blue);"></div>
+        <p class="mt-4" style="color: #666;">Carregando jornadas...</p>
+       </div>
+      </div>
+     </div>
+    </div>
+    <!-- Aba Gerenciamento -->
+    <div id="aba-gerenciamento" class="tab-content">
+     <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4" style="border-color: var(--primary-blue);">
+      <div class="flex items-center justify-between mb-6">
+       <div>
+        <h3 class="text-2xl font-bold mb-2" style="color: var(--primary-blue);">Gerenciar Soluções</h3>
+        <p class="text-sm" style="color: #666;">Cadastre e gerencie as soluções que aparecerão nos resultados filtrados</p>
+       </div>
+       <div class="flex items-center gap-4">
+        <div class="text-right">
+         <p class="text-sm font-semibold" style="color: #666;">Total cadastrado:</p>
+         <p class="text-3xl font-bold" style="color: var(--accent-green);" id="total-assessorias">0</p>
+        </div>
+        <button onclick="desautenticarGestor()" class="px-4 py-2 text-sm font-semibold rounded-lg transition-all hover:bg-red-50" style="color: #DC2626;">
+         🚪 Sair
+        </button>
+       </div>
+      </div>
+      <!-- Importação de Planilha -->
+      <div class="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl border-2 border-dashed" style="border-color: var(--primary-blue);">
+       <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+         <h4 class="font-bold mb-1" style="color: var(--primary-blue);">📊 Importar Planilha</h4>
+         <p class="text-sm" style="color: #666;">Importe uma planilha CSV ou Excel para cadastrar múltiplas soluções de uma vez</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+         <input type="file" id="file-import" accept=".csv,.xlsx,.xls" class="hidden" onchange="processarImportacao(event)">
+         <label for="file-import" class="btn-modern px-6 py-3 text-white font-semibold rounded-xl cursor-pointer" style="background: var(--primary-blue);">
+          📁 Importar (CSV/Excel)
+         </label>
+         <button onclick="exportarParaExcel()" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: #059669; color: #059669;">
+          📤 Exportar Excel
+         </button>
+         <button onclick="baixarModeloPlanilha()" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: var(--accent-green); color: var(--accent-green);">
+          📥 Baixar Modelo
+         </button>
+        </div>
+       </div>
+       <div id="import-status" class="hidden mt-4 p-3 rounded-lg"></div>
+      </div>
+      <form id="cadastro-form" class="space-y-4">
+       <!-- Critérios de oferta: momento empresarial + foco da dor -->
+       <div class="p-4 rounded-xl border-2" style="background: #EFF6FF; border-color: var(--primary-blue);">
+         <p class="text-sm font-semibold mb-1" style="color: var(--primary-blue);">📌 Critérios de oferta</p>
+         <p class="text-xs" style="color: #1e40af;">As soluções são ofertadas de acordo com o <strong>momento empresarial</strong> e o <strong>foco principal da dor</strong> selecionados. Preencha os campos abaixo para que esta solução apareça nas recomendações corretas da consulta.</p>
+       </div>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Momento empresarial -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Momento empresarial *</label> <select id="cad-tipo-momento" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="empresarial">Momento Empresarial (estruturação e gestão)</option> <option value="crescimento">Crescimento Empresarial (expansão e escalabilidade)</option> </select>
+        </div>
+        <!-- Foco principal da dor -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Foco principal da dor *</label> <select id="cad-categoria" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione o momento empresarial primeiro</option> </select><p class="text-xs mt-1" style="color: #666;">Área/foco que define quando esta solução será recomendada.</p>
+        </div>
+        <!-- Código -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Código</label> <input type="text" id="cad-codigo" placeholder="Ex: 6174" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Título/Nome da Solução -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Título/Nome da Solução *</label> <input type="text" id="cad-nome" required placeholder="Ex: Consultoria em Gestão Estratégica" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Porte -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Porte/Público Alvo *</label> <select id="cad-porte" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="MEI">MEI - Microempreendedor Individual</option> <option value="ME">ME - Microempresa</option> <option value="EPP">EPP - Empresa de Pequeno Porte</option> </select>
+        </div>        <!-- Setor -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Setor *</label> <select id="cad-setor" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multisetorial">Multisetorial</option> </select>
+        </div>
+        <!-- Segmento -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Segmento</label> <input type="text" id="cad-segmento" placeholder="Ex: Vestuário, Jóias" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Área de Conhecimento -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Área de Conhecimento</label> <input type="text" id="cad-area-conhecimento" placeholder="Ex: Gestão da Produção" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Carga Horária -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Carga Horária</label> <input type="number" id="cad-carga-horaria" placeholder="Ex: 14" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Instrumento -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Instrumento</label> <input type="text" id="cad-instrumento" placeholder="Ex: Cursos Presenciais" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Fornecedor Executor -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Fornecedor Executor</label> <input type="text" id="cad-fornecedor" placeholder="Ex: SENAI" class="input-modern w-full px-4 py-3 rounded-xl">
+        </div>
+        <!-- Próxima data -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Próxima data</label> <input type="text" id="cad-proxima-data" placeholder="Ex: 15/03/2026 ou A definir" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">Data da próxima turma/edição para exibir na trilha.</p>
+        </div>
+        <!-- Valor (0 = gratuito) -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Valor (R$) *</label> <input type="number" id="cad-valor" min="0" step="0.01" value="0" placeholder="0 = gratuito" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">Zero = gratuito. Informe o valor quando for pago.</p>
+        </div>
+        <!-- Ordem -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Ordem de Exibição *</label> <select id="cad-ordem" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="1">1 - Primeira Assessoria</option> <option value="2">2 - Segunda Assessoria</option> </select>
+        </div>
+        <!-- Link de Direcionamento -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Link de Direcionamento</label> <input type="url" id="cad-link-direcionamento" placeholder="Ex: https://www.sebrae.com.br/solucao" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">URL para direcionar o usuário à solução.</p>
+        </div>
+       </div>
+       <!-- Descrição -->
+       <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Descrição da Solução *</label> <textarea id="cad-descricao" required rows="4" placeholder="Descreva os benefícios e diferenciais desta solução..." class="input-modern w-full px-4 py-3 rounded-xl"></textarea>
+       </div>
+       <button type="submit" id="btn-cadastrar" class="btn-primary btn-modern w-full px-6 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--accent-green);"> ✓ Cadastrar Solução </button>
+      </form><!-- Lista de Soluções Cadastradas -->
+      <div class="mt-8 pt-8 border-t-2" style="border-color: #E0E0E0;">
+       <h4 class="text-xl font-bold mb-4" style="color: #00608B;">📋 Soluções Cadastradas</h4>
+       <div id="barra-exclusao-massa" class="hidden flex flex-wrap items-center gap-4 mb-4 p-3 rounded-xl border-2" style="border-color: #FEE2E2; background: #FEF2F2;">
+         <label class="flex items-center gap-2 cursor-pointer font-semibold" style="color: #991B1B;"><input type="checkbox" id="cb-selecionar-todas" onchange="marcarDesmarcarTodas(this.checked)"> Selecionar todas</label>
+         <button type="button" onclick="marcarDesmarcarTodas(false)" class="px-4 py-2 rounded-lg font-semibold transition-all hover:bg-gray-200" style="background: #E5E7EB; color: #374151;">Desmarcar</button>
+         <button type="button" id="btn-excluir-selecionadas" onclick="excluirSelecionadas()" disabled class="px-4 py-2 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed" style="background: #DC2626; color: white;">Excluir selecionadas</button>
+       </div>
+       <div id="lista-assessorias" class="space-y-3 max-h-96 overflow-y-auto"></div>
+       <div id="lista-vazia" class="text-center py-8 hidden">
+        <p style="color: #999;">Nenhuma solução cadastrada ainda</p>
+       </div>
+      </div>
+      <!-- Gestão de Sugestões de Ferramentas -->
+      <div class="mt-12 pt-8 border-t-4" style="border-color: #00608B;">
+       <h4 class="text-xl font-bold mb-4" style="color: #00608B;">💡 Gerenciar Sugestões de Ferramentas</h4>
+       <p class="text-sm mb-6" style="color: #666;">Configure ferramentas que aparecerão como sugestões ao final da consulta, baseadas no perfil do usuário</p>
+       <form id="form-sugestao" class="space-y-4 mb-6 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #A0C5CF;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Título da Ferramenta *</label> <input type="text" id="sug-titulo" required placeholder="Ex: Calculadora de Precificação" class="input-modern w-full px-4 py-3 rounded-xl"></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Link</label> <input type="url" id="sug-link" placeholder="https://..." class="input-modern w-full px-4 py-3 rounded-xl"></div>
+        </div>
+        <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Descrição</label> <textarea id="sug-descricao" rows="3" placeholder="Descreva a ferramenta e seus benefícios..." class="input-modern w-full px-4 py-3 rounded-xl"></textarea></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Tipo de Momento</label> <select id="sug-tipo-momento" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="empresarial">Momento Empresarial</option> <option value="crescimento">Crescimento Empresarial</option> </select></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Área de Crescimento (Dor)</label> <select id="sug-crescimento" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione o tipo de momento primeiro</option> </select></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Porte</label> <select id="sug-porte" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="MEI">MEI</option> <option value="ME">ME</option> <option value="EPP">EPP</option> </select></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Setor</label> <select id="sug-setor" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multisetorial">Multisetorial</option> </select></div>
+        </div>
+        <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Ordem de Exibição</label> <input type="number" id="sug-ordem" min="1" value="1" class="input-modern w-full px-4 py-3 rounded-xl"></div>
+        <div class="flex items-center gap-2"><input type="checkbox" id="sug-ativo" checked class="h-4 w-4"> <label for="sug-ativo" class="text-sm font-semibold" style="color: #00608B;">Ativo</label></div>
+        <button type="button" id="btn-salvar-sugestao" onclick="salvarSugestao()" class="btn-modern w-full px-6 py-3 text-white font-bold rounded-xl" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">💾 Salvar Sugestão</button>
+       </form>
+       <div id="lista-sugestoes" class="space-y-3 max-h-96 overflow-y-auto"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </main>
+  </div><!-- /main-wrap -->
+  </div><!-- /app-root -->
+  <script>
+    const defaultConfig = {
+      titulo_principal: "Guia de Soluções",
+      subtitulo: "Encontre a solução ideal para  empresa em 3 passos",
+      cor_principal: "#00608B",
+      cor_secundaria: "#00A859",
+      cor_fundo: "#f0f7ff",
+      cor_texto: "#333333",
+      fonte_familia: "Montserrat",
+      tamanho_fonte: 16
+    };
+
+    const momentoEmpresarial = [
+      { id: 'Gerencie', titulo: '01 – Gerencie', emoji: '📊', descricao: 'Um excelente resultado é adotar ferramentas de gestão mais eficientes, garantindo organização, visibilidade, cumprimento de prazos e maior produtividade para acompanhar o crescimento do negócio.' },
+      { id: 'Planeje', titulo: '02 – Planeje', emoji: '📋', descricao: 'Ter processos otimizados, custos reduzidos, alta eficiência operacional e qualidade superior, permitindo crescimento sustentável, competitividade e maior satisfação dos clientes.' },
+      { id: 'Organize', titulo: '03 – Organize', emoji: '🗂️', descricao: 'Processos totalmente padronizados, documentados e consistentes, garantindo eficiência, menos erros, uso otimizado de recursos e uma operação preparada para crescer de forma sustentável.' },
+      { id: 'Lidere', titulo: '04 – Lidere', emoji: '👔', descricao: 'Ouvir clientes e aplicar melhorias impulsiona inovação, competitividade e diversificação. Abrir-se a mudanças e parcerias fortalece crescimento, adaptação e oportunidades no mercado.' },
+      { id: 'Potencialize', titulo: '05 – Potencialize', emoji: '⚡', descricao: 'Priorizar melhorias estratégicas, buscar parcerias, analisar eficiência, explorar financiamentos e incentivar inovação garante adaptação e futuro sustentável.' }
+    ];
+
+    const crescimentoEmpresarial = [
+      { id: 'Marketing e Vendas', titulo: '01 – Marketing e Vendas', emoji: '📢', descricao: 'Alta estabilidade, senso de estratégia, não depende de demanda espontânea, conhece seu público e tem previsibilidade do seu faturamento.' },
+      { id: 'Financas', titulo: '02 – Finanças', emoji: '💰', descricao: 'Precificação clara garante lucro previsível, fluxo de caixa saudável, reposição de estoque, pagamento correto de impostos e competitividade com decisões seguras baseadas em dados.' },
+      { id: 'Planejamento', titulo: '03 – Planejamento', emoji: '🎯', descricao: 'Clareza das prioridades, organização dos processos, decisões mais estratégicas, metas simples e planejamento estruturado que aumentam foco, oportunidades e potencial de crescimento.' },
+      { id: 'Pessoas', titulo: '04 – Pessoas', emoji: '👥', descricao: 'Gestão estruturada aumenta motivação, produtividade e qualidade. Com papéis claros, recrutamento básico, treinamentos e ações de engajamento, a equipe melhora desempenho e resultados.' },
+      { id: 'Operacoes', titulo: '05 – Operações', emoji: '⚙️', descricao: 'Processos mapeados e documentados reduzem erros e retrabalho. Com equipe capacitada e indicadores claros, a operação ganha eficiência, organização e melhoria contínua.' }
+    ];
+
+    let assessoriasData = [];
+    let ultimosResultados = [];
+    let sugestoesData = [];
+    let todasJornadasData = []; // Armazenar todas as jornadas para uso no modal
+    let selecao = {
+      tipoMomento: null,
+      categorias: [],
+      porte: null,
+      setor: null
+    };
+    const STORAGE_KEY = 'guia_sebrae_solucoes';
+    const STORAGE_KEY_SUGESTOES = 'guia_sebrae_sugestoes';
+
+    // --- Supabase: configuração do projeto Guia de Soluções Sebrae ---
+    const SUPABASE_URL = 'https://gzhjmyzsiqmpmavvnevm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6aGpteXpzaXFtcG1hdnZuZXZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxOTE5ODMsImV4cCI6MjA4NDc2Nzk4M30.WMKB9u_mv7eSdWSukEVZ5colTgnDBpE_cS7aO_C_iRI';
+    let supabaseClient = null;
+    /*
+    SQL para criar a tabela no Supabase (Table Editor ou SQL Editor):
+    CREATE TABLE solucoes (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      codigo TEXT, momento_empresarial TEXT, crescimento_empresarial TEXT, porte TEXT, setor TEXT,
+      assessoria_nome TEXT NOT NULL, assessoria_descricao TEXT, segmento TEXT, area_conhecimento TEXT,
+      temas TEXT, carga_horaria TEXT, instrumento TEXT, fornecedor TEXT, proxima_data TEXT,
+      valor NUMERIC DEFAULT 0, ordem INT DEFAULT 1, criado_em TIMESTAMPTZ DEFAULT now()
+    );
+    -- Se a tabela já existir: ALTER TABLE solucoes ADD COLUMN IF NOT EXISTS proxima_data TEXT;
+    -- Habilite RLS e políticas conforme sua necessidade.
+    */
+
+    /** @returns {'supabase'|'local'} */
+    async function carregarDados() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('solucoes').select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, link_direcionamento, proxima_data, criado_em');
+          if (error) throw error;
+          assessoriasData = (data || []).map(a => {
+            if (!a.__backendId) a.__backendId = a.id;
+            return a;
+          });
+          return 'supabase';
+        } catch (e) {
+          console.warn('Supabase: erro ao carregar, usando localStorage:', e);
+        }
+      }
+      try {
+        const s = localStorage.getItem(STORAGE_KEY);
+        assessoriasData = s ? JSON.parse(s) : [];
+        assessoriasData.forEach(a => { if (!a.__backendId) a.__backendId = a.id; });
+      } catch (e) {
+        assessoriasData = [];
+      }
+      return 'local';
+    }
+
+
+    function persistirDados() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(assessoriasData));
+      } catch (e) {
+        console.error('Erro ao salvar no armazenamento local:', e);
+      }
+    }
+
+    async function adicionarSolucao(obj) {
+      console.log('📝 adicionarSolucao chamado, supabaseClient:', supabaseClient ? 'existe' : 'não existe');
+      if (supabaseClient) {
+        try {
+          const toInsert = {
+            codigo: obj.codigo || null,
+            momento_empresarial: obj.momento_empresarial || null,
+            crescimento_empresarial: obj.crescimento_empresarial || null,
+            porte: obj.porte,
+            setor: obj.setor,
+            assessoria_nome: obj.assessoria_nome,
+            assessoria_descricao: obj.assessoria_descricao || null,
+            segmento: obj.segmento || null,
+            area_conhecimento: obj.area_conhecimento || null,
+            temas: obj.temas || null,
+            carga_horaria: obj.carga_horaria || null,
+            instrumento: obj.instrumento || null,
+            fornecedor: obj.fornecedor || null,
+            proxima_data: obj.proxima_data || null,
+            valor: (obj.valor != null && obj.valor !== '') ? Number(obj.valor) : 0,
+            ordem: (obj.ordem != null && obj.ordem !== '') ? parseInt(obj.ordem, 10) : 1,
+            link_direcionamento: obj.link_direcionamento || null
+          };
+          console.log('Tentando inserir no Supabase:', toInsert);
+          const { data, error } = await supabaseClient.from('solucoes').insert(toInsert).select().single();
+          if (error) {
+            console.error('❌ Erro do Supabase ao inserir:', error);
+            console.error('Dados tentados:', JSON.stringify(toInsert, null, 2));
+            return { isOk: false, error: error.message || 'Erro desconhecido do Supabase' };
+          }
+          const item = { ...data, __backendId: data.id };
+          assessoriasData.push(item);
+          return { isOk: true };
+        } catch (e) {
+          console.error('Erro ao adicionar solução:', e);
+          return { isOk: false, error: e.message };
+        }
+      }
+      obj.id = obj.id || ('assess-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9));
+      obj.__backendId = obj.id;
+      assessoriasData.push(obj);
+      persistirDados();
+      return { isOk: true };
+    }
+
+    async function removerSolucao(assessoria) {
+      const id = assessoria.__backendId || assessoria.id;
+      if (supabaseClient && id) {
+        try {
+          const { error } = await supabaseClient.from('solucoes').delete().eq('id', id);
+          if (error) return { isOk: false };
+        } catch (e) {
+          return { isOk: false };
+        }
+      }
+      assessoriasData = assessoriasData.filter(a => (a.__backendId || a.id) !== id);
+      if (!supabaseClient) persistirDados();
+      return { isOk: true };
+    }
+
+    async function onConfigChange(config) {
+      const tituloPrincipal = config.titulo_principal || defaultConfig.titulo_principal;
+      const subtitulo = config.subtitulo || defaultConfig.subtitulo;
+      const corPrincipal = config.cor_principal || defaultConfig.cor_principal;
+      const corSecundaria = config.cor_secundaria || defaultConfig.cor_secundaria;
+      const corFundo = config.cor_fundo || defaultConfig.cor_fundo;
+      const corTexto = config.cor_texto || defaultConfig.cor_texto;
+      const fonteFamilia = config.fonte_familia || defaultConfig.fonte_familia;
+      const tamanhoFonte = config.tamanho_fonte || defaultConfig.tamanho_fonte;
+
+      document.getElementById('titulo-principal').textContent = tituloPrincipal;
+      document.getElementById('subtitulo').textContent = subtitulo;
+
+      const fontStack = `${fonteFamilia}, Montserrat, sans-serif`;
+      document.body.style.fontFamily = fontStack;
+      
+      document.getElementById('titulo-principal').style.fontSize = `${tamanhoFonte * 3.125}px`;
+      document.getElementById('subtitulo').style.fontSize = `${tamanhoFonte * 1.25}px`;
+
+      document.documentElement.style.setProperty('--cor-principal', corPrincipal);
+      document.documentElement.style.setProperty('--cor-secundaria', corSecundaria);
+      
+      // Removido: background do app-wrapper para manter fundo único no body/html
+      // document.getElementById('app-wrapper').style.background = `linear-gradient(to bottom, ${corFundo} 0%, #ffffff 100%)`;
+    }
+
+    // Sistema de Autenticação de Gestor
+    const GESTOR_CREDENTIALS = {
+      usuario: 'gestor',
+      senha: 'sebrae2024'
+    };
+
+    function verificarGestorAutenticado() {
+      return localStorage.getItem('gestor_autenticado') === 'true';
+    }
+
+    function autenticarGestor(usuario, senha) {
+      if (usuario === GESTOR_CREDENTIALS.usuario && senha === GESTOR_CREDENTIALS.senha) {
+        localStorage.setItem('gestor_autenticado', 'true');
+        return true;
+      }
+      return false;
+    }
+
+    function desautenticarGestor() {
+      localStorage.removeItem('gestor_autenticado');
+      atualizarVisibilidadeAbaGestor();
+    }
+
+    function atualizarVisibilidadeAbaGestor() {
+      const wrap = document.getElementById('nav-sair-wrap');
+      const lock = document.getElementById('nav-gestao-lock');
+      const ok = document.getElementById('nav-gestao-ok');
+      const hint = document.getElementById('nav-gestao-hint');
+      if (verificarGestorAutenticado()) {
+        if (wrap) wrap.style.display = '';
+        if (lock) lock.classList.add('hidden');
+        if (ok) ok.classList.remove('hidden');
+        if (hint) hint.textContent = '';
+      } else {
+        if (wrap) wrap.style.display = 'none';
+        if (lock) lock.classList.remove('hidden');
+        if (ok) ok.classList.add('hidden');
+        if (hint) hint.textContent = '(login)';
+      }
+    }
+
+    function abrirSidebarMobile() {
+      document.getElementById('sidebar').classList.add('sidebar--open');
+      document.getElementById('sidebar-backdrop').classList.add('backdrop--on');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fecharSidebarMobile() {
+      document.getElementById('sidebar').classList.remove('sidebar--open');
+      document.getElementById('sidebar-backdrop').classList.remove('backdrop--on');
+      document.body.style.overflow = '';
+    }
+
+    function abrirLoginGestor() {
+      document.getElementById('modal-login').classList.remove('hidden');
+      document.getElementById('login-erro').classList.add('hidden');
+      document.getElementById('login-usuario').value = '';
+      document.getElementById('login-senha').value = '';
+    }
+
+    function fecharLoginGestor() {
+      document.getElementById('modal-login').classList.add('hidden');
+    }
+
+    function verificarGestor() {
+      if (verificarGestorAutenticado()) {
+        trocarAba('gerenciamento');
+      } else {
+        abrirLoginGestor();
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderCardsEmpresarial();
+      renderCardsCrescimento();
+      atualizarVisibilidadeAbaGestor();
+
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.cor_principal || defaultConfig.cor_principal,
+                set: (value) => {
+                  if (window.elementSdk && window.elementSdk.config) {
+                    window.elementSdk.config.cor_principal = value;
+                    window.elementSdk.setConfig({ cor_principal: value });
+                  }
+                }
+              },
+              {
+                get: () => config.cor_secundaria || defaultConfig.cor_secundaria,
+                set: (value) => {
+                  if (window.elementSdk && window.elementSdk.config) {
+                    window.elementSdk.config.cor_secundaria = value;
+                    window.elementSdk.setConfig({ cor_secundaria: value });
+                  }
+                }
+              },
+              {
+                get: () => config.cor_fundo || defaultConfig.cor_fundo,
+                set: (value) => {
+                  if (window.elementSdk && window.elementSdk.config) {
+                    window.elementSdk.config.cor_fundo = value;
+                    window.elementSdk.setConfig({ cor_fundo: value });
+                  }
+                }
+              },
+              {
+                get: () => config.cor_texto || defaultConfig.cor_texto,
+                set: (value) => {
+                  if (window.elementSdk && window.elementSdk.config) {
+                    window.elementSdk.config.cor_texto = value;
+                    window.elementSdk.setConfig({ cor_texto: value });
+                  }
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.fonte_familia || defaultConfig.fonte_familia,
+              set: (value) => {
+                if (window.elementSdk && window.elementSdk.config) {
+                  window.elementSdk.config.fonte_familia = value;
+                  window.elementSdk.setConfig({ fonte_familia: value });
+                }
+              }
+            },
+            fontSizeable: {
+              get: () => config.tamanho_fonte || defaultConfig.tamanho_fonte,
+              set: (value) => {
+                if (window.elementSdk && window.elementSdk.config) {
+                  window.elementSdk.config.tamanho_fonte = value;
+                  window.elementSdk.setConfig({ tamanho_fonte: value });
+                }
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["titulo_principal", config.titulo_principal || defaultConfig.titulo_principal],
+            ["subtitulo", config.subtitulo || defaultConfig.subtitulo]
+          ])
+        });
+      }
+
+      // Supabase: criar client se URL e anon key estiverem preenchidos
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && !/^\s*$/.test(SUPABASE_URL) && !/^\s*$/.test(SUPABASE_ANON_KEY)) {
+        try {
+          // Aguardar um pouco para garantir que o script do CDN foi carregado
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          let createClientFn = null;
+          
+          // Tentar diferentes formas de acessar o Supabase do CDN
+          // O CDN UMD expõe como window.supabase ou supabase global
+          if (typeof window !== 'undefined' && window.supabase && window.supabase.createClient) {
+            createClientFn = window.supabase.createClient;
+            console.log('✅ Supabase: Usando window.supabase.createClient');
+          } else if (typeof supabase !== 'undefined' && supabase.createClient) {
+            createClientFn = supabase.createClient;
+            console.log('✅ Supabase: Usando supabase.createClient');
+          } else {
+            // Fallback para import dinâmico
+            console.log('⚠️ Supabase: Tentando import dinâmico...');
+            const module = await import('https://esm.sh/@supabase/supabase-js@2');
+            createClientFn = module.createClient;
+            console.log('✅ Supabase: Usando import dinâmico');
+          }
+          
+          if (createClientFn) {
+            supabaseClient = createClientFn(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('✅ Supabase: Cliente criado com sucesso');
+            console.log('URL:', SUPABASE_URL);
+            
+            // Testar conexão
+            try {
+              const { data: testData, error: testError } = await supabaseClient.from('solucoes').select('id').limit(1);
+              if (testError) {
+                console.warn('⚠️ Supabase: Erro ao testar conexão:', testError);
+                console.warn('Detalhes:', JSON.stringify(testError, null, 2));
+              } else {
+                console.log('✅ Supabase: Conexão testada com sucesso');
+              }
+            } catch (testErr) {
+              console.warn('⚠️ Supabase: Erro ao testar conexão:', testErr);
+            }
+          } else {
+            throw new Error('Não foi possível encontrar createClient do Supabase. Verifique se o script foi carregado.');
+          }
+        } catch (e) {
+          console.error('❌ Supabase: falha ao carregar client, usando localStorage:', e);
+          console.error('Stack:', e.stack);
+          supabaseClient = null;
+        }
+      } else {
+        console.warn('⚠️ Supabase: URL ou ANON_KEY não configurados');
+        console.warn('URL:', SUPABASE_URL);
+        console.warn('Key:', SUPABASE_ANON_KEY ? 'Configurada' : 'Não configurada');
+      }
+      await carregarDados();
+      await carregarSugestoes();
+      atualizarListaAssessorias();
+      atualizarListaSugestoes();
+
+      document.getElementById('cadastro-form').addEventListener('submit', handleCadastro);
+      
+      // Restaurar botão de cadastro ao resetar formulário
+      document.getElementById('cadastro-form').addEventListener('reset', () => {
+        const btnCadastrar = document.getElementById('btn-cadastrar');
+        btnCadastrar.textContent = '✓ Cadastrar Solução';
+        btnCadastrar.onclick = null;
+        btnCadastrar.type = 'submit';
+      });
+      document.getElementById('cad-tipo-momento').addEventListener('change', atualizarCategorias);
+      
+      // Event listener para atualizar categorias no formulário de sugestão
+      const sugTipoMomento = document.getElementById('sug-tipo-momento');
+      if (sugTipoMomento) {
+        sugTipoMomento.addEventListener('change', atualizarCategoriasSugestao);
+        // Inicializar com todas as opções (quando "Todos" está selecionado)
+        atualizarCategoriasSugestao();
+      }
+      
+      // Formulário de login de gestor
+      document.getElementById('form-login-gestor').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const usuario = document.getElementById('login-usuario').value;
+        const senha = document.getElementById('login-senha').value;
+        const erroDiv = document.getElementById('login-erro');
+        
+        if (autenticarGestor(usuario, senha)) {
+          fecharLoginGestor();
+          atualizarVisibilidadeAbaGestor();
+          trocarAba('gerenciamento');
+          showToast('✓ Login realizado com sucesso!', 'success');
+        } else {
+          erroDiv.textContent = 'Usuário ou senha incorretos. Tente novamente.';
+          erroDiv.classList.remove('hidden');
+        }
+      });
+      
+      // Fechar modal ao clicar fora
+      document.getElementById('modal-login').addEventListener('click', (e) => {
+        if (e.target.id === 'modal-login') {
+          fecharLoginGestor();
+        }
+      });
+      
+      atualizarListaAssessorias();
+    });
+
+    function renderCardsEmpresarial() {
+      const grid = document.getElementById('grid-empresarial');
+      const cardsHTML = momentoEmpresarial.map(item => `
+        <button onclick="selecionarCategoria('${item.id}')" data-card="${item.id}" class="card-option bg-white rounded-xl shadow-lg p-6 text-left">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">${item.emoji}</span>
+            <h3 class="text-lg font-bold" style="color: #00608B;">${item.titulo}</h3>
+          </div>
+          <p class="text-sm" style="color: #666;">${item.descricao}</p>
+        </button>
+      `).join('');
+      
+      // Adicionar "Não preciso melhorar" ao final do grid (ao lado do 5)
+      const naoPrecisoMelhorarHTML = `
+        <button onclick="naoPresisoMelhorar()" class="card-option bg-white rounded-xl shadow-lg p-6 text-left border-2 hover:shadow-xl transition-all hover:scale-105" style="border-color: #2196F3; border-width: 2px;">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">✨</span>
+            <h3 class="text-lg font-bold" style="color: #00608B;">Não preciso melhorar</h3>
+          </div>
+          <p class="text-sm" style="color: #666;">Minha empresa já está bem estruturada e não necessita de melhorias no momento.</p>
+        </button>
+      `;
+      
+      grid.innerHTML = cardsHTML + naoPrecisoMelhorarHTML;
+    }
+
+    function renderCardsCrescimento() {
+      const grid = document.getElementById('grid-crescimento');
+      const cardsHTML = crescimentoEmpresarial.map(item => `
+        <button onclick="selecionarCategoria('${item.id}')" data-card="${item.id}" class="card-option bg-white rounded-xl shadow-lg p-6 text-left">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">${item.emoji}</span>
+            <h3 class="text-lg font-bold" style="color: #00608B;">${item.titulo}</h3>
+          </div>
+          <p class="text-sm" style="color: #666;">${item.descricao}</p>
+        </button>
+      `).join('');
+      
+      // Adicionar "Não preciso melhorar" ao final do grid (ao lado do último card)
+      const naoPrecisoMelhorarHTML = `
+        <button onclick="naoPresisoMelhorar()" class="card-option bg-white rounded-xl shadow-lg p-6 text-left border-2 hover:shadow-xl transition-all hover:scale-105" style="border-color: #2196F3; border-width: 2px;">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-3xl">✨</span>
+            <h3 class="text-lg font-bold" style="color: #00608B;">Não preciso melhorar</h3>
+          </div>
+          <p class="text-sm" style="color: #666;">Minha empresa já está bem estruturada e não necessita de melhorias no momento.</p>
+        </button>
+      `;
+      
+      grid.innerHTML = cardsHTML + naoPrecisoMelhorarHTML;
+    }
+
+    function selecionarMomento(tipo) {
+      selecao.tipoMomento = tipo;
+      
+      document.getElementById('step-momento').classList.add('hidden');
+      
+      if (tipo === 'empresarial') {
+        document.getElementById('cards-empresarial').classList.remove('hidden');
+      } else {
+        document.getElementById('cards-crescimento').classList.remove('hidden');
+      }
+    }
+
+    function selecionarCategoria(categoria) {
+      const gridAtual = selecao.tipoMomento === 'empresarial' ? 'grid-empresarial' : 'grid-crescimento';
+      const card = document.querySelector(`#${gridAtual} [data-card="${categoria}"]`);
+      
+      if (selecao.categorias.includes(categoria)) {
+        selecao.categorias = selecao.categorias.filter(c => c !== categoria);
+        card.classList.remove('selected');
+      } else {
+        selecao.categorias.push(categoria);
+        card.classList.add('selected');
+      }
+      
+      const btnId = selecao.tipoMomento === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
+      document.getElementById(btnId).disabled = selecao.categorias.length === 0;
+    }
+
+    function selecionarTodos(tipo) {
+      const lista = tipo === 'empresarial' ? momentoEmpresarial : crescimentoEmpresarial;
+      const gridAtual = tipo === 'empresarial' ? 'grid-empresarial' : 'grid-crescimento';
+      
+      selecao.categorias = lista.map(item => item.id);
+      
+      document.querySelectorAll(`#${gridAtual} .card-option`).forEach(card => {
+        card.classList.add('selected');
+      });
+      
+      const btnId = tipo === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
+      document.getElementById(btnId).disabled = false;
+    }
+
+    function selecionarNenhum(tipo) {
+      const gridAtual = tipo === 'empresarial' ? 'grid-empresarial' : 'grid-crescimento';
+      
+      selecao.categorias = [];
+      
+      document.querySelectorAll(`#${gridAtual} .card-option`).forEach(card => {
+        card.classList.remove('selected');
+      });
+      
+      const btnId = tipo === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
+      document.getElementById(btnId).disabled = true;
+    }
+
+    function avancarParaPorte() {
+      document.getElementById('cards-empresarial').classList.add('hidden');
+      document.getElementById('cards-crescimento').classList.add('hidden');
+      document.getElementById('step-porte').classList.remove('hidden');
+      
+      document.getElementById('step-1').classList.remove('active');
+      document.getElementById('step-1').classList.add('completed');
+      document.getElementById('line-1').classList.add('completed');
+      document.getElementById('step-2').classList.add('active');
+    }
+
+    function selecionarPorte(porte) {
+      selecao.porte = porte;
+      
+      document.querySelectorAll('#step-porte .card-option').forEach(card => {
+        card.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+      
+      setTimeout(() => {
+        document.getElementById('step-porte').classList.add('hidden');
+        document.getElementById('step-setor').classList.remove('hidden');
+        
+        document.getElementById('step-2').classList.remove('active');
+        document.getElementById('step-2').classList.add('completed');
+        document.getElementById('line-2').classList.add('completed');
+        document.getElementById('step-3').classList.add('active');
+      }, 300);
+    }
+
+    function selecionarSetor(setor) {
+      selecao.setor = setor;
+      
+      document.querySelectorAll('#step-setor .card-option').forEach(card => {
+        card.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+      
+      setTimeout(() => {
+        buscarAssessorias();
+      }, 300);
+    }
+
+    const VALID_EMPRESARIAL = ['Gerencie','Planeje','Organize','Lidere','Potencialize'];
+    const VALID_CRESCIMENTO = ['Marketing e Vendas','Financas','Planejamento','Pessoas','Operacoes'];
+
+    function buscarAssessorias() {
+      document.getElementById('step-setor').classList.add('hidden');
+      document.getElementById('step-resultados').classList.remove('hidden');
+      
+      document.getElementById('step-3').classList.remove('active');
+      document.getElementById('step-3').classList.add('completed');
+      
+      const resultados = assessoriasData.filter(a => {
+        const categoriaAtual = selecao.tipoMomento === 'empresarial' 
+          ? a.momento_empresarial 
+          : a.crescimento_empresarial;
+        
+        var categoriaMatch;
+        if (selecao.categorias.indexOf('Nenhuma') >= 0) {
+          // Se "Nenhuma" foi selecionado, buscar soluções sem categoria (null ou vazio)
+          categoriaMatch = !categoriaAtual || categoriaAtual === '' || categoriaAtual === null;
+        } else {
+          var validas = selecao.tipoMomento === 'empresarial' ? VALID_EMPRESARIAL : VALID_CRESCIMENTO;
+          if (categoriaAtual && validas.indexOf(categoriaAtual) >= 0) {
+            categoriaMatch = selecao.categorias.indexOf(categoriaAtual) >= 0;
+          } else {
+            var padrao = selecao.tipoMomento === 'empresarial' ? 'Gerencie' : 'Marketing e Vendas';
+            categoriaMatch = selecao.categorias.indexOf(padrao) >= 0;
+          }
+        }
+        
+        // Normalizar setor para comparação
+        let setorA = a.setor || '';
+        if (setorA === 'Comércio') setorA = 'Comercio';
+        else if (setorA === 'Indústria') setorA = 'Industria';
+        else if (setorA === 'Serviços') setorA = 'Servicos';
+        
+        return categoriaMatch && 
+               a.porte === selecao.porte && 
+               setorA === selecao.setor;
+      }).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+      renderResumoSelecao();
+      ultimosResultados = resultados;
+
+      if (resultados.length > 0) {
+        renderResultados(resultados);
+        document.getElementById('mensagem-sem-resultados').classList.add('hidden');
+      } else {
+        document.getElementById('resultados-container').innerHTML = '';
+        document.getElementById('mensagem-sem-resultados').classList.remove('hidden');
+      }
+      
+      // Buscar e exibir sugestão de ferramenta
+      buscarEExibirSugestao();
+    }
+
+    function renderResumoSelecao() {
+      const resumo = document.getElementById('resumo-selecao');
+      const tipoTexto = selecao.tipoMomento === 'empresarial' ? 'Momento Empresarial' : 'Crescimento Empresarial';
+      
+      // Mapeamento de cores para momentos empresariais
+      const coresMomentoEmpresarial = {
+        'Gerencie': { bg: '#FF6B35', color: '#FFFFFF' }, // Laranja vibrante
+        'Planeje': { bg: '#2BB29D', color: '#FFFFFF' }, // Teal
+        'Organize': { bg: '#FF6B35', color: '#FFFFFF' }, // Laranja vibrante
+        'Lidere': { bg: '#0066CC', color: '#FFFFFF' }, // Azul vibrante
+        'Potencialize': { bg: '#FF6B35', color: '#FFFFFF' } // Laranja vibrante
+      };
+      
+      const categoriasBadges = selecao.categorias.map(cat => {
+        const cor = coresMomentoEmpresarial[cat] || { bg: '#E3ECEE', color: '#00608B' };
+        return `<span class="badge" style="background-color: ${cor.bg}; color: ${cor.color}; font-weight: 600;">${cat}</span>`;
+      }).join('');
+      
+      resumo.innerHTML = `
+        <span class="badge" style="background-color: #E3ECEE; color: #00608B;">${tipoTexto}</span>
+        ${categoriasBadges}
+        <span class="badge" style="background-color: #E8F7F0; color: #00A859;">${selecao.porte}</span>
+        <span class="badge" style="background-color: #FFF4E6; color: #FF8C00;">${selecao.setor}</span>
+      `;
+      
+      // Atualizar header do fluxograma
+      const headerTitleEl = document.getElementById('header-trilha-titulo');
+      const headerDescEl = document.getElementById('header-trilha-desc');
+      const headerContainer = document.getElementById('header-trilha');
+      
+      if (headerTitleEl && headerDescEl) {
+        const headerTitle = selecao.categorias.length > 0 && selecao.categorias[0] !== 'Nenhuma' 
+          ? selecao.categorias[0] 
+          : (selecao.tipoMomento === 'empresarial' ? 'Gerencie' : 'Crescimento');
+        const headerDesc = selecao.tipoMomento === 'empresarial' 
+          ? 'Processo simplificado de estruturação e gestão empresarial'
+          : 'Jornada de crescimento e expansão empresarial';
+        headerTitleEl.textContent = headerTitle;
+        headerDescEl.textContent = headerDesc;
+        
+        // Aplicar cores do momento empresarial ao container
+        if (headerContainer && selecao.tipoMomento === 'empresarial' && selecao.categorias.length > 0 && selecao.categorias[0] !== 'Nenhuma') {
+          const momentoSelecionado = selecao.categorias[0];
+          const coresContainer = {
+            'Gerencie': 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)', // Laranja vibrante
+            'Planeje': 'linear-gradient(135deg, #2BB29D 0%, #3DD4B8 100%)', // Teal
+            'Organize': 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)', // Laranja vibrante
+            'Lidere': 'linear-gradient(135deg, #0066CC 0%, #0080FF 100%)', // Azul vibrante
+            'Potencialize': 'linear-gradient(135deg, #FF6B35 0%, #FF8C5A 100%)' // Laranja vibrante
+          };
+          
+          const corContainer = coresContainer[momentoSelecionado] || 'linear-gradient(135deg, #00608B 0%, #0092BA 100%)';
+          headerContainer.style.background = corContainer;
+        } else if (headerContainer) {
+          // Cor padrão para crescimento empresarial ou quando não há categoria
+          headerContainer.style.background = 'linear-gradient(135deg, #00608B 0%, #0092BA 100%)';
+        }
+      }
+    }
+
+    function renderResultados(assessorias) {
+      const container = document.getElementById('resultados-container');
+      
+      // Agrupar soluções por momento empresarial > ordem (assessoria) > dor
+      // Cada momento empresarial terá seu próprio container separado
+      const solucoesPorMomento = {};
+      assessorias.forEach((assessoria, index) => {
+        const momento = assessoria.momento_empresarial || 'Sem Momento';
+        const ordem = assessoria.ordem || 1;
+        // Usar o valor real armazenado, ou 'Nenhuma' se for null/undefined/vazio
+        const dor = (assessoria.crescimento_empresarial && String(assessoria.crescimento_empresarial).trim() !== '') 
+          ? String(assessoria.crescimento_empresarial).trim() 
+          : 'Nenhuma';
+        
+        if (!solucoesPorMomento[momento]) {
+          solucoesPorMomento[momento] = {};
+        }
+        if (!solucoesPorMomento[momento][ordem]) {
+          solucoesPorMomento[momento][ordem] = {};
+        }
+        if (!solucoesPorMomento[momento][ordem][dor]) {
+          solucoesPorMomento[momento][ordem][dor] = [];
+        }
+        solucoesPorMomento[momento][ordem][dor].push({ ...assessoria, __index: index });
+      });
+      
+      // Ordenar momentos (usar ordem específica)
+      const ordemMomentos = ['Gerencie', 'Planeje', 'Organize', 'Lidere', 'Potencialize'];
+      const momentosOrdenados = Object.keys(solucoesPorMomento).sort((a, b) => {
+        const idxA = ordemMomentos.indexOf(a);
+        const idxB = ordemMomentos.indexOf(b);
+        if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+      
+      // Mapear nomes de dor para exibição (com variações possíveis)
+      const nomesDor = {
+        'Marketing e Vendas': '📢 Marketing e Vendas',
+        'Marketing e vendas': '📢 Marketing e Vendas',
+        'marketing e vendas': '📢 Marketing e Vendas',
+        'Financas': '💰 Finanças',
+        'Finanças': '💰 Finanças',
+        'financas': '💰 Finanças',
+        'Planejamento': '🎯 Planejamento',
+        'planejamento': '🎯 Planejamento',
+        'Pessoas': '👥 Pessoas',
+        'pessoas': '👥 Pessoas',
+        'Operacoes': '⚙️ Operações',
+        'Operações': '⚙️ Operações',
+        'operacoes': '⚙️ Operações',
+        'Nenhuma': '✨ Sem dor específica',
+        'nenhuma': '✨ Sem dor específica'
+      };
+      
+      // Mapeamento de cores e nomes para momentos empresariais
+      const momentosInfo = {
+        'Gerencie': { nome: 'Gerencie', cor: '#FF6B35', emoji: '📊' },
+        'Planeje': { nome: 'Planeje', cor: '#2BB29D', emoji: '📋' },
+        'Organize': { nome: 'Organize', cor: '#FF6B35', emoji: '🗂️' },
+        'Lidere': { nome: 'Lidere', cor: '#0066CC', emoji: '👔' },
+        'Potencialize': { nome: 'Potencialize', cor: '#FF6B35', emoji: '⚡' },
+        'Sem Momento': { nome: 'Sem Momento', cor: '#00608B', emoji: '❓' }
+      };
+      
+      const inst = (a) => (a.instrumento && String(a.instrumento).trim()) ? a.instrumento : 'Solução';
+      
+      // Renderizar containers separados para cada Momento Empresarial
+      const html = momentosOrdenados.map((momento, momentoIndex) => {
+        const infoMomento = momentosInfo[momento] || momentosInfo['Sem Momento'];
+        const solucoesPorOrdem = solucoesPorMomento[momento];
+        
+        // Ordenar assessorias (ordem)
+        const ordensOrdenadas = Object.keys(solucoesPorOrdem).map(Number).sort((a, b) => a - b);
+        
+        if (ordensOrdenadas.length === 0) return '';
+        
+        return `
+          <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
+            <!-- Fluxograma de Assessorias para este Momento -->
+            <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+              ${ordensOrdenadas.map((ordem, ordemIndex) => {
+                const solucoesPorDor = solucoesPorOrdem[ordem];
+                const doresOrdenadas = Object.keys(solucoesPorDor)
+                  .filter(dor => dor !== 'Nenhuma' && dor !== 'nenhuma')
+                  .sort()
+                  .concat(Object.keys(solucoesPorDor).filter(dor => dor === 'Nenhuma' || dor === 'nenhuma'));
+                const isLast = ordemIndex === ordensOrdenadas.length - 1;
+                
+                return `
+                  <div class="trilha-step fade-in" style="animation-delay: ${ordemIndex * 0.2}s;">
+                    ${!isLast ? `<div class="trilha-step-divider" style="background: linear-gradient(180deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>` : ''}
+                    
+                    <!-- Chevron ASSESSORIA -->
+                    <div class="trilha-assessoria-chevron" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); --chevron-color: ${infoMomento.cor};">
+                      <div class="trilha-assessoria-text">ASSESSORIA ${ordem}</div>
+                    </div>
+                    
+                    <!-- Linha tracejada e hexágono -->
+                    <div class="trilha-dashed-line"></div>
+                    <div class="trilha-hexagon" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                    
+                    <div class="trilha-step-content">
+                      ${doresOrdenadas.map((dor, dorIndex) => {
+                        const solucoes = solucoesPorDor[dor];
+                        const nomeDor = nomesDor[dor] || dor;
+                        const isSemDor = dor === 'Nenhuma' || dor === 'nenhuma';
+                        
+                        return `
+                          <div class="trilha-dor-container mb-4">
+                            ${!isSemDor ? `
+                            <div class="trilha-dor-header mb-3">
+                              <h4 class="text-base font-semibold" style="color: ${infoMomento.cor};">
+                                ${nomeDor}
+                              </h4>
+                            </div>
+                            ` : ''}
+                            
+                            <div class="trilha-dor-solucoes">
+                              ${solucoes.map((assessoria, solIndex) => {
+                                const instrumento = inst(assessoria);
+                                const v = assessoria.valor;
+                                const n = (v != null && v !== '') ? Number(v) : NaN;
+                                const temValor = !isNaN(n) && n > 0;
+                                const valorTexto = temValor ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : 'Gratuito';
+                                const valorBadgeColor = temValor ? '#B45309' : '#00A859';
+                                const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
+                                
+                                return `
+                                  <div onclick="abrirDetalheSolucao(${assessoria.__index})" class="trilha-solucao-card card-clicavel p-5 mb-4 fade-in" style="animation-delay: ${(ordemIndex * 0.2) + (dorIndex * 0.15) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor};">
+                                    <!-- Destaque: Preço e Tipo de Produto -->
+                                    <div class="flex items-center justify-between mb-4 p-3 rounded-lg" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${infoMomento.cor};">
+                                      <div class="flex-1">
+                                        <p class="text-xs font-semibold mb-1" style="color: #00608B;">Tipo de Produto</p>
+                                        <p class="text-base font-bold" style="color: #00608B;">${instrumento}</p>
+                                      </div>
+                                      <div class="text-right ml-4">
+                                        <p class="text-xs font-semibold mb-1" style="color: #00608B;">Preço</p>
+                                        <span class="inline-block px-3 py-1 rounded-lg font-bold text-lg" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor};">
+                                          ${valorTexto}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    
+                                    <h3 class="text-xl font-bold mb-3" style="color: #1F2937;">${assessoria.assessoria_nome}</h3>
+                                    <p class="mb-4 leading-relaxed line-clamp-3" style="color: #4B5563;">${assessoria.assessoria_descricao || ''}</p>
+                                    ${assessoria.proxima_data ? `<div class="border-t-2 pt-3 mt-3" style="border-color: #E5E7EB;"><p class="text-xs" style="color: #6B7280;">📅 Próxima turma: <strong style="color: #1F2937;">${assessoria.proxima_data}</strong></p></div>` : ''}
+                                  </div>
+                                `;
+                              }).join('')}
+                            </div>
+                          </div>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                  ${!isLast ? `
+                  <div class="trilha-connector">
+                    <div class="trilha-connector-line" style="background: linear-gradient(90deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                    <div class="trilha-connector-hexagon" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                  </div>
+                  ` : ''}
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }).filter(html => html !== '').join('');
+      
+      container.innerHTML = html;
+    }
+
+    async function carregarTodasJornadas() {
+      const container = document.getElementById('jornadas-container');
+      if (!container) return;
+      
+      try {
+        // Carregar todas as soluções do banco de dados
+        let todasSolucoes = [];
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('solucoes')
+            .select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, link_direcionamento, proxima_data, criado_em')
+            .order('ordem', { ascending: true });
+          
+          if (error) throw error;
+          todasSolucoes = data || [];
+        } else {
+          // Se não houver Supabase, usar dados locais
+          todasSolucoes = assessoriasData || [];
+        }
+        
+        if (todasSolucoes.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-12">
+              <svg class="w-20 h-20 mx-auto mb-4 opacity-50" fill="none" stroke="#00608B" viewbox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-xl font-semibold mb-3" style="color: #666;">Nenhuma jornada encontrada</p>
+              <p style="color: #999;">Não há soluções cadastradas no sistema</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Adicionar índices para uso no modal de detalhes
+        todasSolucoes = todasSolucoes.map((sol, idx) => ({ ...sol, __index: idx }));
+        
+        // Armazenar globalmente para uso no modal
+        todasJornadasData = todasSolucoes;
+        
+        // Renderizar usando a mesma função renderResultados
+        renderTodasJornadas(todasSolucoes, container);
+      } catch (error) {
+        console.error('Erro ao carregar jornadas:', error);
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <p class="text-xl font-semibold mb-3 text-red-600">Erro ao carregar jornadas</p>
+            <p style="color: #999;">${error.message || 'Erro desconhecido'}</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTodasJornadas(assessorias, container) {
+      // Agrupar soluções por: Porte > Dor > Momento Empresarial > Ordem (Assessoria)
+      // Cada dor terá seu próprio fluxograma de assessorias
+      // Cada momento empresarial dentro de uma dor terá seu próprio container
+      const solucoesPorPorte = {};
+      
+      assessorias.forEach((assessoria, index) => {
+        const porte = assessoria.porte || 'Sem Porte';
+        const dor = (assessoria.crescimento_empresarial && String(assessoria.crescimento_empresarial).trim() !== '') 
+          ? String(assessoria.crescimento_empresarial).trim() 
+          : 'Nenhuma';
+        const momento = assessoria.momento_empresarial || 'Sem Momento';
+        const ordem = assessoria.ordem || 1;
+        
+        if (!solucoesPorPorte[porte]) {
+          solucoesPorPorte[porte] = {};
+        }
+        if (!solucoesPorPorte[porte][dor]) {
+          solucoesPorPorte[porte][dor] = {};
+        }
+        if (!solucoesPorPorte[porte][dor][momento]) {
+          solucoesPorPorte[porte][dor][momento] = {};
+        }
+        if (!solucoesPorPorte[porte][dor][momento][ordem]) {
+          solucoesPorPorte[porte][dor][momento][ordem] = [];
+        }
+        solucoesPorPorte[porte][dor][momento][ordem].push({ ...assessoria, __index: index });
+      });
+      
+      // Mapear nomes de dor para exibição
+      const nomesDor = {
+        'Marketing e Vendas': '📢 Marketing e Vendas',
+        'Marketing e vendas': '📢 Marketing e Vendas',
+        'marketing e vendas': '📢 Marketing e Vendas',
+        'Financas': '💰 Finanças',
+        'Finanças': '💰 Finanças',
+        'financas': '💰 Finanças',
+        'Planejamento': '🎯 Planejamento',
+        'planejamento': '🎯 Planejamento',
+        'Pessoas': '👥 Pessoas',
+        'pessoas': '👥 Pessoas',
+        'Operacoes': '⚙️ Operações',
+        'Operações': '⚙️ Operações',
+        'operacoes': '⚙️ Operações',
+        'Nenhuma': '✨ Sem dor específica',
+        'nenhuma': '✨ Sem dor específica'
+      };
+      
+      // Mapeamento de cores e nomes para momentos empresariais
+      const momentosInfo = {
+        'Gerencie': { nome: 'Gerencie', cor: '#FF6B35', emoji: '📊' },
+        'Planeje': { nome: 'Planeje', cor: '#2BB29D', emoji: '📋' },
+        'Organize': { nome: 'Organize', cor: '#FF6B35', emoji: '🗂️' },
+        'Lidere': { nome: 'Lidere', cor: '#0066CC', emoji: '👔' },
+        'Potencialize': { nome: 'Potencialize', cor: '#FF6B35', emoji: '⚡' },
+        'Sem Momento': { nome: 'Sem Momento', cor: '#00608B', emoji: '❓' }
+      };
+      
+      // Mapeamento de nomes para portes
+      const portesInfo = {
+        'MEI': { nome: 'MEI - Microempreendedor Individual', emoji: '👤' },
+        'ME': { nome: 'ME - Microempresa', emoji: '👥' },
+        'EPP': { nome: 'EPP - Empresa de Pequeno Porte', emoji: '🏢' },
+        'Sem Porte': { nome: '❓ Sem Porte', emoji: '❓' }
+      };
+      
+      const coresMomentoEmpresarial = {
+        'Gerencie': { bg: '#FF6B35', color: '#FFFFFF', border: '#FF6B35' },
+        'Planeje': { bg: '#2BB29D', color: '#FFFFFF', border: '#2BB29D' },
+        'Organize': { bg: '#FF6B35', color: '#FFFFFF', border: '#FF6B35' },
+        'Lidere': { bg: '#0066CC', color: '#FFFFFF', border: '#0066CC' },
+        'Potencialize': { bg: '#FF6B35', color: '#FFFFFF', border: '#FF6B35' }
+      };
+      
+      const inst = (a) => (a.instrumento && String(a.instrumento).trim()) ? a.instrumento : 'Solução';
+      
+      // Ordenar portes
+      const ordemPortes = ['MEI', 'ME', 'EPP'];
+      const portesOrdenados = Object.keys(solucoesPorPorte).sort((a, b) => {
+        const idxA = ordemPortes.indexOf(a);
+        const idxB = ordemPortes.indexOf(b);
+        if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+      
+      // Ordenar momentos (usar ordem específica)
+      const ordemMomentos = ['Gerencie', 'Planeje', 'Organize', 'Lidere', 'Potencialize'];
+      const ordenarMomentos = (momentos) => {
+        return Object.keys(momentos).sort((a, b) => {
+          const idxA = ordemMomentos.indexOf(a);
+          const idxB = ordemMomentos.indexOf(b);
+          if (idxA === -1 && idxB === -1) return a.localeCompare(b);
+          if (idxA === -1) return 1;
+          if (idxB === -1) return -1;
+          return idxA - idxB;
+        });
+      };
+      
+      // Renderizar containers separados para cada Momento Empresarial
+      // Cada momento terá seu próprio container independente, como na imagem
+      const html = portesOrdenados.map((porte, porteIndex) => {
+        const infoPorte = portesInfo[porte] || portesInfo['Sem Porte'];
+        const solucoesPorDor = solucoesPorPorte[porte];
+        
+        // Coletar todos os momentos únicos de todas as dores deste porte
+        const todosMomentos = new Set();
+        Object.keys(solucoesPorDor).forEach(dor => {
+          Object.keys(solucoesPorDor[dor]).forEach(momento => {
+            todosMomentos.add(momento);
+          });
+        });
+        
+        const momentosOrdenados = ordenarMomentos(Array.from(todosMomentos).reduce((acc, m) => {
+          acc[m] = {};
+          return acc;
+        }, {}));
+        
+        return `
+          <div class="mb-12 fade-in" style="animation-delay: ${porteIndex * 0.1}s;">
+            <!-- Header do Porte -->
+            <div class="mb-6">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-3xl">${infoPorte.emoji}</span>
+                <h2 class="text-2xl md:text-3xl font-bold" style="color: #00608B;">
+                  ${infoPorte.nome}
+                </h2>
+              </div>
+            </div>
+            
+            <!-- Containers separados para cada Momento Empresarial -->
+            <div class="space-y-6">
+              ${momentosOrdenados.map((momento, momentoIndex) => {
+                const infoMomento = momentosInfo[momento] || momentosInfo['Sem Momento'];
+                
+                // Coletar todas as soluções deste momento de todas as dores
+                const todasSolucoesPorOrdem = {};
+                Object.keys(solucoesPorDor).forEach(dor => {
+                  if (solucoesPorDor[dor][momento]) {
+                    Object.keys(solucoesPorDor[dor][momento]).forEach(ordem => {
+                      if (!todasSolucoesPorOrdem[ordem]) {
+                        todasSolucoesPorOrdem[ordem] = [];
+                      }
+                      todasSolucoesPorOrdem[ordem].push(...solucoesPorDor[dor][momento][ordem]);
+                    });
+                  }
+                });
+                
+                const ordensOrdenadas = Object.keys(todasSolucoesPorOrdem).map(Number).sort((a, b) => a - b);
+                
+                if (ordensOrdenadas.length === 0) return '';
+                
+                return `
+                  <div class="bg-white rounded-xl shadow-lg border-2 p-6 mb-6 fade-in" style="border-color: ${infoMomento.cor}; animation-delay: ${momentoIndex * 0.1}s;">
+                    <!-- Fluxograma de Assessorias para este Momento -->
+                    <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem; min-height: 300px;">
+                      ${ordensOrdenadas.map((ordem, ordemIndex) => {
+                        const solucoes = todasSolucoesPorOrdem[ordem];
+                        const isLast = ordemIndex === ordensOrdenadas.length - 1;
+                        
+                        return `
+                          <div class="trilha-step fade-in" style="animation-delay: ${ordemIndex * 0.2}s;">
+                            ${!isLast ? `<div class="trilha-step-divider" style="background: linear-gradient(180deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>` : ''}
+                            
+                            <!-- Chevron ASSESSORIA -->
+                            <div class="trilha-assessoria-chevron" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%); --chevron-color: ${infoMomento.cor};">
+                              <div class="trilha-assessoria-text">ASSESSORIA ${ordem}</div>
+                            </div>
+                            
+                            <!-- Linha tracejada e hexágono -->
+                            <div class="trilha-dashed-line"></div>
+                            <div class="trilha-hexagon" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                            
+                            <div class="trilha-step-content">
+                              <div class="trilha-dor-solucoes">
+                                ${solucoes.map((assessoria, solIndex) => {
+                                  const instrumento = inst(assessoria);
+                                  const v = assessoria.valor;
+                                  const n = (v != null && v !== '') ? Number(v) : NaN;
+                                  const temValor = !isNaN(n) && n > 0;
+                                  const valorTexto = temValor ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : 'Gratuito';
+                                  const valorBadgeColor = temValor ? '#B45309' : '#00A859';
+                                  const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
+                                  
+                                  return `
+                                    <div onclick="abrirDetalheSolucaoJornadas(${assessoria.__index})" class="trilha-solucao-card card-clicavel p-4 mb-3 fade-in" style="animation-delay: ${(ordemIndex * 0.2) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor};">
+                                      <!-- Destaque: Preço e Tipo de Produto -->
+                                      <div class="flex items-center justify-between mb-3 p-2 rounded-lg" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${infoMomento.cor};">
+                                        <div class="flex-1">
+                                          <p class="text-xs font-semibold mb-1" style="color: #00608B;">Tipo de Produto</p>
+                                          <p class="text-sm font-bold" style="color: #00608B;">${instrumento}</p>
+                                        </div>
+                                        <div class="text-right ml-2">
+                                          <p class="text-xs font-semibold mb-1" style="color: #00608B;">Preço</p>
+                                          <span class="inline-block px-2 py-1 rounded-lg font-bold text-sm" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor};">
+                                            ${valorTexto}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      
+                                      <h5 class="text-sm font-bold mb-2" style="color: #1F2937;">${assessoria.assessoria_nome}</h5>
+                                      <p class="text-xs leading-relaxed line-clamp-2 mb-2" style="color: #4B5563;">${assessoria.assessoria_descricao || ''}</p>
+                                      ${assessoria.proxima_data ? `<p class="text-xs mb-1" style="color: #6B7280;">📅 <strong>${assessoria.proxima_data}</strong></p>` : ''}
+                                    </div>
+                                  `;
+                                }).join('')}
+                              </div>
+                            </div>
+                          </div>
+                          ${!isLast ? `
+                          <div class="trilha-connector">
+                            <div class="trilha-connector-line" style="background: linear-gradient(90deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                            <div class="trilha-connector-hexagon" style="background: linear-gradient(135deg, ${infoMomento.cor} 0%, ${infoMomento.cor}dd 100%);"></div>
+                          </div>
+                          ` : ''}
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+                `;
+              }).filter(html => html !== '').join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
+    }
+
+    function abrirDetalheSolucaoJornadas(index) {
+      const a = todasJornadasData[index];
+      if (!a) return;
+      const modal = document.getElementById('modal-detalhe-solucao');
+      document.getElementById('detalhe-titulo').textContent = a.assessoria_nome;
+      document.getElementById('detalhe-descricao').textContent = a.assessoria_descricao || '';
+      document.getElementById('detalhe-proxima-data').textContent = (a.proxima_data && String(a.proxima_data).trim()) ? a.proxima_data : 'A definir';
+      const badges = document.getElementById('detalhe-badges');
+      badges.innerHTML = [
+        ['Porte', a.porte, '#E8F7F0', '#00A859'],
+        ['Setor', a.setor, '#FFF4E6', '#FF8C00'],
+        ['Valor', (a.valor != null && Number(a.valor) > 0) ? ('R$ ' + Number(a.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito', '#E8F7F0', '#00A859']
+      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c}">${l}: ${v}</span>`).join('');
+      
+      const botoesContainer = document.getElementById('detalhe-botoes');
+      if (a.link_direcionamento) {
+        botoesContainer.innerHTML = `
+          <a href="${a.link_direcionamento}" target="_blank" rel="noopener noreferrer" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl text-center transition-all" style="color: #333; text-decoration: none;">Saiba Mais</a>
+          <button type="button" onclick="fecharDetalheSolucao()" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
+        `;
+      } else {
+        botoesContainer.innerHTML = `
+          <button type="button" onclick="fecharDetalheSolucao()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
+        `;
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    function abrirDetalheSolucao(index) {
+      const a = ultimosResultados[index];
+      if (!a) return;
+      const modal = document.getElementById('modal-detalhe-solucao');
+      document.getElementById('detalhe-titulo').textContent = a.assessoria_nome;
+      document.getElementById('detalhe-descricao').textContent = a.assessoria_descricao || '';
+      document.getElementById('detalhe-proxima-data').textContent = (a.proxima_data && String(a.proxima_data).trim()) ? a.proxima_data : 'A definir';
+      const badges = document.getElementById('detalhe-badges');
+      badges.innerHTML = [
+        ['Porte', a.porte, '#E8F7F0', '#00A859'],
+        ['Setor', a.setor, '#FFF4E6', '#FF8C00'],
+        ['Valor', (a.valor != null && Number(a.valor) > 0) ? ('R$ ' + Number(a.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito', '#E8F7F0', '#00A859']
+      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c}">${l}: ${v}</span>`).join('');
+      
+      // Atualizar botões do modal
+      const botoesContainer = document.getElementById('detalhe-botoes');
+      if (a.link_direcionamento) {
+        botoesContainer.innerHTML = `
+          <a href="${a.link_direcionamento}" target="_blank" rel="noopener noreferrer" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl text-center transition-all" style="color: #333; text-decoration: none;">Saiba Mais</a>
+          <button type="button" onclick="fecharDetalheSolucao()" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
+        `;
+      } else {
+        botoesContainer.innerHTML = `
+          <button type="button" onclick="fecharDetalheSolucao()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
+        `;
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    function fecharDetalheSolucao() {
+      document.getElementById('modal-detalhe-solucao').classList.add('hidden');
+    }
+
+    // Função para buscar sugestões de ferramentas
+    async function carregarSugestoes() {
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('sugestoes_ferramentas')
+            .select('id, titulo, descricao, link, tipo_momento, crescimento_empresarial, porte, setor, ordem, ativo, criado_em')
+            .eq('ativo', true)
+            .order('ordem', { ascending: true });
+          if (error) throw error;
+          sugestoesData = (data || []).map(s => {
+            if (!s.__backendId) s.__backendId = s.id;
+            return s;
+          });
+          return 'supabase';
+        } catch (e) {
+          console.warn('Supabase: erro ao carregar sugestões, usando localStorage:', e);
+        }
+      }
+      try {
+        const s = localStorage.getItem(STORAGE_KEY_SUGESTOES);
+        sugestoesData = s ? JSON.parse(s) : [];
+        sugestoesData.forEach(s => { if (!s.__backendId) s.__backendId = s.id; });
+      } catch (e) {
+        sugestoesData = [];
+      }
+      return 'local';
+    }
+
+    // Função para buscar e exibir sugestão baseada na seleção
+    async function buscarEExibirSugestao() {
+      const boxSugestao = document.getElementById('box-sugestao-ferramenta');
+      const conteudoSugestao = document.getElementById('sugestao-conteudo');
+      
+      if (!selecao.tipoMomento || !selecao.porte || !selecao.setor) {
+        boxSugestao.classList.add('hidden');
+        return;
+      }
+
+      // Buscar sugestões que correspondem à seleção
+      const sugestoesFiltradas = sugestoesData.filter(s => {
+        if (!s.ativo) return false;
+        
+        // Verificar tipo de momento
+        if (s.tipo_momento && s.tipo_momento !== selecao.tipoMomento) return false;
+        
+        // Verificar porte
+        if (s.porte && s.porte !== selecao.porte) return false;
+        
+        // Verificar setor (normalizar para comparação)
+        if (s.setor) {
+          let setorSugestao = s.setor;
+          let setorSelecao = selecao.setor;
+          // Normalizar
+          if (setorSelecao === 'Comércio') setorSelecao = 'Comercio';
+          else if (setorSelecao === 'Indústria') setorSelecao = 'Industria';
+          else if (setorSelecao === 'Serviços') setorSelecao = 'Servicos';
+          if (setorSugestao !== setorSelecao) return false;
+        }
+        
+        // Verificar dor (crescimento_empresarial)
+        if (selecao.tipoMomento === 'crescimento' && selecao.categorias.length > 0) {
+          const doresSelecionadas = selecao.categorias.filter(c => c !== 'Nenhuma');
+          // Se a sugestão tem uma dor específica, ela deve estar nas categorias selecionadas
+          if (s.crescimento_empresarial) {
+            if (doresSelecionadas.length > 0 && !doresSelecionadas.includes(s.crescimento_empresarial)) {
+              return false;
+            }
+          }
+          // Se todas as categorias são "Nenhuma", aceitar sugestões sem dor específica
+          if (doresSelecionadas.length === 0 && s.crescimento_empresarial) {
+            return false;
+          }
+        } else if (s.crescimento_empresarial) {
+          // Se não é crescimento, não deve ter dor específica
+          return false;
+        }
+        
+        return true;
+      });
+
+      if (sugestoesFiltradas.length === 0) {
+        boxSugestao.classList.add('hidden');
+        return;
+      }
+
+      // Pegar a primeira sugestão (ou ordenar por ordem)
+      const sugestao = sugestoesFiltradas.sort((a, b) => (a.ordem || 0) - (b.ordem || 0))[0];
+
+      // Renderizar sugestão
+      conteudoSugestao.innerHTML = `
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+          <h4 class="text-xl font-bold mb-3" style="color: #00608B;">${sugestao.titulo}</h4>
+          ${sugestao.descricao ? `<p class="text-gray-700 mb-4 leading-relaxed">${sugestao.descricao}</p>` : ''}
+          ${sugestao.link ? `
+            <a href="${sugestao.link}" target="_blank" rel="noopener noreferrer" 
+               class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg" 
+               style="background: linear-gradient(135deg, #00608B 0%, #6366F1 100%); color: white;">
+              🚀 Acessar Ferramenta →
+            </a>
+          ` : ''}
+        </div>
+      `;
+
+      boxSugestao.classList.remove('hidden');
+    }
+
+    // Funções de gestão de sugestões
+    async function salvarSugestao() {
+      const titulo = document.getElementById('sug-titulo').value.trim();
+      if (!titulo) {
+        showToast('Preencha o título da sugestão', 'error');
+        return;
+      }
+
+      const tipoMomento = document.getElementById('sug-tipo-momento').value;
+      const crescimentoValue = document.getElementById('sug-crescimento').value;
+      
+      // Se tipo_momento é "empresarial", crescimento_empresarial deve ser null
+      // porque os valores de momento empresarial não são válidos para o enum crescimento_empresarial_enum
+      const crescimento_empresarial = (tipoMomento === 'empresarial') ? null : (crescimentoValue || null);
+
+      const sugestao = {
+        titulo: titulo,
+        descricao: document.getElementById('sug-descricao').value.trim() || null,
+        link: document.getElementById('sug-link').value.trim() || null,
+        tipo_momento: tipoMomento || null,
+        crescimento_empresarial: crescimento_empresarial,
+        porte: document.getElementById('sug-porte').value || null,
+        setor: document.getElementById('sug-setor').value || null,
+        ordem: parseInt(document.getElementById('sug-ordem').value) || 1,
+        ativo: document.getElementById('sug-ativo').checked
+      };
+
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient.from('sugestoes_ferramentas').insert(sugestao).select().single();
+          if (error) {
+            showToast('Erro ao salvar: ' + error.message, 'error');
+            return;
+          }
+          sugestoesData.push({ ...data, __backendId: data.id });
+          showToast('✓ Sugestão salva com sucesso!', 'success');
+        } catch (e) {
+          showToast('Erro ao salvar: ' + e.message, 'error');
+          return;
+        }
+      } else {
+        sugestao.id = 'sug-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        sugestao.__backendId = sugestao.id;
+        sugestoesData.push(sugestao);
+        localStorage.setItem(STORAGE_KEY_SUGESTOES, JSON.stringify(sugestoesData));
+        showToast('✓ Sugestão salva com sucesso!', 'success');
+      }
+
+      document.getElementById('form-sugestao').reset();
+      atualizarCategoriasSugestao();
+      document.getElementById('sug-ordem').value = '1';
+      document.getElementById('sug-ativo').checked = true;
+      atualizarListaSugestoes();
+    }
+
+    async function excluirSugestao(backendId) {
+      const sugestao = sugestoesData.find(s => (s.__backendId || s.id) === backendId);
+      if (!sugestao) return;
+
+      if (!confirm(`Deseja realmente excluir a sugestão "${sugestao.titulo}"?`)) return;
+
+      if (supabaseClient && backendId) {
+        try {
+          const { error } = await supabaseClient.from('sugestoes_ferramentas').delete().eq('id', backendId);
+          if (error) {
+            showToast('Erro ao excluir: ' + error.message, 'error');
+            return;
+          }
+        } catch (e) {
+          showToast('Erro ao excluir: ' + e.message, 'error');
+          return;
+        }
+      }
+
+      sugestoesData = sugestoesData.filter(s => (s.__backendId || s.id) !== backendId);
+      if (!supabaseClient) {
+        localStorage.setItem(STORAGE_KEY_SUGESTOES, JSON.stringify(sugestoesData));
+      }
+
+      showToast('✓ Sugestão excluída!', 'success');
+      atualizarListaSugestoes();
+    }
+
+    function editarSugestao(backendId) {
+      const sugestao = sugestoesData.find(s => (s.__backendId || s.id) === backendId);
+      if (!sugestao) return;
+
+      document.getElementById('sug-titulo').value = sugestao.titulo || '';
+      document.getElementById('sug-descricao').value = sugestao.descricao || '';
+      document.getElementById('sug-link').value = sugestao.link || '';
+      document.getElementById('sug-tipo-momento').value = sugestao.tipo_momento || '';
+      // Atualizar opções de crescimento baseado no tipo de momento
+      atualizarCategoriasSugestao();
+      // Só definir crescimento_empresarial se tipo_momento não for "empresarial"
+      if (sugestao.tipo_momento !== 'empresarial' && sugestao.crescimento_empresarial) {
+        document.getElementById('sug-crescimento').value = sugestao.crescimento_empresarial || '';
+      } else {
+        document.getElementById('sug-crescimento').value = '';
+      }
+      document.getElementById('sug-porte').value = sugestao.porte || '';
+      document.getElementById('sug-setor').value = sugestao.setor || '';
+      document.getElementById('sug-ordem').value = sugestao.ordem || 1;
+      document.getElementById('sug-ativo').checked = sugestao.ativo !== false;
+
+      const btnSalvar = document.getElementById('btn-salvar-sugestao');
+      btnSalvar.textContent = '💾 Atualizar Sugestão';
+      btnSalvar.onclick = async () => {
+        await atualizarSugestao(backendId);
+      };
+
+      document.getElementById('form-sugestao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function atualizarSugestao(backendId) {
+      const titulo = document.getElementById('sug-titulo').value.trim();
+      if (!titulo) {
+        showToast('Preencha o título da sugestão', 'error');
+        return;
+      }
+
+      const tipoMomento = document.getElementById('sug-tipo-momento').value;
+      const crescimentoValue = document.getElementById('sug-crescimento').value;
+      
+      // Se tipo_momento é "empresarial", crescimento_empresarial deve ser null
+      // porque os valores de momento empresarial não são válidos para o enum crescimento_empresarial_enum
+      const crescimento_empresarial = (tipoMomento === 'empresarial') ? null : (crescimentoValue || null);
+
+      const dadosAtualizados = {
+        titulo: titulo,
+        descricao: document.getElementById('sug-descricao').value.trim() || null,
+        link: document.getElementById('sug-link').value.trim() || null,
+        tipo_momento: tipoMomento || null,
+        crescimento_empresarial: crescimento_empresarial,
+        porte: document.getElementById('sug-porte').value || null,
+        setor: document.getElementById('sug-setor').value || null,
+        ordem: parseInt(document.getElementById('sug-ordem').value) || 1,
+        ativo: document.getElementById('sug-ativo').checked
+      };
+
+      if (supabaseClient && backendId) {
+        try {
+          const { error } = await supabaseClient.from('sugestoes_ferramentas').update(dadosAtualizados).eq('id', backendId);
+          if (error) {
+            showToast('Erro ao atualizar: ' + error.message, 'error');
+            return;
+          }
+        } catch (e) {
+          showToast('Erro ao atualizar: ' + e.message, 'error');
+          return;
+        }
+      }
+
+      const index = sugestoesData.findIndex(s => (s.__backendId || s.id) === backendId);
+      if (index >= 0) {
+        sugestoesData[index] = { ...sugestoesData[index], ...dadosAtualizados };
+        if (!supabaseClient) {
+          localStorage.setItem(STORAGE_KEY_SUGESTOES, JSON.stringify(sugestoesData));
+        }
+      }
+
+      showToast('✓ Sugestão atualizada!', 'success');
+      document.getElementById('form-sugestao').reset();
+      atualizarCategoriasSugestao();
+      document.getElementById('sug-ordem').value = '1';
+      document.getElementById('sug-ativo').checked = true;
+
+      const btnSalvar = document.getElementById('btn-salvar-sugestao');
+      btnSalvar.textContent = '💾 Salvar Sugestão';
+      btnSalvar.onclick = salvarSugestao;
+
+      atualizarListaSugestoes();
+    }
+
+    function atualizarListaSugestoes() {
+      const lista = document.getElementById('lista-sugestoes');
+      if (!lista) return;
+
+      if (sugestoesData.length === 0) {
+        lista.innerHTML = '<p class="text-center py-4 text-gray-500">Nenhuma sugestão cadastrada ainda</p>';
+        return;
+      }
+
+      const ordenadas = [...sugestoesData].sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+      lista.innerHTML = ordenadas.map(sugestao => {
+        const bid = String(sugestao.__backendId || sugestao.id);
+        const filtros = [];
+        if (sugestao.tipo_momento) filtros.push(`Momento: ${sugestao.tipo_momento === 'empresarial' ? 'Empresarial' : 'Crescimento'}`);
+        if (sugestao.crescimento_empresarial) filtros.push(`Dor: ${sugestao.crescimento_empresarial}`);
+        if (sugestao.porte) filtros.push(`Porte: ${sugestao.porte}`);
+        if (sugestao.setor) filtros.push(`Setor: ${sugestao.setor}`);
+        if (filtros.length === 0) filtros.push('Todos os perfis');
+
+        return `
+          <div class="bg-gradient-to-r from-purple-50 to-blue-50 border-2 rounded-lg p-4" style="border-color: #A0C5CF;">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="flex flex-wrap gap-2 mb-2">
+                  ${sugestao.ativo ? '<span class="badge" style="background-color: #E8F7F0; color: #00A859; font-size: 0.7rem;">✓ Ativo</span>' : '<span class="badge" style="background-color: #FEE2E2; color: #DC2626; font-size: 0.7rem;">✗ Inativo</span>'}
+                  <span class="badge" style="background-color: #E3ECEE; color: #00608B; font-size: 0.7rem;">Ordem ${sugestao.ordem || 1}</span>
+                </div>
+                <h5 class="font-bold text-base mb-1" style="color: #00608B;">${sugestao.titulo}</h5>
+                ${sugestao.descricao ? `<p class="text-sm line-clamp-2 mb-2" style="color: #666;">${sugestao.descricao}</p>` : ''}
+                <p class="text-xs mb-2" style="color: #999;">${filtros.join(' • ')}</p>
+                ${sugestao.link ? `<p class="text-xs"><a href="${sugestao.link}" target="_blank" rel="noopener noreferrer" class="text-purple-600 hover:underline">🔗 ${sugestao.link}</a></p>` : ''}
+              </div>
+              <div class="flex gap-2 flex-shrink-0">
+                <button onclick="copiarSugestao('${bid}')" class="px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-all" style="color: #00A859;" title="Copiar/Duplicar">
+                  <span class="text-xl">📋</span>
+                </button>
+                <button onclick="editarSugestao('${bid}')" class="px-3 py-2 bg-purple-50 hover:bg-purple-100 rounded-lg transition-all" style="color: #00608B;" title="Editar">
+                  <span class="text-xl">✏️</span>
+                </button>
+                <button onclick="excluirSugestao('${bid}')" class="px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg transition-all" style="color: #DC2626;" title="Excluir">
+                  <span class="text-xl">🗑️</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copiarSugestao(backendId) {
+      const sugestao = sugestoesData.find(s => (s.__backendId || s.id) === backendId);
+      if (!sugestao) {
+        showToast('Sugestão não encontrada', 'error');
+        return;
+      }
+
+      // Preencher formulário com dados da sugestão (cópia)
+      const tituloOriginal = sugestao.titulo || '';
+      const tituloComCopia = tituloOriginal.includes('(Cópia)') ? tituloOriginal : tituloOriginal + ' (Cópia)';
+      document.getElementById('sug-titulo').value = tituloComCopia;
+      document.getElementById('sug-descricao').value = sugestao.descricao || '';
+      document.getElementById('sug-link').value = sugestao.link || '';
+      document.getElementById('sug-tipo-momento').value = sugestao.tipo_momento || '';
+      
+      // Atualizar opções de crescimento baseado no tipo de momento
+      atualizarCategoriasSugestao();
+      
+      // Só definir crescimento_empresarial se tipo_momento não for "empresarial"
+      if (sugestao.tipo_momento !== 'empresarial' && sugestao.crescimento_empresarial) {
+        document.getElementById('sug-crescimento').value = sugestao.crescimento_empresarial || '';
+      } else {
+        document.getElementById('sug-crescimento').value = '';
+      }
+      
+      document.getElementById('sug-porte').value = sugestao.porte || '';
+      document.getElementById('sug-setor').value = sugestao.setor || '';
+      document.getElementById('sug-ordem').value = sugestao.ordem || 1;
+      document.getElementById('sug-ativo').checked = sugestao.ativo !== false;
+
+      // Resetar botão para "Salvar" (não "Atualizar")
+      const btnSalvar = document.getElementById('btn-salvar-sugestao');
+      btnSalvar.textContent = '💾 Salvar Sugestão';
+      btnSalvar.onclick = salvarSugestao;
+
+      // Scroll para o formulário
+      document.getElementById('form-sugestao').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function voltarEtapa(etapa) {
+      if (etapa === 'momento') {
+        document.getElementById('cards-empresarial').classList.add('hidden');
+        document.getElementById('cards-crescimento').classList.add('hidden');
+        document.getElementById('step-momento').classList.remove('hidden');
+        
+        document.querySelectorAll('.card-option').forEach(card => card.classList.remove('selected'));
+        document.getElementById('btn-avancar-momento').disabled = true;
+        document.getElementById('btn-avancar-crescimento').disabled = true;
+        
+        selecao.categorias = [];
+      } else if (etapa === 'cards') {
+        document.getElementById('step-porte').classList.add('hidden');
+        
+        if (selecao.tipoMomento === 'empresarial') {
+          document.getElementById('cards-empresarial').classList.remove('hidden');
+        } else {
+          document.getElementById('cards-crescimento').classList.remove('hidden');
+        }
+        
+        document.getElementById('step-2').classList.remove('active', 'completed');
+        document.getElementById('line-1').classList.remove('completed');
+        document.getElementById('step-1').classList.add('active');
+        document.getElementById('step-1').classList.remove('completed');
+      } else if (etapa === 'porte') {
+        document.getElementById('step-setor').classList.add('hidden');
+        document.getElementById('step-porte').classList.remove('hidden');
+        
+        document.getElementById('step-3').classList.remove('active', 'completed');
+        document.getElementById('line-2').classList.remove('completed');
+        document.getElementById('step-2').classList.add('active');
+        document.getElementById('step-2').classList.remove('completed');
+        
+        selecao.porte = null;
+      }
+    }
+
+    function reiniciar() {
+      selecao = {
+        tipoMomento: null,
+        categorias: [],
+        porte: null,
+        setor: null
+      };
+      
+      document.getElementById('step-resultados').classList.add('hidden');
+      document.getElementById('step-momento').classList.remove('hidden');
+      
+      document.querySelectorAll('.step-circle').forEach(circle => {
+        circle.classList.remove('active', 'completed');
+      });
+      document.querySelectorAll('.step-line').forEach(line => {
+        line.classList.remove('completed');
+      });
+      document.getElementById('step-1').classList.add('active');
+      
+      document.querySelectorAll('.card-option').forEach(card => card.classList.remove('selected'));
+    }
+
+    function atualizarCategorias() {
+      const tipo = document.getElementById('cad-tipo-momento').value;
+      const selectCategoria = document.getElementById('cad-categoria');
+      
+      if (tipo === 'empresarial') {
+        selectCategoria.innerHTML = '<option value="">Selecione o foco da dor...</option>';
+        momentoEmpresarial.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.titulo;
+          selectCategoria.appendChild(option);
+        });
+      } else if (tipo === 'crescimento') {
+        // Adicionar opção "Nenhuma" primeiro
+        selectCategoria.innerHTML = '<option value="">Nenhuma</option>';
+        // Adicionar as outras opções de crescimento
+        crescimentoEmpresarial.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.titulo;
+          selectCategoria.appendChild(option);
+        });
+      } else {
+        selectCategoria.innerHTML = '<option value="">Selecione o momento empresarial primeiro</option>';
+      }
+    }
+
+    function atualizarCategoriasSugestao() {
+      const tipo = document.getElementById('sug-tipo-momento').value;
+      const selectCrescimento = document.getElementById('sug-crescimento');
+      
+      if (tipo === 'empresarial') {
+        // Quando tipo é "empresarial", o campo crescimento_empresarial deve ser null
+        // porque valores de momento empresarial não são válidos para o enum crescimento_empresarial_enum
+        selectCrescimento.innerHTML = '<option value="">Não aplicável (Momento Empresarial)</option>';
+        selectCrescimento.value = ''; // Limpar o valor selecionado
+      } else if (tipo === 'crescimento') {
+        // Adicionar opção "Nenhuma" primeiro
+        selectCrescimento.innerHTML = '<option value="">Nenhuma</option>';
+        // Adicionar as outras opções de crescimento
+        crescimentoEmpresarial.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.titulo;
+          selectCrescimento.appendChild(option);
+        });
+      } else {
+        // Se "Todos" for selecionado, mostrar todas as opções
+        selectCrescimento.innerHTML = '<option value="">Todas</option>';
+        // Adicionar opções de momento empresarial
+        momentoEmpresarial.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.titulo;
+          selectCrescimento.appendChild(option);
+        });
+        // Adicionar opções de crescimento
+        crescimentoEmpresarial.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = item.titulo;
+          selectCrescimento.appendChild(option);
+        });
+      }
+    }
+
+    async function handleCadastro(e) {
+      e.preventDefault();
+
+      if (assessoriasData.length >= 999) {
+        showToast('Limite de 999 soluções atingido. Exclua algumas para cadastrar novas.', 'error');
+        return;
+      }
+
+      const btnCadastrar = document.getElementById('btn-cadastrar');
+      btnCadastrar.disabled = true;
+      btnCadastrar.textContent = '⏳ Cadastrando...';
+
+      const tipoMomento = document.getElementById('cad-tipo-momento').value;
+      const categoriaValue = document.getElementById('cad-categoria').value;
+      // Se categoria vazia (value="") ou "Nenhuma", salvar como null
+      const categoriaFinal = (categoriaValue && categoriaValue.trim() !== '' && categoriaValue !== 'Nenhuma' && categoriaValue !== '__nenhuma__') ? categoriaValue : null;
+      
+      const novaAssessoria = {
+        id: `assess-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        codigo: document.getElementById('cad-codigo').value || '',
+        momento_empresarial: tipoMomento === 'empresarial' ? categoriaFinal : null,
+        crescimento_empresarial: tipoMomento === 'crescimento' ? categoriaFinal : null,
+        porte: document.getElementById('cad-porte').value,
+        setor: document.getElementById('cad-setor').value,
+        assessoria_nome: document.getElementById('cad-nome').value,
+        assessoria_descricao: document.getElementById('cad-descricao').value,
+        segmento: document.getElementById('cad-segmento').value || '',
+        area_conhecimento: document.getElementById('cad-area-conhecimento').value || '',
+        temas: '',
+        carga_horaria: document.getElementById('cad-carga-horaria').value || '',
+        instrumento: document.getElementById('cad-instrumento').value || '',
+        fornecedor: document.getElementById('cad-fornecedor').value || '',
+        proxima_data: document.getElementById('cad-proxima-data').value || '',
+        valor: (function(){ var v = parseFloat(document.getElementById('cad-valor').value); return (v >= 0 && !isNaN(v)) ? v : 0; })(),
+        ordem: parseInt(document.getElementById('cad-ordem').value),
+        link_direcionamento: document.getElementById('cad-link-direcionamento').value || null,
+        criado_em: new Date().toISOString()
+      };
+
+      const result = await adicionarSolucao(novaAssessoria);
+
+      btnCadastrar.disabled = false;
+      btnCadastrar.textContent = '✓ Cadastrar Solução';
+
+      if (result && result.isOk) {
+        showToast('✓ Solução cadastrada com sucesso!', 'success');
+        document.getElementById('cadastro-form').reset();
+        document.getElementById('cad-valor').value = '0';
+        atualizarListaAssessorias();
+      } else {
+        const errorMsg = result && result.error ? result.error : 'Erro desconhecido';
+        console.error('Erro ao cadastrar:', errorMsg);
+        showToast('✗ Erro ao cadastrar solução: ' + errorMsg, 'error');
+      }
+    }
+
+    // Função para processar importação de planilha
+    async function processarImportacao(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('import-status');
+      statusDiv.classList.remove('hidden');
+      statusDiv.innerHTML = '<div class="flex items-center gap-2"><div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div><p class="text-sm">⏳ Processando arquivo...</p></div>';
+      statusDiv.className = 'mt-4 p-4 rounded-lg bg-blue-50 text-blue-700 border-2 border-blue-200';
+
+      try {
+        let dados = [];
+        const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+        if (isExcel && typeof XLSX !== 'undefined') {
+          const ab = await file.arrayBuffer();
+          const wb = XLSX.read(ab, { type: 'array' });
+          const ws = wb.Sheets[wb.SheetNames[0]] || wb.Sheets[0];
+          if (!ws) throw new Error('Nenhuma planilha encontrada no arquivo.');
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          if (!rows || rows.length < 2) throw new Error('Planilha vazia ou sem dados.');
+          const headers = (rows[0] || []).map(h => String(h || '').trim());
+          for (let i = 1; i < rows.length; i++) {
+            const values = rows[i] || [];
+            if (values.every(v => v === undefined || v === null || v === '')) continue;
+            const row = {};
+            headers.forEach((h, j) => { row[h] = values[j] !== undefined && values[j] !== null ? String(values[j]) : ''; });
+            dados.push(row);
+          }
+        } else {
+          const text = await file.text();
+          const lines = text.split('\n').filter(line => line.trim());
+          if (lines.length < 2) throw new Error('Arquivo vazio ou sem dados. Verifique se o arquivo contém pelo menos um cabeçalho e uma linha de dados.');
+          const parseCSVLine = (line) => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              if (char === '"') inQuotes = !inQuotes;
+              else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+              else current += char;
+            }
+            result.push(current.trim());
+            return result;
+          };
+          const headers = parseCSVLine(lines[0]).map(h => h.replace(/^"|"$/g, '').trim());
+          for (let i = 1; i < lines.length; i++) {
+            const values = parseCSVLine(lines[i]).map(v => v.replace(/^"|"$/g, '').trim());
+            if (values.length === 0 || values.every(v => !v)) continue;
+            const row = {};
+            headers.forEach((header, index) => { row[header] = values[index] || ''; });
+            dados.push(row);
+          }
+        }
+
+        if (dados.length === 0) {
+          throw new Error('Nenhum dado válido encontrado no arquivo.');
+        }
+
+        // Mapear campos da planilha para o modelo
+        let sucesso = 0;
+        let erros = 0;
+        const errosDetalhes = [];
+
+        for (let idx = 0; idx < dados.length; idx++) {
+          const row = dados[idx];
+          try {
+            // Mapear campos
+            const codigo = row['Cód'] || row['Código'] || '';
+            const titulo = row['Título'] || row['Titulo'] || '';
+            const segmento = row['Segmento'] || '';
+            const areaConhecimento = row['Área de Conhecimento'] || row['Area de Conhecimento'] || '';
+            const temas = row['Temas'] || '';
+            const publicoAlvo = row['Públi Alvo'] || row['Publico Alvo'] || row['Público Alvo'] || '';
+            const cargaHoraria = row['Car horária'] || row['Carga horária'] || row['Carga Horaria'] || '';
+            const instrumento = row['Instrumer'] || row['Instrumento'] || '';
+            const fornecedor = row['Fornecedores Executores'] || row['Fornecedor'] || '';
+            const proximaData = row['Próxima data'] || row['Proxima data'] || '';
+            let valor = parseFloat(row['Valor']);
+            if (isNaN(valor) || valor < 0) { valor = (row['Pa'] === 'Sim' || row['Pago'] === 'Sim') ? 1 : 0; }
+            const descricao = row['Descr'] || row['Descrição'] || row['Descricao'] || titulo;
+
+            // Determinar porte: coluna Porte (export) ou público alvo
+            let porte = (row['Porte'] || '').toString().trim();
+            if (porte) porte = porte.toUpperCase();
+            if (!porte) {
+              if (publicoAlvo.includes('MEI')) porte = 'MEI';
+              else if (publicoAlvo.includes('ME')) porte = 'ME';
+              else if (publicoAlvo.includes('EPP')) porte = 'EPP';
+            }
+            if (porte && !['MEI','ME','EPP'].includes(porte)) porte = '';
+            
+            // Normalizar setor para valores do enum
+            let setor = (row['Setor'] || '').toString().trim();
+            if (setor === 'Comércio') setor = 'Comercio';
+            else if (setor === 'Indústria') setor = 'Industria';
+            else if (setor === 'Serviços') setor = 'Servicos';
+            else if (setor === 'Multisetorial') setor = 'Multisetorial';
+
+            // Determinar tipo de momento e categoria; usar sempre IDs válidos para aparecer na consulta
+            var tipoStrImp = (row['Tipo Momento'] || row['Tipo de Momento'] || 'empresarial').toString().toLowerCase();
+            var isCrescImp = tipoStrImp.indexOf('crescimento') >= 0;
+            var categoria = (row['Categoria'] || areaConhecimento || temas || 'Gerencie').toString().trim();
+            var momento_empresarial = '', crescimento_empresarial = '';
+            if (isCrescImp) {
+              // Se categoria vazia ou "Nenhuma", deixar null
+              if (!categoria || categoria === 'Nenhuma' || categoria.trim() === '') {
+                crescimento_empresarial = null;
+              } else {
+                crescimento_empresarial = (VALID_CRESCIMENTO && VALID_CRESCIMENTO.indexOf(categoria) >= 0) ? categoria : 'Marketing e Vendas';
+              }
+            } else {
+              momento_empresarial = (VALID_EMPRESARIAL && VALID_EMPRESARIAL.indexOf(categoria) >= 0) ? categoria : 'Gerencie';
+            }
+
+            // Validação
+            if (!titulo) {
+              erros++;
+              errosDetalhes.push(`Linha ${idx + 2}: Título obrigatório`);
+              continue;
+            }
+            if (!porte) {
+              erros++;
+              errosDetalhes.push(`Linha ${idx + 2}: Porte não identificado (MEI/ME/EPP)`);
+              continue;
+            }
+            if (!setor) {
+              erros++;
+              errosDetalhes.push(`Linha ${idx + 2}: Setor obrigatório`);
+              continue;
+            }
+
+            const ordemVal = parseInt(row['Ordem'], 10);
+            const novaAssessoria = {
+              id: `assess-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${idx}`,
+              codigo: codigo,
+              momento_empresarial: momento_empresarial,
+              crescimento_empresarial: crescimento_empresarial,
+              porte: porte,
+              setor: setor,
+              assessoria_nome: titulo,
+              assessoria_descricao: descricao,
+              segmento: segmento,
+              area_conhecimento: areaConhecimento,
+              temas: temas,
+              carga_horaria: cargaHoraria,
+              instrumento: instrumento,
+              fornecedor: fornecedor,
+              proxima_data: proximaData,
+              valor: valor,
+              ordem: !isNaN(ordemVal) ? ordemVal : 1,
+              link_direcionamento: row['Link de Direcionamento'] || row['Link'] || row['link_direcionamento'] || null,
+              criado_em: new Date().toISOString()
+            };
+
+            const result = await adicionarSolucao(novaAssessoria);
+            if (result && result.isOk) {
+              sucesso++;
+            } else {
+              erros++;
+              errosDetalhes.push(`Linha ${idx + 2}: Erro ao salvar - ${(result && result.error) || 'Erro desconhecido'}`);
+            }
+          } catch (err) {
+            erros++;
+            errosDetalhes.push(`Linha ${idx + 2}: ${err.message || 'Erro ao processar'}`);
+            console.error('Erro ao processar linha:', err);
+          }
+        }
+
+        // Feedback detalhado
+        let feedbackHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">${sucesso > 0 ? '✓' : '⚠️'}</span>
+              <div>
+                <p class="text-sm font-bold">Importação concluída!</p>
+                <p class="text-xs">${sucesso} solução(ões) importada(s) com sucesso</p>
+                ${erros > 0 ? `<p class="text-xs text-red-600">${erros} erro(s) encontrado(s)</p>` : ''}
+              </div>
+            </div>
+        `;
+
+        if (errosDetalhes.length > 0 && errosDetalhes.length <= 10) {
+          feedbackHTML += `
+            <details class="mt-2">
+              <summary class="text-xs cursor-pointer font-semibold text-red-600">Ver detalhes dos erros</summary>
+              <ul class="mt-2 text-xs space-y-1 list-disc list-inside">
+                ${errosDetalhes.map(e => `<li>${e}</li>`).join('')}
+              </ul>
+            </details>
+          `;
+        }
+
+        feedbackHTML += '</div>';
+
+        statusDiv.innerHTML = feedbackHTML;
+        
+        if (sucesso > 0 && erros === 0) {
+          statusDiv.className = 'mt-4 p-4 rounded-lg bg-green-50 text-green-700 border-2 border-green-200';
+          showToast(`✓ ${sucesso} solução(ões) importada(s) com sucesso!`, 'success');
+        } else if (sucesso > 0 && erros > 0) {
+          statusDiv.className = 'mt-4 p-4 rounded-lg bg-yellow-50 text-yellow-700 border-2 border-yellow-200';
+          showToast(`⚠️ ${sucesso} importada(s), ${erros} erro(s)`, 'error');
+        } else {
+          statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-50 text-red-700 border-2 border-red-200';
+          showToast(`✗ Nenhuma solução foi importada. Verifique os erros.`, 'error');
+        }
+
+        atualizarListaAssessorias();
+        event.target.value = ''; // Reset file input
+
+      } catch (error) {
+        statusDiv.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">✗</span>
+            <div>
+              <p class="text-sm font-bold">Erro ao processar arquivo</p>
+              <p class="text-xs">${error.message}</p>
+            </div>
+          </div>
+        `;
+        statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-50 text-red-700 border-2 border-red-200';
+        showToast(`✗ Erro: ${error.message}`, 'error');
+      }
+    }
+
+    // Função para baixar modelo de planilha
+    function baixarModeloPlanilha() {
+      const headers = [
+        'Cód', 'Título', 'Descr', 'Setor', 'Segmento', 'Porte', 'Públi Alvo',
+        'Área de Conhecimento', 'Temas', 'Car horária', 'Instrumer', 'Valor', 'Fornecedores Executores', 'Próxima data', 'Ordem', 'Link de Direcionamento'
+      ];
+
+      const exemplo = [
+        '6174', 'Aprenda a ajustar e reformar roupas (Presencial)',
+        'Curso do Sebrae', 'Industria', 'Vestuário', 'MEI', 'MEI, Poten',
+        'Gestão da Produção', 'Gestão da Qualidade', '14', 'Cursos Presenciais', '0', 'SENAI', '15/03/2026', '1', 'https://www.sebrae.com.br/solucao'
+      ];
+
+      const csv = [headers.join(','), exemplo.join(',')].join('\n');
+      const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'modelo_solucoes_sebrae.csv';
+      link.click();
+      showToast('✓ Modelo de planilha baixado!', 'success');
+    }
+
+    // Exportar dados atuais para Excel
+    function exportarParaExcel() {
+      if (typeof XLSX === 'undefined') {
+        showToast('Biblioteca Excel não carregada. Recarregue a página.', 'error');
+        return;
+      }
+      if (assessoriasData.length === 0) {
+        showToast('Nenhuma solução para exportar.', 'error');
+        return;
+      }
+      const rows = assessoriasData.map(a => ({
+        'Código': a.codigo || '',
+        'Título': a.assessoria_nome || '',
+        'Descrição': a.assessoria_descricao || '',
+        'Porte': a.porte || '',
+        'Setor': a.setor || '',
+        'Segmento': a.segmento || '',
+        'Área de Conhecimento': a.area_conhecimento || '',
+        'Temas': a.temas || '',
+        'Carga Horária': a.carga_horaria || '',
+        'Instrumento': a.instrumento || '',
+        'Fornecedor': a.fornecedor || '',
+        'Próxima data': a.proxima_data || '',
+        'Valor': (function(){ var v = a.valor; var n = (v != null && v !== '') ? Number(v) : NaN; return (!isNaN(n) && n >= 0) ? n : 0; })(),
+        'Ordem': a.ordem || 1,
+        'Link de Direcionamento': a.link_direcionamento || ''
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Soluções');
+      XLSX.writeFile(wb, 'solucoes_sebrae_' + new Date().toISOString().slice(0,10) + '.xlsx');
+      showToast('✓ Planilha exportada!', 'success');
+    }
+
+    function atualizarListaAssessorias() {
+      const lista = document.getElementById('lista-assessorias');
+      const listaVazia = document.getElementById('lista-vazia');
+      const totalElement = document.getElementById('total-assessorias');
+      const barraMassa = document.getElementById('barra-exclusao-massa');
+      
+      totalElement.textContent = assessoriasData.length;
+      
+      if (assessoriasData.length === 0) {
+        lista.innerHTML = '';
+        if (barraMassa) barraMassa.classList.add('hidden');
+        listaVazia.classList.remove('hidden');
+        return;
+      }
+      
+      listaVazia.classList.add('hidden');
+      if (barraMassa) barraMassa.classList.remove('hidden');
+      const cbTodas = document.getElementById('cb-selecionar-todas');
+      if (cbTodas) cbTodas.checked = false;
+      
+      const ordenadas = [...assessoriasData].sort((a, b) => {
+        const momentoA = a.momento_empresarial || a.crescimento_empresarial;
+        const momentoB = b.momento_empresarial || b.crescimento_empresarial;
+        return momentoA.localeCompare(momentoB) || a.ordem - b.ordem;
+      });
+      
+      lista.innerHTML = ordenadas.map(assessoria => {
+        const momento = assessoria.momento_empresarial || assessoria.crescimento_empresarial;
+        const tipoMomento = assessoria.momento_empresarial ? 'Empresarial' : 'Crescimento';
+        const v = assessoria.valor; const n = (v != null && v !== '') ? Number(v) : NaN;
+        const temValor = !isNaN(n) && n > 0;
+        const legadoPago = assessoria.pago === 'Sim';
+        const valorTexto = temValor ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })) : (legadoPago ? 'Pago' : '🆓 Gratuito');
+        const valorBadgeColor = (temValor || legadoPago) ? '#B45309' : '#00A859';
+        const valorBadgeBg = (temValor || legadoPago) ? '#FFEDD5' : '#E8F7F0';
+        const bid = String(assessoria.__backendId || assessoria.id);
+        return `
+          <div class="bg-gradient-to-r from-blue-50 to-white border-2 rounded-lg p-4" style="border-color: #E0E0E0;">
+            <div class="flex items-start justify-between gap-3">
+              <input type="checkbox" class="cb-excluir-assessoria h-4 w-4 mt-1 flex-shrink-0" value="${bid}" onchange="atualizarBotaoExcluirSelecionadas()" title="Selecionar para exclusão">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap gap-2 mb-2">
+                  <span class="badge" style="background-color: #E3ECEE; color: #00608B; font-size: 0.7rem;">${tipoMomento}</span>
+                  <span class="badge" style="background-color: #E3ECEE; color: #00608B; font-size: 0.7rem;">${momento}</span>
+                  <span class="badge" style="background-color: #E8F7F0; color: #00A859; font-size: 0.7rem;">${assessoria.porte}</span>
+                  <span class="badge" style="background-color: #FFF4E6; color: #FF8C00; font-size: 0.7rem;">${assessoria.setor}</span>
+                  <span class="badge" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor}; font-size: 0.7rem;">${valorTexto}</span>
+                  <span class="badge" style="background-color: #00608B; color: white; font-size: 0.7rem;">Ordem ${assessoria.ordem}</span>
+                </div>
+                <h5 class="font-bold text-base mb-1" style="color: #00608B;">${assessoria.assessoria_nome}</h5>
+                <p class="text-sm line-clamp-2" style="color: #666;">${assessoria.assessoria_descricao}</p>
+                ${assessoria.link_direcionamento ? `<p class="text-xs mt-2"><a href="${assessoria.link_direcionamento}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">🔗 ${assessoria.link_direcionamento}</a></p>` : ''}
+              </div>
+              <div class="flex gap-2 flex-shrink-0">
+                <button onclick="copiarAssessoria('${bid}')" class="px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-all" style="color: #00A859;" title="Copiar/Duplicar">
+                  <span class="text-xl">📋</span>
+                </button>
+                <button onclick="editarAssessoria('${bid}')" class="px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all" style="color: #00608B;" title="Editar">
+                  <span class="text-xl">✏️</span>
+                </button>
+                <button onclick="excluirAssessoria('${bid}')" class="px-3 py-2 bg-red-50 hover:bg-red-100 rounded-lg transition-all" style="color: #DC2626;" title="Excluir">
+                  <span class="text-xl">🗑️</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      atualizarBotaoExcluirSelecionadas();
+    }
+
+    function marcarDesmarcarTodas(checked) {
+      document.querySelectorAll('.cb-excluir-assessoria').forEach(cb => { cb.checked = checked; });
+      const cbAll = document.getElementById('cb-selecionar-todas');
+      if (cbAll) cbAll.checked = checked;
+      atualizarBotaoExcluirSelecionadas();
+    }
+
+    function atualizarBotaoExcluirSelecionadas() {
+      const cbs = document.querySelectorAll('.cb-excluir-assessoria');
+      const n = document.querySelectorAll('.cb-excluir-assessoria:checked').length;
+      const btn = document.getElementById('btn-excluir-selecionadas');
+      const cbAll = document.getElementById('cb-selecionar-todas');
+      if (btn) { btn.disabled = n === 0; btn.textContent = n > 0 ? 'Excluir selecionadas (' + n + ')' : 'Excluir selecionadas'; }
+      if (cbAll && cbs.length) cbAll.checked = n === cbs.length;
+    }
+
+    async function excluirSelecionadas() {
+      const ids = Array.from(document.querySelectorAll('.cb-excluir-assessoria:checked')).map(cb => cb.value);
+      if (ids.length === 0) return;
+      const toRemove = ids.map(id => assessoriasData.find(a => (a.__backendId || a.id) === id)).filter(Boolean);
+      if (toRemove.length === 0) return;
+      const div = document.createElement('div');
+      div.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in';
+      div.innerHTML = '<div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4"><h3 class="text-2xl font-bold mb-4" style="color: #DC2626;">Exclusão em massa</h3><p class="mb-6" style="color: #666;">Deseja excluir <strong>' + toRemove.length + ' solução(ões)</strong> selecionada(s)?</p><div class="flex gap-3"><button id="btn-confirmar-massa" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg">Sim, Excluir</button><button id="btn-cancelar-massa" class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-lg" style="color: #333;">Cancelar</button></div></div>';
+      document.body.appendChild(div);
+      document.getElementById('btn-confirmar-massa').onclick = async function() {
+        document.getElementById('btn-confirmar-massa').disabled = true;
+        document.getElementById('btn-confirmar-massa').textContent = 'Excluindo...';
+        for (const a of toRemove) await removerSolucao(a);
+        div.remove();
+        showToast(toRemove.length + ' solução(ões) excluída(s).', 'success');
+        atualizarListaAssessorias();
+      };
+      document.getElementById('btn-cancelar-massa').onclick = function() { div.remove(); };
+    }
+
+    async function excluirAssessoria(backendId) {
+      const assessoria = assessoriasData.find(a => (a.__backendId || a.id) === backendId);
+      
+      if (!assessoria) return;
+
+      const confirmDiv = document.createElement('div');
+      confirmDiv.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in';
+      confirmDiv.innerHTML = `
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4">
+          <h3 class="text-2xl font-bold mb-4" style="color: #DC2626;">⚠️ Confirmar Exclusão</h3>
+          <p class="mb-6" style="color: #666;">Deseja realmente excluir a solução "<strong>${assessoria.assessoria_nome}</strong>"?</p>
+          <div class="flex gap-3">
+            <button id="btn-confirmar-exclusao" class="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-all">
+              Sim, Excluir
+            </button>
+            <button id="btn-cancelar-exclusao" class="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 font-bold rounded-lg transition-all" style="color: #333;">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(confirmDiv);
+      
+      document.getElementById('btn-confirmar-exclusao').addEventListener('click', async () => {
+        document.getElementById('btn-confirmar-exclusao').disabled = true;
+        document.getElementById('btn-confirmar-exclusao').textContent = 'Excluindo...';
+        
+        const result = await removerSolucao(assessoria);
+        
+        confirmDiv.remove();
+        
+        if (result && result.isOk) {
+          showToast('✓ Solução excluída com sucesso!', 'success');
+          atualizarListaAssessorias();
+        } else {
+          showToast('✗ Erro ao excluir solução.', 'error');
+        }
+      });
+      
+      document.getElementById('btn-cancelar-exclusao').addEventListener('click', () => {
+        confirmDiv.remove();
+      });
+    }
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-xl text-white font-semibold z-50 fade-in';
+      toast.style.backgroundColor = type === 'success' ? '#00A859' : '#DC2626';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function trocarAba(aba) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.sidebar-nav-item').forEach(b => b.classList.remove('active'));
+      const navBusca = document.getElementById('nav-busca');
+      const navJornadas = document.getElementById('nav-jornadas');
+      const navGestao = document.getElementById('nav-gestao');
+      if (aba === 'consulta') {
+        document.getElementById('aba-consulta').classList.add('active');
+        if (navBusca) { navBusca.classList.add('active'); navBusca.setAttribute('aria-current','page'); }
+        if (navJornadas) navJornadas.removeAttribute('aria-current');
+        if (navGestao) navGestao.removeAttribute('aria-current');
+      } else if (aba === 'jornadas') {
+        document.getElementById('aba-jornadas').classList.add('active');
+        carregarTodasJornadas();
+        if (navJornadas) { navJornadas.classList.add('active'); navJornadas.setAttribute('aria-current','page'); }
+        if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
+        if (navGestao) navGestao.removeAttribute('aria-current');
+      } else if (aba === 'gerenciamento') {
+        document.getElementById('aba-gerenciamento').classList.add('active');
+        atualizarListaAssessorias();
+        if (navGestao) { navGestao.classList.add('active'); navGestao.setAttribute('aria-current','page'); }
+        if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
+        if (navJornadas) navJornadas.removeAttribute('aria-current');
+      }
+    }
+
+    function naoPresisoMelhorar() {
+      selecao.categorias = ['Nenhuma'];
+      
+      const btnId = selecao.tipoMomento === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
+      document.getElementById(btnId).disabled = false;
+      
+      avancarParaPorte();
+    }
+
+    // Função para copiar/duplicar solução
+    function copiarAssessoria(backendId) {
+      const assessoria = assessoriasData.find(a => (a.__backendId || a.id) === backendId);
+      if (!assessoria) {
+        showToast('Solução não encontrada', 'error');
+        return;
+      }
+
+      // Preencher formulário com dados da solução (cópia)
+      document.getElementById('cad-codigo').value = assessoria.codigo || '';
+      // Adicionar sufixo "(Cópia)" ao nome se não tiver já
+      const nomeOriginal = assessoria.assessoria_nome || '';
+      const nomeComCopia = nomeOriginal.includes('(Cópia)') ? nomeOriginal : nomeOriginal + ' (Cópia)';
+      document.getElementById('cad-nome').value = nomeComCopia;
+      document.getElementById('cad-descricao').value = assessoria.assessoria_descricao || '';
+      document.getElementById('cad-porte').value = assessoria.porte || '';
+      document.getElementById('cad-setor').value = assessoria.setor || '';
+      document.getElementById('cad-segmento').value = assessoria.segmento || '';
+      document.getElementById('cad-area-conhecimento').value = assessoria.area_conhecimento || '';
+      document.getElementById('cad-carga-horaria').value = assessoria.carga_horaria || '';
+      document.getElementById('cad-instrumento').value = assessoria.instrumento || '';
+      document.getElementById('cad-fornecedor').value = assessoria.fornecedor || '';
+      document.getElementById('cad-proxima-data').value = assessoria.proxima_data || '';
+      document.getElementById('cad-valor').value = assessoria.valor || 0;
+      document.getElementById('cad-ordem').value = assessoria.ordem || 1;
+      document.getElementById('cad-link-direcionamento').value = assessoria.link_direcionamento || '';
+
+      // Determinar tipo de momento e categoria
+      if (assessoria.momento_empresarial) {
+        document.getElementById('cad-tipo-momento').value = 'empresarial';
+        atualizarCategorias();
+        document.getElementById('cad-categoria').value = assessoria.momento_empresarial || '';
+      } else {
+        // Se não tem momento_empresarial, é crescimento (pode ser null para "Nenhuma")
+        document.getElementById('cad-tipo-momento').value = 'crescimento';
+        atualizarCategorias();
+        // Se crescimento_empresarial é null ou vazio, selecionar "Nenhuma" (value="")
+        document.getElementById('cad-categoria').value = assessoria.crescimento_empresarial || '';
+      }
+
+      // Garantir que o botão está como "Cadastrar" (não "Atualizar")
+      const btnCadastrar = document.getElementById('btn-cadastrar');
+      btnCadastrar.textContent = '✓ Cadastrar Solução';
+      btnCadastrar.type = 'submit';
+      btnCadastrar.onclick = null; // Remover qualquer handler de atualização
+      btnCadastrar.disabled = false;
+
+      // Trocar para a aba de cadastro se não estiver nela
+      trocarAba('gerenciamento');
+      
+      // Scroll para o formulário
+      setTimeout(() => {
+        document.getElementById('cadastro-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      
+      showToast('✓ Dados copiados! Edite e clique em "Cadastrar Solução" para criar uma nova solução.', 'success');
+    }
+
+    // Função para editar solução
+    async function editarAssessoria(backendId) {
+      const assessoria = assessoriasData.find(a => (a.__backendId || a.id) === backendId);
+      if (!assessoria) return;
+
+      // Preencher formulário com dados da solução
+      document.getElementById('cad-codigo').value = assessoria.codigo || '';
+      document.getElementById('cad-nome').value = assessoria.assessoria_nome || '';
+      document.getElementById('cad-descricao').value = assessoria.assessoria_descricao || '';
+      document.getElementById('cad-porte').value = assessoria.porte || '';
+      document.getElementById('cad-setor').value = assessoria.setor || '';
+      document.getElementById('cad-segmento').value = assessoria.segmento || '';
+      document.getElementById('cad-area-conhecimento').value = assessoria.area_conhecimento || '';
+      document.getElementById('cad-carga-horaria').value = assessoria.carga_horaria || '';
+      document.getElementById('cad-instrumento').value = assessoria.instrumento || '';
+      document.getElementById('cad-fornecedor').value = assessoria.fornecedor || '';
+      document.getElementById('cad-proxima-data').value = assessoria.proxima_data || '';
+      document.getElementById('cad-valor').value = assessoria.valor || 0;
+      document.getElementById('cad-ordem').value = assessoria.ordem || 1;
+      document.getElementById('cad-link-direcionamento').value = assessoria.link_direcionamento || '';
+
+      // Determinar tipo de momento e categoria
+      if (assessoria.momento_empresarial) {
+        document.getElementById('cad-tipo-momento').value = 'empresarial';
+        atualizarCategorias();
+        document.getElementById('cad-categoria').value = assessoria.momento_empresarial || '';
+      } else {
+        // Se não tem momento_empresarial, é crescimento (pode ser null para "Nenhuma")
+        document.getElementById('cad-tipo-momento').value = 'crescimento';
+        atualizarCategorias();
+        // Se crescimento_empresarial é null ou vazio, selecionar "Nenhuma" (value="")
+        document.getElementById('cad-categoria').value = assessoria.crescimento_empresarial || '';
+      }
+
+      // Alterar botão para "Atualizar"
+      const btnCadastrar = document.getElementById('btn-cadastrar');
+      btnCadastrar.textContent = '💾 Atualizar Solução';
+      btnCadastrar.type = 'button';
+      btnCadastrar.onclick = async (e) => {
+        e.preventDefault();
+        await atualizarAssessoria(backendId, e);
+      };
+
+      // Scroll para o formulário
+      document.getElementById('cadastro-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      showToast('Formulário preenchido. Edite e clique em "Atualizar Solução"', 'success');
+    }
+
+    // Função para atualizar solução
+    async function atualizarAssessoria(backendId, e) {
+      e.preventDefault();
+      const assessoria = assessoriasData.find(a => (a.__backendId || a.id) === backendId);
+      if (!assessoria) {
+        showToast('Solução não encontrada', 'error');
+        return;
+      }
+
+      const btnCadastrar = document.getElementById('btn-cadastrar');
+      btnCadastrar.disabled = true;
+      btnCadastrar.textContent = '⏳ Atualizando...';
+
+      const tipoMomento = document.getElementById('cad-tipo-momento').value;
+      const categoriaValue = document.getElementById('cad-categoria').value;
+      // Se categoria vazia (value="") ou "Nenhuma", salvar como null
+      const categoriaFinal = (categoriaValue && categoriaValue.trim() !== '' && categoriaValue !== 'Nenhuma' && categoriaValue !== '__nenhuma__') ? categoriaValue : null;
+
+      const dadosAtualizados = {
+        codigo: document.getElementById('cad-codigo').value || null,
+        momento_empresarial: tipoMomento === 'empresarial' ? categoriaFinal : null,
+        crescimento_empresarial: tipoMomento === 'crescimento' ? categoriaFinal : null,
+        porte: document.getElementById('cad-porte').value,
+        setor: document.getElementById('cad-setor').value,
+        assessoria_nome: document.getElementById('cad-nome').value,
+        assessoria_descricao: document.getElementById('cad-descricao').value,
+        segmento: document.getElementById('cad-segmento').value || null,
+        area_conhecimento: document.getElementById('cad-area-conhecimento').value || null,
+        carga_horaria: document.getElementById('cad-carga-horaria').value || null,
+        instrumento: document.getElementById('cad-instrumento').value || null,
+        fornecedor: document.getElementById('cad-fornecedor').value || null,
+        proxima_data: document.getElementById('cad-proxima-data').value || null,
+        valor: parseFloat(document.getElementById('cad-valor').value) || 0,
+        ordem: parseInt(document.getElementById('cad-ordem').value) || 1,
+        link_direcionamento: document.getElementById('cad-link-direcionamento').value || null
+      };
+
+      try {
+        if (supabaseClient && backendId) {
+          const { error } = await supabaseClient.from('solucoes').update(dadosAtualizados).eq('id', backendId);
+          if (error) throw error;
+        }
+
+        // Atualizar no array local
+        const index = assessoriasData.findIndex(a => (a.__backendId || a.id) === backendId);
+        if (index >= 0) {
+          assessoriasData[index] = { ...assessoriasData[index], ...dadosAtualizados };
+          if (!supabaseClient) persistirDados();
+        }
+
+        showToast('✓ Solução atualizada com sucesso!', 'success');
+        document.getElementById('cadastro-form').reset();
+        atualizarListaAssessorias();
+
+        // Restaurar botão
+        btnCadastrar.textContent = '✓ Cadastrar Solução';
+        btnCadastrar.type = 'submit';
+        btnCadastrar.onclick = null;
+      } catch (error) {
+        showToast('✗ Erro ao atualizar: ' + (error.message || 'Erro desconhecido'), 'error');
+      } finally {
+        btnCadastrar.disabled = false;
+      }
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c296652c4c836f6',t:'MTc2OTE5MzQxOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

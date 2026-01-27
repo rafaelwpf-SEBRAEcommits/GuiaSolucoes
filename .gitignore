@@ -1,0 +1,53 @@
+# Arquivos Excel e planilhas
+*.xlsx
+*.xls
+*.csv
+
+# Arquivos temporários do Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.temp
+~$*
+
+# Arquivos do sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Arquivos do OneDrive
+*.odt
+*.odp
+*.ods
+
+# Arquivos de IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de ambiente (se houver)
+.env
+.env.local
+.env.*.local
+
+# Arquivos de backup
+*.bak
+*.backup
+*~
+
+# Arquivos comprimidos (se não forem necessários)
+*.zip
+*.rar
+*.7z

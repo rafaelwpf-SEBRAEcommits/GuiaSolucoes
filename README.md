@@ -1,0 +1,28 @@
+# Guia de Soluções Sebrae
+
+Aplicação web para consulta e gerenciamento de soluções e assessorias do Sebrae.
+
+## Estrutura do Projeto
+
+- `GuiaSebrae.html` - Aplicação principal (HTML único com JavaScript embutido)
+- `ARQUITETURA-BANCO-DADOS-GUIA-SEBRAE.md` - Documentação da arquitetura do banco de dados
+- `CONFIGURACAO-SUPABASE.md` - Guia de configuração do Supabase
+
+## Tecnologias Utilizadas
+
+- HTML5
+- Tailwind CSS (via CDN)
+- JavaScript (Vanilla)
+- Supabase (PostgreSQL)
+- SheetJS (para importação de Excel)
+
+## Configuração
+
+Consulte o arquivo `CONFIGURACAO-SUPABASE.md` para instruções detalhadas de configuração do Supabase.
+
+## Funcionalidades
+
+- Consulta de soluções por momento empresarial, porte e setor
+- Gerenciamento de soluções (cadastro, exclusão, importação)
+- Interface responsiva e moderna
+- Integração com Supabase para persistência de dados
