@@ -1,0 +1,17 @@
+{
+  "name": "guia-solucoes-sebrae",
+  "version": "1.0.0",
+  "description": "Aplicação web para consulta e gerenciamento de soluções e assessorias do Sebrae",
+  "main": "GuiaSebrae.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build needed - static HTML file'"
+  },
+  "keywords": [
+    "sebrae",
+    "solucoes",
+    "guia"
+  ],
+  "author": "",
+  "license": "ISC"
+}

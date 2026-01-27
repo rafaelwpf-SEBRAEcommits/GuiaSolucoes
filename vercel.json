@@ -1,38 +1,12 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "GuiaSebrae.html",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/GuiaSebrae.html"
     },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/GuiaSebrae.html",
-      "dest": "/GuiaSebrae.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/GuiaSebrae.html"
-    }
-  ],
-  "headers": [
     {
       "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
-        }
-      ]
+      "destination": "/GuiaSebrae.html"
     }
   ]
 }
