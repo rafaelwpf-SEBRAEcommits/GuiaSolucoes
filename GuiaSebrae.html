@@ -164,6 +164,9 @@
       border-radius: 9999px;
       font-size: 0.75rem;
       font-weight: 600;
+      word-wrap: break-word;
+      max-width: 100%;
+      white-space: normal;
     }
 
     .resultado-card {
@@ -730,17 +733,72 @@
       align-items: center;
       justify-content: center;
       animation: fadeIn 0.3s ease;
+      padding: 1rem;
+      overflow-y: auto;
     }
 
     .modal-content {
       background: white;
       border-radius: 20px;
       padding: 1.5rem;
-      max-width: 400px;
-      width: 90%;
-      margin: 1rem;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      margin: auto;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
       animation: slideUp 0.3s ease;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .modal-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 10px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+
+    @media (max-width: 640px) {
+      .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+        padding-top: 0;
+      }
+      
+      .modal-content {
+        max-width: 100%;
+        width: 100%;
+        max-height: 90vh;
+        padding: 1rem;
+        border-radius: 20px 20px 0 0;
+        margin: 0;
+        margin-top: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .modal-content {
+        max-height: 95vh;
+        padding: 0.875rem;
+      }
+      
+      .modal-content h2 {
+        font-size: 1.125rem !important;
+      }
     }
 
     @keyframes slideUp {
@@ -1000,18 +1058,21 @@
     </div>
     <!-- Modal Detalhes da Solução / Trilha -->
     <div id="modal-detalhe-solucao" class="modal-overlay hidden" onclick="if(event.target===this)fecharDetalheSolucao()">
-     <div class="modal-content max-w-lg">
-      <div class="flex items-start justify-between mb-4">
-       <h2 id="detalhe-titulo" class="text-xl font-bold" style="color: var(--primary-blue);"></h2>
-       <button type="button" onclick="fecharDetalheSolucao()" class="text-2xl leading-none opacity-70 hover:opacity-100" style="color: #666;">&times;</button>
+     <div class="modal-content">
+      <div class="flex items-start justify-between mb-4 flex-shrink-0">
+       <h2 id="detalhe-titulo" class="text-lg md:text-xl font-bold pr-2" style="color: var(--primary-blue); word-wrap: break-word;"></h2>
+       <button type="button" onclick="fecharDetalheSolucao()" class="text-2xl leading-none opacity-70 hover:opacity-100 flex-shrink-0" style="color: #666;">&times;</button>
       </div>
-      <p id="detalhe-descricao" class="text-sm mb-4" style="color: #666;"></p>
-      <div class="mb-4 p-3 rounded-xl border-2" style="background: #FFFBEB; border-color: #F59E0B;">
-       <p class="text-xs font-semibold mb-1" style="color: #B45309;">Próxima data</p>
-       <p id="detalhe-proxima-data" class="text-lg font-bold" style="color: #B45309;"></p>
+      <div class="flex-1 overflow-y-auto min-h-0">
+       <p id="detalhe-descricao" class="text-sm mb-4" style="color: #666; word-wrap: break-word;"></p>
+       <div class="mb-4 p-3 rounded-xl border-2" style="background: #FFFBEB; border-color: #F59E0B;">
+        <p class="text-xs font-semibold mb-1" style="color: #B45309;">Próxima data</p>
+        <p id="detalhe-proxima-data" class="text-base md:text-lg font-bold" style="color: #B45309; word-wrap: break-word;"></p>
+       </div>
+       <div id="detalhe-carga-horaria-area" class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3" style="display: none;"></div>
+       <div class="flex flex-wrap gap-2 mb-4" id="detalhe-badges"></div>
       </div>
-      <div class="flex flex-wrap gap-2 mb-4" id="detalhe-badges"></div>
-      <div class="flex gap-3" id="detalhe-botoes">
+      <div class="flex gap-3 flex-shrink-0 mt-4" id="detalhe-botoes">
        <button type="button" onclick="fecharDetalheSolucao()" class="w-full py-3 bg-gray-100 hover:bg-gray-200 font-semibold rounded-xl" style="color: #333;">Fechar</button>
       </div>
      </div>
@@ -1391,7 +1452,7 @@
             segmento: obj.segmento || null,
             area_conhecimento: obj.area_conhecimento || null,
             temas: obj.temas || null,
-            carga_horaria: obj.carga_horaria || null,
+            carga_horaria: (obj.carga_horaria !== undefined && obj.carga_horaria !== null && String(obj.carga_horaria).trim() !== '') ? String(obj.carga_horaria).trim() : null,
             instrumento: obj.instrumento || null,
             fornecedor: obj.fornecedor || null,
             proxima_data: obj.proxima_data || null,
@@ -2638,7 +2699,14 @@
                             
                             <div class="trilha-step-content">
                               <div class="trilha-dor-solucoes">
-                                ${solucoes.map((assessoria, solIndex) => {
+                                ${solucoes
+                                  .sort((a, b) => {
+                                    // Ordenar por valor: maior para menor
+                                    const valorA = (a.valor != null && a.valor !== '') ? Number(a.valor) : 0;
+                                    const valorB = (b.valor != null && b.valor !== '') ? Number(b.valor) : 0;
+                                    return valorB - valorA; // Ordem decrescente (maior para menor)
+                                  })
+                                  .map((assessoria, solIndex) => {
                                   const instrumento = inst(assessoria);
                                   const v = assessoria.valor;
                                   const n = (v != null && v !== '') ? Number(v) : NaN;
@@ -2702,12 +2770,39 @@
       document.getElementById('detalhe-titulo').textContent = a.assessoria_nome;
       document.getElementById('detalhe-descricao').textContent = a.assessoria_descricao || '';
       document.getElementById('detalhe-proxima-data').textContent = (a.proxima_data && String(a.proxima_data).trim()) ? a.proxima_data : 'A definir';
+      
+      // Adicionar Carga Horária e Área de Conhecimento
+      const cargaAreaContainer = document.getElementById('detalhe-carga-horaria-area');
+      const temCargaHoraria = a.carga_horaria && String(a.carga_horaria).trim();
+      const temAreaConhecimento = a.area_conhecimento && String(a.area_conhecimento).trim();
+      
+      if (temCargaHoraria || temAreaConhecimento) {
+        cargaAreaContainer.style.display = 'grid';
+        cargaAreaContainer.innerHTML = `
+          ${temCargaHoraria ? `
+            <div class="p-3 rounded-xl border-2" style="background: #EFF6FF; border-color: #3B82F6; word-wrap: break-word; overflow-wrap: break-word;">
+              <p class="text-xs font-semibold mb-1" style="color: #1E40AF;">Carga Horária</p>
+              <p class="text-sm font-bold" style="color: #1E40AF; word-wrap: break-word; overflow-wrap: break-word;">${a.carga_horaria}</p>
+            </div>
+          ` : ''}
+          ${temAreaConhecimento ? `
+            <div class="p-3 rounded-xl border-2" style="background: #F0FDF4; border-color: #10B981; word-wrap: break-word; overflow-wrap: break-word;">
+              <p class="text-xs font-semibold mb-1" style="color: #065F46;">Área de Conhecimento</p>
+              <p class="text-sm font-bold" style="color: #065F46; word-wrap: break-word; overflow-wrap: break-word;">${a.area_conhecimento}</p>
+            </div>
+          ` : ''}
+        `;
+      } else {
+        cargaAreaContainer.style.display = 'none';
+        cargaAreaContainer.innerHTML = '';
+      }
+      
       const badges = document.getElementById('detalhe-badges');
       badges.innerHTML = [
         ['Porte', a.porte, '#E8F7F0', '#00A859'],
         ['Setor', a.setor, '#FFF4E6', '#FF8C00'],
         ['Valor', (a.valor != null && Number(a.valor) > 0) ? ('R$ ' + Number(a.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito', '#E8F7F0', '#00A859']
-      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c}">${l}: ${v}</span>`).join('');
+      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c};word-break: break-word;white-space: normal;max-width: 100%;">${l}: ${v}</span>`).join('');
       
       const botoesContainer = document.getElementById('detalhe-botoes');
       if (a.link_direcionamento) {
@@ -2731,12 +2826,39 @@
       document.getElementById('detalhe-titulo').textContent = a.assessoria_nome;
       document.getElementById('detalhe-descricao').textContent = a.assessoria_descricao || '';
       document.getElementById('detalhe-proxima-data').textContent = (a.proxima_data && String(a.proxima_data).trim()) ? a.proxima_data : 'A definir';
+      
+      // Adicionar Carga Horária e Área de Conhecimento
+      const cargaAreaContainer = document.getElementById('detalhe-carga-horaria-area');
+      const temCargaHoraria = a.carga_horaria && String(a.carga_horaria).trim();
+      const temAreaConhecimento = a.area_conhecimento && String(a.area_conhecimento).trim();
+      
+      if (temCargaHoraria || temAreaConhecimento) {
+        cargaAreaContainer.style.display = 'grid';
+        cargaAreaContainer.innerHTML = `
+          ${temCargaHoraria ? `
+            <div class="p-3 rounded-xl border-2" style="background: #EFF6FF; border-color: #3B82F6; word-wrap: break-word; overflow-wrap: break-word;">
+              <p class="text-xs font-semibold mb-1" style="color: #1E40AF;">Carga Horária</p>
+              <p class="text-sm font-bold" style="color: #1E40AF; word-wrap: break-word; overflow-wrap: break-word;">${a.carga_horaria}</p>
+            </div>
+          ` : ''}
+          ${temAreaConhecimento ? `
+            <div class="p-3 rounded-xl border-2" style="background: #F0FDF4; border-color: #10B981; word-wrap: break-word; overflow-wrap: break-word;">
+              <p class="text-xs font-semibold mb-1" style="color: #065F46;">Área de Conhecimento</p>
+              <p class="text-sm font-bold" style="color: #065F46; word-wrap: break-word; overflow-wrap: break-word;">${a.area_conhecimento}</p>
+            </div>
+          ` : ''}
+        `;
+      } else {
+        cargaAreaContainer.style.display = 'none';
+        cargaAreaContainer.innerHTML = '';
+      }
+      
       const badges = document.getElementById('detalhe-badges');
       badges.innerHTML = [
         ['Porte', a.porte, '#E8F7F0', '#00A859'],
         ['Setor', a.setor, '#FFF4E6', '#FF8C00'],
         ['Valor', (a.valor != null && Number(a.valor) > 0) ? ('R$ ' + Number(a.valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito', '#E8F7F0', '#00A859']
-      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c}">${l}: ${v}</span>`).join('');
+      ].map(([l, v, bg, c]) => `<span class="badge" style="background-color:${bg};color:${c};word-break: break-word;white-space: normal;max-width: 100%;">${l}: ${v}</span>`).join('');
       
       // Atualizar botões do modal
       const botoesContainer = document.getElementById('detalhe-botoes');
@@ -3323,17 +3445,29 @@
 
         if (isExcel && typeof XLSX !== 'undefined') {
           const ab = await file.arrayBuffer();
-          const wb = XLSX.read(ab, { type: 'array' });
+          const wb = XLSX.read(ab, { type: 'array', cellDates: true, cellNF: false });
           const ws = wb.Sheets[wb.SheetNames[0]] || wb.Sheets[0];
           if (!ws) throw new Error('Nenhuma planilha encontrada no arquivo.');
-          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+          // Usar raw: false para obter valores formatados, mas manter cellDates: true para datas
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, dateNF: 'dd/mm/yyyy' });
           if (!rows || rows.length < 2) throw new Error('Planilha vazia ou sem dados.');
           const headers = (rows[0] || []).map(h => String(h || '').trim());
           for (let i = 1; i < rows.length; i++) {
             const values = rows[i] || [];
             if (values.every(v => v === undefined || v === null || v === '')) continue;
             const row = {};
-            headers.forEach((h, j) => { row[h] = values[j] !== undefined && values[j] !== null ? String(values[j]) : ''; });
+            headers.forEach((h, j) => { 
+              const val = values[j];
+              // Se for um objeto Date, converter para string formatada
+              if (val instanceof Date) {
+                const day = String(val.getDate()).padStart(2, '0');
+                const month = String(val.getMonth() + 1).padStart(2, '0');
+                const year = val.getFullYear();
+                row[h] = `${day}/${month}/${year}`;
+              } else {
+                row[h] = val !== undefined && val !== null ? String(val) : '';
+              }
+            });
             dados.push(row);
           }
         } else {
@@ -3367,6 +3501,25 @@
           throw new Error('Nenhum dado válido encontrado no arquivo.');
         }
 
+        // Função auxiliar para buscar valor em coluna com variações de nome
+        const buscarColuna = (row, variacoes) => {
+          for (const variacao of variacoes) {
+            if (row[variacao] !== undefined && row[variacao] !== null && String(row[variacao]).trim() !== '') {
+              return String(row[variacao]).trim();
+            }
+          }
+          // Busca case-insensitive e normalizando espaços
+          const rowKeys = Object.keys(row);
+          for (const variacao of variacoes) {
+            const variacaoNormalizada = variacao.toLowerCase().replace(/\s+/g, ' ').trim();
+            const encontrado = rowKeys.find(k => k.toLowerCase().replace(/\s+/g, ' ').trim() === variacaoNormalizada);
+            if (encontrado && row[encontrado] !== undefined && row[encontrado] !== null && String(row[encontrado]).trim() !== '') {
+              return String(row[encontrado]).trim();
+            }
+          }
+          return '';
+        };
+
         // Mapear campos da planilha para o modelo
         let sucesso = 0;
         let erros = 0;
@@ -3375,20 +3528,24 @@
         for (let idx = 0; idx < dados.length; idx++) {
           const row = dados[idx];
           try {
-            // Mapear campos
-            const codigo = row['Cód'] || row['Código'] || '';
-            const titulo = row['Título'] || row['Titulo'] || '';
-            const segmento = row['Segmento'] || '';
-            const areaConhecimento = row['Área de Conhecimento'] || row['Area de Conhecimento'] || '';
-            const temas = row['Temas'] || '';
-            const publicoAlvo = row['Públi Alvo'] || row['Publico Alvo'] || row['Público Alvo'] || '';
-            const cargaHoraria = row['Car horária'] || row['Carga horária'] || row['Carga Horaria'] || '';
-            const instrumento = row['Instrumer'] || row['Instrumento'] || '';
-            const fornecedor = row['Fornecedores Executores'] || row['Fornecedor'] || '';
-            const proximaData = row['Próxima data'] || row['Proxima data'] || '';
-            let valor = parseFloat(row['Valor']);
-            if (isNaN(valor) || valor < 0) { valor = (row['Pa'] === 'Sim' || row['Pago'] === 'Sim') ? 1 : 0; }
-            const descricao = row['Descr'] || row['Descrição'] || row['Descricao'] || titulo;
+            // Mapear campos usando função auxiliar
+            const codigo = buscarColuna(row, ['Código', 'Cód', 'codigo']);
+            const titulo = buscarColuna(row, ['Título', 'Titulo', 'assessoria_nome', 'Nome', 'Título/Nome da Solução']);
+            const segmento = buscarColuna(row, ['Segmento', 'segmento']);
+            const areaConhecimento = buscarColuna(row, ['Área de Conhecimento', 'Area de Conhecimento', 'area_conhecimento', 'Área de conhecimento']);
+            const temas = buscarColuna(row, ['Temas', 'temas']);
+            const publicoAlvo = buscarColuna(row, ['Público Alvo', 'Publico Alvo', 'Públi Alvo', 'Porte/Público Alvo']);
+            // Mapear carga horária com várias variações possíveis
+            const cargaHoraria = buscarColuna(row, ['Carga Horária', 'Carga horária', 'Car horária', 'Carga Horaria', 'carga_horaria', 'Carga Horária ']);
+            const instrumento = buscarColuna(row, ['Instrumento', 'Instrumer', 'instrumento']);
+            const fornecedor = buscarColuna(row, ['Fornecedor', 'Fornecedores Executores', 'fornecedor', 'Fornecedor Executor']);
+            const proximaData = buscarColuna(row, ['Próxima data', 'Proxima data', 'proxima_data', 'Próxima Data']);
+            let valor = parseFloat(buscarColuna(row, ['Valor', 'valor', 'Valor (R$)', 'Valor (R$)']));
+            if (isNaN(valor) || valor < 0) { 
+              const pago = buscarColuna(row, ['Pago', 'Pa', 'pago']);
+              valor = (pago === 'Sim' || pago === 'sim' || pago === 'SIM') ? 1 : 0; 
+            }
+            const descricao = buscarColuna(row, ['Descrição', 'Descricao', 'Descr', 'assessoria_descricao', 'Descrição da Solução']) || titulo;
 
             // Determinar porte: coluna Porte (export) ou público alvo
             let porte = (row['Porte'] || '').toString().trim();
@@ -3459,25 +3616,148 @@
             }
 
             const ordemVal = parseInt(row['Ordem'], 10);
+            
+            // Função auxiliar para normalizar campos de texto (preservar string vazia como null)
+            const normalizarTexto = (valor) => {
+              if (valor === null || valor === undefined) return null;
+              const str = String(valor).trim();
+              return str === '' ? null : str;
+            };
+            
+            // Função auxiliar para normalizar data (aceita vários formatos)
+            const normalizarData = (valor) => {
+              if (!valor || valor === null || valor === undefined) return null;
+              
+              // Se for um objeto Date, converter diretamente
+              if (valor instanceof Date) {
+                if (isNaN(valor.getTime())) return null;
+                const day = String(valor.getDate()).padStart(2, '0');
+                const month = String(valor.getMonth() + 1).padStart(2, '0');
+                const year = valor.getFullYear();
+                return `${day}/${month}/${year}`;
+              }
+              
+              const str = String(valor).trim();
+              if (str === '' || str.toLowerCase() === 'a definir' || str.toLowerCase() === 'a definir' || str.toLowerCase() === 'a definir') {
+                return null;
+              }
+              
+              // Tentar converter diferentes formatos de data do Excel
+              // Excel pode retornar números (dias desde 1900-01-01) ou strings formatadas
+              const numVal = Number(str);
+              if (!isNaN(numVal) && numVal > 0 && numVal < 100000) {
+                // Pode ser um número serial do Excel (dias desde 1900-01-01)
+                // Converter para data
+                try {
+                  // Excel usa 1 de janeiro de 1900 como dia 1, mas tem um bug: considera 1900 como bissexto
+                  // Então usamos 30 de dezembro de 1899 como base
+                  const excelEpoch = new Date(1899, 11, 30); // 30 de dezembro de 1899
+                  const days = numVal;
+                  const date = new Date(excelEpoch.getTime() + days * 24 * 60 * 60 * 1000);
+                  if (!isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100) {
+                    // Formatar como DD/MM/YYYY
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                  }
+                } catch (e) {
+                  // Se falhar, continuar para outros formatos
+                }
+              }
+              
+              // Tentar parsear como data ISO (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss)
+              if (str.match(/^\d{4}-\d{2}-\d{2}/)) {
+                try {
+                  const date = new Date(str);
+                  if (!isNaN(date.getTime())) {
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${day}/${month}/${year}`;
+                  }
+                } catch (e) {
+                  // Se falhar, continuar
+                }
+              }
+              
+              // Tentar parsear formato brasileiro (DD/MM/YYYY)
+              if (str.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                // Validar se é uma data válida
+                try {
+                  const parts = str.split('/');
+                  if (parts.length === 3) {
+                    const day = parseInt(parts[0]);
+                    const month = parseInt(parts[1]);
+                    const year = parseInt(parts[2]);
+                    if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+                      return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+                    }
+                  }
+                } catch (e) {
+                  // Se falhar, retornar o valor original
+                }
+                return str; // Já está no formato correto
+              }
+              
+              // Tentar parsear formato americano (MM/DD/YYYY)
+              if (str.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                try {
+                  const parts = str.split('/');
+                  if (parts.length === 3) {
+                    const month = parseInt(parts[0]);
+                    const day = parseInt(parts[1]);
+                    const year = parseInt(parts[2]);
+                    // Se mês > 12, provavelmente é formato brasileiro
+                    if (month > 12) {
+                      return str; // Já está no formato brasileiro
+                    }
+                    const date = new Date(year, month - 1, day);
+                    if (!isNaN(date.getTime()) && date.getDate() === day && date.getMonth() === month - 1) {
+                      return `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
+                    }
+                  }
+                } catch (e) {
+                  // Se falhar, retornar o valor original
+                }
+              }
+              
+              // Tentar parsear como data genérica (pode ser qualquer formato reconhecido pelo JavaScript)
+              try {
+                const date = new Date(str);
+                if (!isNaN(date.getTime()) && date.getFullYear() >= 1900 && date.getFullYear() <= 2100) {
+                  const day = String(date.getDate()).padStart(2, '0');
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const year = date.getFullYear();
+                  return `${day}/${month}/${year}`;
+                }
+              } catch (e) {
+                // Se falhar, retornar o valor original
+              }
+              
+              // Se não conseguir parsear, retornar o valor original (pode ser texto como "A definir")
+              return str;
+            };
+            
             const novaAssessoria = {
               id: `assess-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${idx}`,
-              codigo: codigo,
-              momento_empresarial: momento_empresarial,
-              crescimento_empresarial: crescimento_empresarial,
+              codigo: normalizarTexto(codigo),
+              momento_empresarial: normalizarTexto(momento_empresarial),
+              crescimento_empresarial: normalizarTexto(crescimento_empresarial),
               porte: porte,
               setor: setor,
-              assessoria_nome: titulo,
-              assessoria_descricao: descricao,
-              segmento: segmento,
-              area_conhecimento: areaConhecimento,
-              temas: temas,
-              carga_horaria: cargaHoraria,
-              instrumento: instrumento,
-              fornecedor: fornecedor,
-              proxima_data: proximaData,
+              assessoria_nome: titulo.trim(),
+              assessoria_descricao: normalizarTexto(descricao),
+              segmento: normalizarTexto(segmento),
+              area_conhecimento: normalizarTexto(areaConhecimento),
+              temas: normalizarTexto(temas),
+              carga_horaria: normalizarTexto(cargaHoraria),
+              instrumento: normalizarTexto(instrumento),
+              fornecedor: normalizarTexto(fornecedor),
+              proxima_data: normalizarData(proximaData),
               valor: valor,
               ordem: !isNaN(ordemVal) ? ordemVal : 1,
-              link_direcionamento: row['Link de Direcionamento'] || row['Link'] || row['link_direcionamento'] || null,
+              link_direcionamento: normalizarTexto(buscarColuna(row, ['Link de Direcionamento', 'Link', 'link_direcionamento'])),
               criado_em: new Date().toISOString()
             };
 
