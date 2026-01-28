@@ -1082,7 +1082,7 @@
     </section><!-- Step 3: Setor -->
     <section id="step-setor" class="hidden fade-in"><button onclick="voltarEtapa('porte')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
      <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o setor de atuação?</h2>
-     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><button onclick="selecionarSetor('Comercio')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🛒</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Comércio</h3><p class="text-sm" style="color: #666;">Compra e venda de produtos</p></button> <button onclick="selecionarSetor('Industria')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏭</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Indústria</h3><p class="text-sm" style="color: #666;">Produção e transformação</p></button> <button onclick="selecionarSetor('Servicos')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">💼</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Serviços</h3><p class="text-sm" style="color: #666;">Prestação de serviços</p></button> <button onclick="selecionarSetor('Multisetorial')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🌐</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Multisetorial</h3><p class="text-sm" style="color: #666;">Múltiplos setores</p></button>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><button onclick="selecionarSetor('Comercio')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🛒</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Comércio</h3><p class="text-sm" style="color: #666;">Compra e venda de produtos</p></button> <button onclick="selecionarSetor('Industria')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏭</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Indústria</h3><p class="text-sm" style="color: #666;">Produção e transformação</p></button> <button onclick="selecionarSetor('Servicos')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">💼</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Serviços</h3><p class="text-sm" style="color: #666;">Prestação de serviços</p></button> <button onclick="selecionarSetor('Multissetorial')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🌐</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Multissetorial</h3><p class="text-sm" style="color: #666;">Múltiplos setores</p></button>
      </div>
     </section>    <!-- Resultados -->
     <section id="step-resultados" class="hidden fade-in">
@@ -1207,7 +1207,7 @@
         <!-- Porte -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Porte/Público Alvo *</label> <select id="cad-porte" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="MEI">MEI - Microempreendedor Individual</option> <option value="ME">ME - Microempresa</option> <option value="EPP">EPP - Empresa de Pequeno Porte</option> </select>
         </div>        <!-- Setor -->
-        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Setor *</label> <select id="cad-setor" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multisetorial">Multisetorial</option> </select>
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Setor *</label> <select id="cad-setor" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multissetorial">Multissetorial</option> </select>
         </div>
         <!-- Segmento -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Segmento</label> <input type="text" id="cad-segmento" placeholder="Ex: Vestuário, Jóias" class="input-modern w-full px-4 py-3 rounded-xl">
@@ -1270,7 +1270,7 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Porte</label> <select id="sug-porte" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="MEI">MEI</option> <option value="ME">ME</option> <option value="EPP">EPP</option> </select></div>
-         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Setor</label> <select id="sug-setor" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multisetorial">Multisetorial</option> </select></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Setor</label> <select id="sug-setor" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Todos</option> <option value="Comercio">Comércio</option> <option value="Industria">Indústria</option> <option value="Servicos">Serviços</option> <option value="Multissetorial">Multissetorial</option> </select></div>
         </div>
         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Ordem de Exibição</label> <input type="number" id="sug-ordem" min="1" value="1" class="input-modern w-full px-4 py-3 rounded-xl"></div>
         <div class="flex items-center gap-2"><input type="checkbox" id="sug-ativo" checked class="h-4 w-4"> <label for="sug-ativo" class="text-sm font-semibold" style="color: #00608B;">Ativo</label></div>
@@ -3405,22 +3405,40 @@
             if (setor === 'Comércio') setor = 'Comercio';
             else if (setor === 'Indústria') setor = 'Industria';
             else if (setor === 'Serviços') setor = 'Servicos';
-            else if (setor === 'Multisetorial') setor = 'Multisetorial';
+            else if (setor === 'Multissetorial') setor = 'Multissetorial';
 
             // Determinar tipo de momento e categoria; usar sempre IDs válidos para aparecer na consulta
-            var tipoStrImp = (row['Tipo Momento'] || row['Tipo de Momento'] || 'empresarial').toString().toLowerCase();
-            var isCrescImp = tipoStrImp.indexOf('crescimento') >= 0;
-            var categoria = (row['Categoria'] || areaConhecimento || temas || 'Gerencie').toString().trim();
-            var momento_empresarial = '', crescimento_empresarial = '';
-            if (isCrescImp) {
-              // Se categoria vazia ou "Nenhuma", deixar null
-              if (!categoria || categoria === 'Nenhuma' || categoria.trim() === '') {
-                crescimento_empresarial = null;
+            // Primeiro verificar se os campos foram exportados diretamente
+            var momento_empresarial = (row['Momento Empresarial'] || row['momento_empresarial'] || '').toString().trim();
+            var crescimento_empresarial = (row['Foco Principal da Dor'] || row['crescimento_empresarial'] || '').toString().trim();
+            
+            // Se não encontrados diretamente, tentar determinar pelo tipo de momento
+            if (!momento_empresarial && !crescimento_empresarial) {
+              var tipoStrImp = (row['Tipo Momento'] || row['Tipo de Momento'] || 'empresarial').toString().toLowerCase();
+              var isCrescImp = tipoStrImp.indexOf('crescimento') >= 0;
+              var categoria = (row['Categoria'] || areaConhecimento || temas || 'Gerencie').toString().trim();
+              
+              if (isCrescImp) {
+                // Se categoria vazia ou "Nenhuma", deixar null
+                if (!categoria || categoria === 'Nenhuma' || categoria.trim() === '') {
+                  crescimento_empresarial = null;
+                } else {
+                  crescimento_empresarial = (VALID_CRESCIMENTO && VALID_CRESCIMENTO.indexOf(categoria) >= 0) ? categoria : 'Marketing e Vendas';
+                }
               } else {
-                crescimento_empresarial = (VALID_CRESCIMENTO && VALID_CRESCIMENTO.indexOf(categoria) >= 0) ? categoria : 'Marketing e Vendas';
+                momento_empresarial = (VALID_EMPRESARIAL && VALID_EMPRESARIAL.indexOf(categoria) >= 0) ? categoria : 'Gerencie';
               }
             } else {
-              momento_empresarial = (VALID_EMPRESARIAL && VALID_EMPRESARIAL.indexOf(categoria) >= 0) ? categoria : 'Gerencie';
+              // Validar valores se foram encontrados diretamente
+              if (momento_empresarial && VALID_EMPRESARIAL && VALID_EMPRESARIAL.indexOf(momento_empresarial) < 0) {
+                momento_empresarial = '';
+              }
+              if (crescimento_empresarial && (!VALID_CRESCIMENTO || VALID_CRESCIMENTO.indexOf(crescimento_empresarial) < 0)) {
+                crescimento_empresarial = '';
+              }
+              // Converter strings vazias para null
+              if (momento_empresarial === '') momento_empresarial = null;
+              if (crescimento_empresarial === '') crescimento_empresarial = null;
             }
 
             // Validação
@@ -3568,6 +3586,8 @@
       }
       const rows = assessoriasData.map(a => ({
         'Código': a.codigo || '',
+        'Momento Empresarial': a.momento_empresarial || '',
+        'Foco Principal da Dor': a.crescimento_empresarial || '',
         'Título': a.assessoria_nome || '',
         'Descrição': a.assessoria_descricao || '',
         'Porte': a.porte || '',
