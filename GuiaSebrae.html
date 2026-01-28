@@ -1319,6 +1319,26 @@
       <div class="mt-12 pt-8 border-t-4" style="border-color: #00608B;">
        <h4 class="text-xl font-bold mb-4" style="color: #00608B;">💡 Gerenciar Sugestões de Ferramentas</h4>
        <p class="text-sm mb-6" style="color: #666;">Configure ferramentas que aparecerão como sugestões ao final da consulta, baseadas no perfil do usuário</p>
+       <!-- Importar/Exportar Ferramentas -->
+       <div class="mb-6 p-4 rounded-xl border-2" style="background: #F0F9FF; border-color: #B3E5FC;">
+        <div>
+         <h4 class="font-bold mb-1" style="color: var(--primary-blue);">📊 Importar/Exportar Ferramentas</h4>
+         <p class="text-sm" style="color: #666;">Importe uma planilha CSV ou Excel para cadastrar múltiplas ferramentas de uma vez</p>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-3">
+         <input type="file" id="file-import-ferramentas" accept=".csv,.xlsx,.xls" class="hidden" onchange="processarImportacaoFerramentas(event)">
+         <label for="file-import-ferramentas" class="btn-modern px-6 py-3 text-white font-semibold rounded-xl cursor-pointer" style="background: var(--primary-blue);">
+          📁 Importar Ferramentas (CSV/Excel)
+         </label>
+         <button onclick="exportarFerramentasParaExcel()" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: #059669; color: #059669;">
+          📤 Exportar Ferramentas Excel
+         </button>
+         <button onclick="baixarModeloPlanilhaFerramentas()" class="btn-modern px-6 py-3 glass-card border-2 rounded-xl font-semibold" style="border-color: var(--accent-green); color: var(--accent-green);">
+          📥 Baixar Modelo Ferramentas
+         </button>
+        </div>
+       </div>
+       <div id="import-status-ferramentas" class="hidden mt-4 p-3 rounded-lg"></div>
        <form id="form-sugestao" class="space-y-4 mb-6 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #A0C5CF;">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
          <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Título da Ferramenta *</label> <input type="text" id="sug-titulo" required placeholder="Ex: Calculadora de Precificação" class="input-modern w-full px-4 py-3 rounded-xl"></div>
@@ -3207,6 +3227,266 @@
           </div>
         `;
       }).join('');
+    }
+
+    // Função para exportar ferramentas para Excel
+    function exportarFerramentasParaExcel() {
+      if (typeof XLSX === 'undefined') {
+        showToast('Biblioteca Excel não carregada. Recarregue a página.', 'error');
+        return;
+      }
+      if (sugestoesData.length === 0) {
+        showToast('Nenhuma ferramenta para exportar.', 'error');
+        return;
+      }
+      const rows = sugestoesData.map(f => ({
+        'Título': f.titulo || '',
+        'Descrição': f.descricao || '',
+        'Link': f.link || '',
+        'Tipo de Momento': f.tipo_momento || '',
+        'Foco Principal da Dor': f.crescimento_empresarial || '',
+        'Porte': f.porte || '',
+        'Setor': f.setor || '',
+        'Ordem': f.ordem || 1,
+        'Ativo': f.ativo !== false ? 'Sim' : 'Não'
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Ferramentas');
+      XLSX.writeFile(wb, 'ferramentas_sebrae_' + new Date().toISOString().slice(0,10) + '.xlsx');
+      showToast('✓ Planilha de ferramentas exportada!', 'success');
+    }
+
+    // Função para baixar modelo de planilha de ferramentas
+    function baixarModeloPlanilhaFerramentas() {
+      if (typeof XLSX === 'undefined') {
+        showToast('Biblioteca Excel não carregada. Recarregue a página.', 'error');
+        return;
+      }
+      const modelo = [{
+        'Título': 'Calculadora de Precificação',
+        'Descrição': 'Ferramenta para calcular preços de produtos',
+        'Link': 'https://www.sebrae.com.br/ferramenta',
+        'Tipo de Momento': 'empresarial',
+        'Foco Principal da Dor': '',
+        'Porte': 'MEI',
+        'Setor': 'Comercio',
+        'Ordem': 1,
+        'Ativo': 'Sim'
+      }];
+      const ws = XLSX.utils.json_to_sheet(modelo);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Ferramentas');
+      XLSX.writeFile(wb, 'modelo_ferramentas_sebrae.xlsx');
+      showToast('✓ Modelo de planilha baixado!', 'success');
+    }
+
+    // Função para processar importação de ferramentas
+    async function processarImportacaoFerramentas(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const statusDiv = document.getElementById('import-status-ferramentas');
+      statusDiv.classList.remove('hidden');
+      statusDiv.className = 'mt-4 p-4 rounded-lg bg-blue-50 text-blue-700 border-2 border-blue-200';
+
+      try {
+        let dados = [];
+        const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+        if (isExcel && typeof XLSX !== 'undefined') {
+          const ab = await file.arrayBuffer();
+          const wb = XLSX.read(ab, { type: 'array', cellDates: true, cellNF: false });
+          const ws = wb.Sheets[wb.SheetNames[0]] || wb.Sheets[0];
+          if (!ws) throw new Error('Nenhuma planilha encontrada no arquivo.');
+          const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, dateNF: 'dd/mm/yyyy' });
+          if (!rows || rows.length < 2) throw new Error('Planilha vazia ou sem dados.');
+          const headers = (rows[0] || []).map(h => String(h || '').trim());
+          for (let i = 1; i < rows.length; i++) {
+            const values = rows[i] || [];
+            if (values.every(v => v === undefined || v === null || v === '')) continue;
+            const row = {};
+            headers.forEach((h, j) => { 
+              const val = values[j];
+              if (val instanceof Date) {
+                const day = String(val.getDate()).padStart(2, '0');
+                const month = String(val.getMonth() + 1).padStart(2, '0');
+                const year = val.getFullYear();
+                row[h] = `${day}/${month}/${year}`;
+              } else {
+                row[h] = val !== undefined && val !== null ? String(val) : '';
+              }
+            });
+            dados.push(row);
+          }
+        } else {
+          const text = await file.text();
+          const lines = text.split('\n').filter(line => line.trim());
+          if (lines.length < 2) throw new Error('Arquivo vazio ou sem dados.');
+          const parseCSVLine = (line) => {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+              const char = line[i];
+              if (char === '"') inQuotes = !inQuotes;
+              else if (char === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+              else current += char;
+            }
+            result.push(current.trim());
+            return result;
+          };
+          const headers = parseCSVLine(lines[0]);
+          for (let i = 1; i < lines.length; i++) {
+            const values = parseCSVLine(lines[i]);
+            if (values.every(v => !v || v.trim() === '')) continue;
+            const row = {};
+            headers.forEach((h, j) => { row[h] = values[j] || ''; });
+            dados.push(row);
+          }
+        }
+
+        if (dados.length === 0) {
+          throw new Error('Nenhum dado válido encontrado na planilha.');
+        }
+
+        // Função auxiliar para buscar coluna com variações
+        const buscarColuna = (row, variacoes) => {
+          for (const variacao of variacoes) {
+            if (row[variacao] !== undefined && row[variacao] !== null && String(row[variacao]).trim() !== '') {
+              return String(row[variacao]).trim();
+            }
+          }
+          return '';
+        };
+
+        // Função auxiliar para normalizar campos de texto
+        const normalizarTexto = (valor) => {
+          if (valor === null || valor === undefined) return null;
+          const str = String(valor).trim();
+          return str === '' ? null : str;
+        };
+
+        let sucesso = 0;
+        let erros = 0;
+        const errosDetalhes = [];
+
+        for (let idx = 0; idx < dados.length; idx++) {
+          const row = dados[idx];
+          try {
+            // Mapear campos usando função auxiliar
+            const titulo = buscarColuna(row, ['Título', 'Titulo', 'titulo', 'Título da Ferramenta']);
+            const descricao = buscarColuna(row, ['Descrição', 'Descricao', 'descricao']);
+            const link = buscarColuna(row, ['Link', 'link', 'URL', 'url']);
+            const tipoMomento = buscarColuna(row, ['Tipo de Momento', 'Tipo Momento', 'tipo_momento', 'Tipo']);
+            const crescimentoEmpresarial = buscarColuna(row, ['Foco Principal da Dor', 'Foco Principal', 'crescimento_empresarial', 'Crescimento Empresarial', 'Dor']);
+            const porte = buscarColuna(row, ['Porte', 'porte']);
+            const setor = buscarColuna(row, ['Setor', 'setor']);
+            const ordemStr = buscarColuna(row, ['Ordem', 'ordem', 'Ordem de Exibição']);
+            const ativoStr = buscarColuna(row, ['Ativo', 'ativo', 'Ativa']);
+
+            // Validação
+            if (!titulo) {
+              erros++;
+              errosDetalhes.push(`Linha ${idx + 2}: Título obrigatório`);
+              continue;
+            }
+
+            // Normalizar valores
+            const tipoMomentoFinal = tipoMomento && ['empresarial', 'crescimento', ''].includes(tipoMomento.toLowerCase()) 
+              ? tipoMomento.toLowerCase() 
+              : (tipoMomento ? null : null);
+            
+            // Se tipo_momento é "empresarial", crescimento_empresarial deve ser null
+            const crescimentoFinal = (tipoMomentoFinal === 'empresarial') ? null : (normalizarTexto(crescimentoEmpresarial));
+
+            // Normalizar setor
+            let setorFinal = normalizarTexto(setor);
+            if (setorFinal) {
+              if (setorFinal === 'Comércio') setorFinal = 'Comercio';
+              else if (setorFinal === 'Indústria') setorFinal = 'Industria';
+              else if (setorFinal === 'Serviços') setorFinal = 'Servicos';
+              else if (setorFinal === 'Multissetorial') setorFinal = 'Multissetorial';
+              else if (!['Comercio', 'Industria', 'Servicos', 'Multissetorial'].includes(setorFinal)) {
+                setorFinal = null;
+              }
+            }
+
+            // Normalizar porte
+            let porteFinal = normalizarTexto(porte);
+            if (porteFinal && !['MEI', 'ME', 'EPP'].includes(porteFinal)) {
+              porteFinal = null;
+            }
+
+            // Normalizar ordem
+            const ordemFinal = ordemStr ? (parseInt(ordemStr, 10) || 1) : 1;
+
+            // Normalizar ativo
+            const ativoFinal = ativoStr ? (ativoStr.toLowerCase() === 'sim' || ativoStr.toLowerCase() === 'true' || ativoStr === '1') : true;
+
+            const novaFerramenta = {
+              titulo: titulo,
+              descricao: normalizarTexto(descricao),
+              link: normalizarTexto(link),
+              tipo_momento: tipoMomentoFinal || null,
+              crescimento_empresarial: crescimentoFinal,
+              porte: porteFinal,
+              setor: setorFinal,
+              ordem: ordemFinal,
+              ativo: ativoFinal
+            };
+
+            if (supabaseClient) {
+              try {
+                const { data, error } = await supabaseClient.from('sugestoes_ferramentas').insert(novaFerramenta).select().single();
+                if (error) {
+                  erros++;
+                  errosDetalhes.push(`Linha ${idx + 2}: ${error.message}`);
+                  continue;
+                }
+                sugestoesData.push({ ...data, __backendId: data.id });
+                sucesso++;
+              } catch (e) {
+                erros++;
+                errosDetalhes.push(`Linha ${idx + 2}: ${e.message}`);
+              }
+            } else {
+              novaFerramenta.id = 'sug-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+              novaFerramenta.__backendId = novaFerramenta.id;
+              sugestoesData.push(novaFerramenta);
+              localStorage.setItem(STORAGE_KEY_SUGESTOES, JSON.stringify(sugestoesData));
+              sucesso++;
+            }
+          } catch (err) {
+            erros++;
+            errosDetalhes.push(`Linha ${idx + 2}: ${err.message || 'Erro desconhecido'}`);
+          }
+        }
+
+        if (erros > 0) {
+          statusDiv.className = 'mt-4 p-4 rounded-lg bg-yellow-50 text-yellow-800 border-2 border-yellow-300';
+          statusDiv.innerHTML = `
+            <p class="font-bold">⚠️ Importação concluída com erros</p>
+            <p>Sucesso: ${sucesso} | Erros: ${erros}</p>
+            <details class="mt-2">
+              <summary class="cursor-pointer font-semibold">Ver detalhes dos erros</summary>
+              <ul class="list-disc list-inside mt-2 text-sm max-h-40 overflow-y-auto">
+                ${errosDetalhes.map(e => `<li>${e}</li>`).join('')}
+              </ul>
+            </details>
+          `;
+        } else {
+          statusDiv.className = 'mt-4 p-4 rounded-lg bg-green-50 text-green-800 border-2 border-green-300';
+          statusDiv.innerHTML = `<p class="font-bold">✓ Importação concluída com sucesso!</p><p>${sucesso} ferramenta(s) importada(s).</p>`;
+        }
+
+        atualizarListaSugestoes();
+        event.target.value = '';
+      } catch (error) {
+        statusDiv.className = 'mt-4 p-4 rounded-lg bg-red-50 text-red-800 border-2 border-red-300';
+        statusDiv.innerHTML = `<p class="font-bold">✗ Erro na importação</p><p>${error.message}</p>`;
+        event.target.value = '';
+      }
     }
 
     function copiarSugestao(backendId) {
