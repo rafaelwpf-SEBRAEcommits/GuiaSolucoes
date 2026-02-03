@@ -1056,6 +1056,153 @@
       .p-6 { padding: 0.75rem; }
       .w-full.max-w-7xl.mx-auto { padding-left: 0.75rem; padding-right: 0.75rem; }
     }
+
+    /* Estilos do Calendário */
+    .evento-dia {
+      transition: all 0.2s ease;
+      word-wrap: break-word;
+      overflow: hidden;
+      display: block;
+      line-height: 1.2;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .evento-dia:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    #calendario-container {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    #calendario-container table {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      table-layout: fixed;
+    }
+
+    #calendario-container th {
+      width: calc(100% / 7);
+      padding: 0.5rem;
+      text-align: center;
+      font-weight: bold;
+      color: white;
+      background: var(--primary-blue);
+      border-right: 1px solid rgba(255,255,255,0.2);
+      box-sizing: border-box;
+    }
+
+    #calendario-container th:last-child {
+      border-right: none;
+    }
+
+    #calendario-container td {
+      vertical-align: top;
+      position: relative;
+      width: calc(100% / 7);
+      height: 140px;
+      min-height: 140px;
+      max-height: 140px;
+      padding: 0.5rem;
+      overflow: hidden;
+      box-sizing: border-box;
+      border: 1px solid #e5e7eb;
+    }
+
+    .eventos-container {
+      max-height: calc(140px - 2.5rem);
+      overflow-y: auto;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    .eventos-container::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .eventos-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .eventos-container::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.2);
+      border-radius: 2px;
+    }
+
+    #calendario-container th {
+      border-right: 1px solid rgba(255,255,255,0.2);
+      width: 14.28%;
+    }
+
+    #calendario-container th:last-child {
+      border-right: none;
+    }
+
+    @media (max-width: 768px) {
+      #calendario-container table {
+        width: 100%;
+        table-layout: fixed;
+      }
+      
+      #calendario-container th {
+        width: calc(100% / 7);
+        padding: 0.4rem 0.25rem;
+        font-size: 0.7rem;
+        box-sizing: border-box;
+      }
+      
+      #calendario-container td {
+        width: calc(100% / 7);
+        height: 100px;
+        min-height: 100px;
+        max-height: 100px;
+        padding: 0.25rem;
+        font-size: 0.7rem;
+        box-sizing: border-box;
+      }
+
+      .eventos-container {
+        max-height: calc(100px - 2rem);
+      }
+      
+      .evento-dia {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.4rem;
+        margin-bottom: 0.25rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      #calendario-container th {
+        width: calc(100% / 7);
+        padding: 0.3rem 0.2rem;
+        font-size: 0.65rem;
+        box-sizing: border-box;
+      }
+
+      #calendario-container td {
+        width: calc(100% / 7);
+        height: 80px;
+        min-height: 80px;
+        max-height: 80px;
+        padding: 0.2rem;
+        box-sizing: border-box;
+      }
+
+      .eventos-container {
+        max-height: calc(80px - 1.5rem);
+      }
+      
+      .evento-dia {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.3rem;
+        margin-bottom: 0.2rem;
+      }
+    }
   </style>
   <style>@view-transition { navigation: auto; }</style>
  </head>
@@ -1088,6 +1235,10 @@
       <button type="button" id="nav-ferramentas" class="sidebar-nav-item" onclick="trocarAba('ferramentas'); fecharSidebar();">
        <span class="nav-icon" aria-hidden="true">🛠️</span>
        <span>Ferramentas</span>
+      </button>
+      <button type="button" id="nav-calendario" class="sidebar-nav-item" onclick="trocarAba('calendario'); fecharSidebar();">
+       <span class="nav-icon" aria-hidden="true">📅</span>
+       <span>Calendário</span>
       </button>
       <button type="button" id="nav-gestao" class="sidebar-nav-item" onclick="verificarGestor(); fecharSidebar();">
        <span id="nav-gestao-lock" class="nav-icon nav-icon--lock" aria-hidden="true">🔒</span>
@@ -1170,7 +1321,7 @@
      <header class="text-center mb-8 md:mb-12">
      <div class="sebrae-gradient text-white py-8 md:py-12 px-4 md:px-8 rounded-3xl shadow-2xl relative overflow-hidden">
       <div class="relative z-10">
-       <h1 id="titulo-principal" class="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg">Jornada de Soluções</h1>
+       <h1 id="titulo-principal" class="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg"> Guia de Soluções</h1>
        <p id="subtitulo" class="text-lg md:text-xl opacity-95 drop-shadow-md">Encontre a solução ideal para o diagnóstico</p>
       </div>
      </div>
@@ -1330,6 +1481,69 @@
       </div>
      </div>
     </div>
+    <!-- Aba Calendário -->
+    <div id="aba-calendario" class="tab-content">
+     <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4 mb-6" style="border-color: var(--primary-blue);">
+      <!-- Header -->
+      <div class="text-center mb-6">
+       <h2 class="text-3xl md:text-4xl font-bold mb-2" style="color: var(--primary-blue);">📅 Calendário de Soluções</h2>
+       <p class="text-lg" style="color: #666;">Soluções com data de validade</p>
+      </div>
+      
+      <!-- Controles do Calendário -->
+      <div class="mb-6 p-4 bg-white rounded-xl border-2" style="border-color: #A0C5CF;">
+       <div class="flex flex-wrap items-center justify-center gap-4">
+        <button onclick="calendarioMesAnterior()" class="btn-modern px-4 py-2 text-white font-semibold rounded-lg" style="background: var(--primary-blue);">
+         ◀ 
+        </button>
+        <div class="text-xl font-bold" style="color: var(--primary-blue);" id="calendario-mes-atual"></div>
+        <button onclick="calendarioProximoMes()" class="btn-modern px-4 py-2 text-white font-semibold rounded-lg" style="background: var(--primary-blue);">
+         ▶
+        </button>
+       </div>
+      </div>
+
+      <!-- Layout Principal: Sidebar + Calendário -->
+      <div class="flex flex-col lg:flex-row gap-6">
+       <!-- Sidebar com Legenda -->
+       <div class="lg:w-64 flex-shrink-0 order-2 lg:order-1">
+        <div class="bg-white rounded-xl border-2 p-4 lg:sticky lg:top-4" style="border-color: #A0C5CF;">
+         <h3 class="font-bold mb-4 text-sm uppercase" style="color: var(--primary-blue);">Status</h3>
+         <div class="space-y-3 mb-6">
+          <div class="flex items-center gap-2">
+           <div class="w-4 h-4 rounded flex-shrink-0" style="background: var(--accent-green);"></div>
+           <span class="text-xs font-semibold" style="color: #666;">Válida</span>
+          </div>
+          <div class="flex items-center gap-2">
+           <div class="w-4 h-4 rounded flex-shrink-0" style="background: #f39c12;"></div>
+           <span class="text-xs font-semibold" style="color: #666;">Expira em breve</span>
+          </div>
+          <div class="flex items-center gap-2">
+           <div class="w-4 h-4 rounded flex-shrink-0" style="background: #e74c3c;"></div>
+           <span class="text-xs font-semibold" style="color: #666;">Expirada</span>
+          </div>
+         </div>
+         <div class="border-t pt-4" style="border-color: #A0C5CF;">
+          <h3 class="font-bold mb-3 text-sm uppercase" style="color: var(--primary-blue);">Estatísticas</h3>
+          <div id="calendario-stats-sidebar" class="space-y-2">
+           <!-- Preenchido dinamicamente -->
+          </div>
+         </div>
+        </div>
+       </div>
+
+       <!-- Calendário Principal -->
+       <div class="flex-1 order-1 lg:order-2 min-w-0">
+        <div id="calendario-container" class="mb-6 w-full">
+         <div class="text-center py-12">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: var(--primary-blue);"></div>
+          <p class="mt-4" style="color: #666;">Carregando calendário...</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
     <!-- Aba Gerenciamento -->
     <div id="aba-gerenciamento" class="tab-content">
      <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4" style="border-color: var(--primary-blue);">
@@ -1412,6 +1626,9 @@
         <!-- Próxima data -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Próxima data</label> <input type="text" id="cad-proxima-data" placeholder="Ex: 15/03/2026 ou A definir" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">Data da próxima turma/edição para exibir na trilha.</p>
         </div>
+        <!-- Data de Validade -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Data de Validade (Opcional)</label> <input type="date" id="cad-data-validade" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">Data de validade da solução. Deixe em branco se não possui validade.</p>
+        </div>
         <!-- Valor (0 = gratuito) -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Valor (R$) *</label> <input type="number" id="cad-valor" min="0" step="0.01" value="0" placeholder="0 = gratuito" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">Zero = gratuito. Informe o valor quando for pago.</p>
         </div>
@@ -1426,9 +1643,31 @@
        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Descrição da Solução *</label> <textarea id="cad-descricao" required rows="4" placeholder="Descreva os benefícios e diferenciais desta solução..." class="input-modern w-full px-4 py-3 rounded-xl"></textarea>
        </div>
        <button type="submit" id="btn-cadastrar" class="btn-primary btn-modern w-full px-6 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--accent-green);"> ✓ Cadastrar Solução </button>
-      </form><!-- Lista de Soluções Cadastradas -->
+      </form>      <!-- Lista de Soluções Cadastradas -->
       <div class="mt-8 pt-8 border-t-2" style="border-color: #E0E0E0;">
        <h4 class="text-xl font-bold mb-4" style="color: #00608B;">📋 Soluções Cadastradas</h4>
+       
+       <!-- Filtro por Data -->
+       <div class="mb-4 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #A0C5CF;">
+        <h5 class="text-sm font-bold mb-3" style="color: #00608B;">🔍 Filtro por Data</h5>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+         <div>
+          <label class="block text-xs font-semibold mb-2" style="color: #00608B;">Data Inicial</label>
+          <input type="date" id="filtro-data-inicial" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="aplicarFiltroData()">
+         </div>
+         <div>
+          <label class="block text-xs font-semibold mb-2" style="color: #00608B;">Data Final</label>
+          <input type="date" id="filtro-data-final" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="aplicarFiltroData()">
+         </div>
+         <div class="flex items-end">
+          <button onclick="limparFiltroData()" class="btn-modern px-4 py-2 glass-card border-2 rounded-lg font-semibold text-sm w-full" style="border-color: #6c757d; color: #6c757d;">
+           🔄 Limpar Filtro
+          </button>
+         </div>
+        </div>
+        <p class="text-xs mt-2" style="color: #666;">Filtre soluções pela <strong>próxima data</strong>. Deixe em branco para mostrar todas.</p>
+       </div>
+
        <div id="barra-exclusao-massa" class="hidden flex flex-wrap items-center gap-4 mb-4 p-3 rounded-xl border-2" style="border-color: #FEE2E2; background: #FEF2F2;">
          <label class="flex items-center gap-2 cursor-pointer font-semibold" style="color: #991B1B;"><input type="checkbox" id="cb-selecionar-todas" onchange="marcarDesmarcarTodas(this.checked)"> Selecionar todas</label>
          <button type="button" onclick="marcarDesmarcarTodas(false)" class="px-4 py-2 rounded-lg font-semibold transition-all hover:bg-gray-200" style="background: #E5E7EB; color: #374151;">Desmarcar</button>
@@ -1555,7 +1794,7 @@
     async function carregarDados() {
       if (supabaseClient) {
         try {
-          const { data, error } = await supabaseClient.from('solucoes').select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, link_direcionamento, proxima_data, criado_em');
+          const { data, error } = await supabaseClient.from('solucoes').select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, link_direcionamento, proxima_data, data_validade, criado_em');
           if (error) throw error;
           assessoriasData = (data || []).map(a => {
             if (!a.__backendId) a.__backendId = a.id;
@@ -3893,6 +4132,7 @@
         instrumento: document.getElementById('cad-instrumento').value || '',
         fornecedor: document.getElementById('cad-fornecedor').value || '',
         proxima_data: document.getElementById('cad-proxima-data').value || '',
+        data_validade: document.getElementById('cad-data-validade').value || null,
         valor: (function(){ var v = parseFloat(document.getElementById('cad-valor').value); return (v >= 0 && !isNaN(v)) ? v : 0; })(),
         ordem: parseInt(document.getElementById('cad-ordem').value),
         link_direcionamento: document.getElementById('cad-link-direcionamento').value || null,
@@ -4377,18 +4617,91 @@
       showToast('✓ Planilha exportada!', 'success');
     }
 
+    // Variável para armazenar dados filtrados
+    let assessoriasFiltradas = [];
+
+    function aplicarFiltroData() {
+      const dataInicial = document.getElementById('filtro-data-inicial').value;
+      const dataFinal = document.getElementById('filtro-data-final').value;
+      
+      assessoriasFiltradas = assessoriasData.filter(assessoria => {
+        if (!assessoria.proxima_data || assessoria.proxima_data.trim() === '') {
+          return false; // Não mostrar soluções sem próxima_data quando há filtro
+        }
+        
+        // Converter proxima_data para Date
+        let dataObj = null;
+        const dataStr = assessoria.proxima_data.trim();
+        
+        // Tentar formato brasileiro DD/MM/YYYY
+        if (dataStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+          const [dia, mes, ano] = dataStr.split('/');
+          dataObj = new Date(ano, mes - 1, dia);
+        } 
+        // Tentar formato ISO YYYY-MM-DD
+        else if (dataStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          dataObj = new Date(dataStr);
+        }
+        // Tentar parse direto
+        else {
+          dataObj = new Date(dataStr);
+        }
+        
+        if (!dataObj || isNaN(dataObj.getTime())) {
+          return false;
+        }
+        
+        // Aplicar filtros de data
+        if (dataInicial) {
+          const inicio = new Date(dataInicial);
+          inicio.setHours(0, 0, 0, 0);
+          if (dataObj < inicio) return false;
+        }
+        
+        if (dataFinal) {
+          const fim = new Date(dataFinal);
+          fim.setHours(23, 59, 59, 999);
+          if (dataObj > fim) return false;
+        }
+        
+        return true;
+      });
+      
+      atualizarListaAssessorias();
+    }
+
+    function limparFiltroData() {
+      document.getElementById('filtro-data-inicial').value = '';
+      document.getElementById('filtro-data-final').value = '';
+      assessoriasFiltradas = [];
+      atualizarListaAssessorias();
+    }
+
     function atualizarListaAssessorias() {
       const lista = document.getElementById('lista-assessorias');
       const listaVazia = document.getElementById('lista-vazia');
       const totalElement = document.getElementById('total-assessorias');
       const barraMassa = document.getElementById('barra-exclusao-massa');
       
-      totalElement.textContent = assessoriasData.length;
+      // Usar dados filtrados se houver filtro ativo, senão usar todos
+      const filtroInicial = document.getElementById('filtro-data-inicial');
+      const filtroFinal = document.getElementById('filtro-data-final');
+      const dataInicial = filtroInicial ? filtroInicial.value : '';
+      const dataFinal = filtroFinal ? filtroFinal.value : '';
+      const temFiltro = dataInicial || dataFinal;
+      const dadosParaExibir = temFiltro ? assessoriasFiltradas : assessoriasData;
       
-      if (assessoriasData.length === 0) {
+      totalElement.textContent = dadosParaExibir.length;
+      
+      if (dadosParaExibir.length === 0) {
         lista.innerHTML = '';
         if (barraMassa) barraMassa.classList.add('hidden');
         listaVazia.classList.remove('hidden');
+        if (temFiltro) {
+          listaVazia.innerHTML = '<p style="color: #999;">Nenhuma solução encontrada com os filtros de data selecionados</p>';
+        } else {
+          listaVazia.innerHTML = '<p style="color: #999;">Nenhuma solução cadastrada ainda</p>';
+        }
         return;
       }
       
@@ -4397,7 +4710,7 @@
       const cbTodas = document.getElementById('cb-selecionar-todas');
       if (cbTodas) cbTodas.checked = false;
       
-      const ordenadas = [...assessoriasData].sort((a, b) => {
+      const ordenadas = [...dadosParaExibir].sort((a, b) => {
         const momentoA = a.momento_empresarial || a.crescimento_empresarial;
         const momentoB = b.momento_empresarial || b.crescimento_empresarial;
         return momentoA.localeCompare(momentoB) || a.ordem - b.ordem;
@@ -4428,6 +4741,7 @@
                 </div>
                 <h5 class="font-bold text-base mb-1" style="color: #00608B;">${assessoria.assessoria_nome}</h5>
                 <p class="text-sm line-clamp-2" style="color: #666;">${assessoria.assessoria_descricao}</p>
+                ${assessoria.proxima_data ? `<p class="text-xs mt-1" style="color: #666;"><strong>Próxima data:</strong> ${assessoria.proxima_data}</p>` : ''}
                 ${assessoria.link_direcionamento ? `<p class="text-xs mt-2"><a href="${assessoria.link_direcionamento}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">🔗 ${assessoria.link_direcionamento}</a></p>` : ''}
               </div>
               <div class="flex gap-2 flex-shrink-0">
@@ -4549,12 +4863,14 @@
       const navBusca = document.getElementById('nav-busca');
       const navJornadas = document.getElementById('nav-jornadas');
       const navFerramentas = document.getElementById('nav-ferramentas');
+      const navCalendario = document.getElementById('nav-calendario');
       const navGestao = document.getElementById('nav-gestao');
       if (aba === 'consulta') {
         document.getElementById('aba-consulta').classList.add('active');
         if (navBusca) { navBusca.classList.add('active'); navBusca.setAttribute('aria-current','page'); }
         if (navJornadas) navJornadas.removeAttribute('aria-current');
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'jornadas') {
         document.getElementById('aba-jornadas').classList.add('active');
@@ -4562,6 +4878,7 @@
         if (navJornadas) { navJornadas.classList.add('active'); navJornadas.setAttribute('aria-current','page'); }
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'ferramentas') {
         document.getElementById('aba-ferramentas').classList.add('active');
@@ -4570,6 +4887,18 @@
         if (navFerramentas) { navFerramentas.classList.add('active'); navFerramentas.setAttribute('aria-current','page'); }
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navGestao) navGestao.removeAttribute('aria-current');
+      } else if (aba === 'calendario') {
+        document.getElementById('aba-calendario').classList.add('active');
+        // Carregar calendário quando a aba for aberta
+        setTimeout(() => {
+          carregarCalendario();
+        }, 100);
+        if (navCalendario) { navCalendario.classList.add('active'); navCalendario.setAttribute('aria-current','page'); }
+        if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
+        if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
+        if (navFerramentas) navFerramentas.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'gerenciamento') {
         document.getElementById('aba-gerenciamento').classList.add('active');
@@ -4578,6 +4907,7 @@
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
       }
     }
 
@@ -4803,6 +5133,7 @@
         instrumento: document.getElementById('cad-instrumento').value || null,
         fornecedor: document.getElementById('cad-fornecedor').value || null,
         proxima_data: document.getElementById('cad-proxima-data').value || null,
+        data_validade: document.getElementById('cad-data-validade').value || null,
         valor: parseFloat(document.getElementById('cad-valor').value) || 0,
         ordem: parseInt(document.getElementById('cad-ordem').value) || 1,
         link_direcionamento: document.getElementById('cad-link-direcionamento').value || null
@@ -4833,6 +5164,359 @@
         showToast('✗ Erro ao atualizar: ' + (error.message || 'Erro desconhecido'), 'error');
       } finally {
         btnCadastrar.disabled = false;
+      }
+    }
+
+    // ============================================
+    // FUNÇÕES DO CALENDÁRIO
+    // ============================================
+    let calendarioDataAtual = new Date();
+    let calendarioSolucoes = [];
+
+    const monthNames = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+
+    const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    async function carregarCalendario() {
+      const container = document.getElementById('calendario-container');
+      container.innerHTML = '<div class="text-center py-12"><div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2" style="border-color: var(--primary-blue);"></div><p class="mt-4" style="color: #666;">Carregando calendário...</p></div>';
+
+      try {
+        if (supabaseClient) {
+          // Buscar todas as soluções primeiro para debug
+          const { data: allData, error: allError } = await supabaseClient
+            .from('solucoes')
+            .select('id, codigo, assessoria_nome, assessoria_descricao, proxima_data, porte, setor, valor, link_direcionamento');
+          
+          console.log('📅 Todas as soluções:', allData);
+          
+          // Filtrar apenas as que têm proxima_data (não vazia e não nula)
+          const solutionsWithDate = (allData || []).filter(s => {
+            const data = s.proxima_data;
+            return data && data !== null && data !== '' && data.trim() !== '';
+          });
+          
+          console.log('📅 Soluções com proxima_data:', solutionsWithDate);
+          
+          if (allError) {
+            throw allError;
+          }
+          
+          // Converter e ordenar por data
+          calendarioSolucoes = solutionsWithDate
+            .map(s => {
+              // Tentar converter proxima_data para Date
+              // proxima_data pode estar no formato "DD/MM/YYYY" ou "YYYY-MM-DD"
+              let dateObj = null;
+              const dataStr = s.proxima_data.trim();
+              
+              // Tentar formato brasileiro DD/MM/YYYY
+              if (dataStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+                const [dia, mes, ano] = dataStr.split('/');
+                dateObj = new Date(ano, mes - 1, dia);
+              } 
+              // Tentar formato ISO YYYY-MM-DD
+              else if (dataStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                dateObj = new Date(dataStr);
+              }
+              // Tentar parse direto
+              else {
+                dateObj = new Date(dataStr);
+              }
+              
+              return {
+                ...s,
+                _dataParsed: dateObj,
+                _dataStr: dataStr
+              };
+            })
+            .filter(s => s._dataParsed && !isNaN(s._dataParsed.getTime()))
+            .sort((a, b) => a._dataParsed - b._dataParsed);
+          
+          console.log('📅 Soluções ordenadas:', calendarioSolucoes);
+        } else {
+          console.warn('⚠️ Supabase client não disponível');
+          calendarioSolucoes = [];
+        }
+
+        console.log('📅 Total de soluções para calendário:', calendarioSolucoes.length);
+        
+        if (calendarioSolucoes.length === 0) {
+          console.warn('⚠️ Nenhuma solução com data de validade encontrada');
+        }
+        
+        atualizarEstatisticasCalendario();
+        renderizarCalendario();
+      } catch (error) {
+        console.error('❌ Erro ao carregar calendário:', error);
+        
+        // Erro genérico
+        container.innerHTML = `
+          <div class="glass-card rounded-xl p-8 text-center border-2" style="border-color: #e74c3c;">
+            <div class="text-6xl mb-4">❌</div>
+            <h3 class="text-2xl font-bold mb-4" style="color: #e74c3c;">Erro ao Carregar Calendário</h3>
+            <p class="text-lg mb-4" style="color: #666;">${error.message || 'Erro desconhecido'}</p>
+            <p class="text-sm mb-4" style="color: #999;">Verifique se há soluções cadastradas com <strong>próxima_data</strong> preenchida.</p>
+            <button onclick="carregarCalendario()" class="btn-modern px-6 py-3 text-white font-semibold rounded-xl" style="background: var(--primary-blue);">
+              🔄 Tentar Novamente
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    function atualizarEstatisticasCalendario() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const sevenDaysFromNow = new Date(today);
+      sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+
+      const valid = calendarioSolucoes.filter(s => {
+        if (!s._dataParsed) return false;
+        const validade = new Date(s._dataParsed);
+        if (isNaN(validade.getTime())) return false;
+        validade.setHours(0, 0, 0, 0);
+        return validade >= today;
+      }).length;
+
+      const expiringSoon = calendarioSolucoes.filter(s => {
+        if (!s._dataParsed) return false;
+        const validade = new Date(s._dataParsed);
+        if (isNaN(validade.getTime())) return false;
+        validade.setHours(0, 0, 0, 0);
+        return validade >= today && validade <= sevenDaysFromNow;
+      }).length;
+
+      const expired = calendarioSolucoes.filter(s => {
+        if (!s._dataParsed) return false;
+        const validade = new Date(s._dataParsed);
+        if (isNaN(validade.getTime())) return false;
+        validade.setHours(0, 0, 0, 0);
+        return validade < today;
+      }).length;
+
+      // Atualizar estatísticas na sidebar
+      const statsSidebar = document.getElementById('calendario-stats-sidebar');
+      if (statsSidebar) {
+        statsSidebar.innerHTML = `
+          <div class="text-xs">
+            <div class="font-semibold" style="color: var(--primary-blue);">Total:</div>
+            <div class="text-lg font-bold" style="color: #666;">${calendarioSolucoes.length}</div>
+          </div>
+          <div class="text-xs">
+            <div class="font-semibold" style="color: var(--accent-green);">Válidas:</div>
+            <div class="text-lg font-bold" style="color: #666;">${valid}</div>
+          </div>
+          <div class="text-xs">
+            <div class="font-semibold" style="color: #f39c12;">Expirando:</div>
+            <div class="text-lg font-bold" style="color: #666;">${expiringSoon}</div>
+          </div>
+          <div class="text-xs">
+            <div class="font-semibold" style="color: #e74c3c;">Expiradas:</div>
+            <div class="text-lg font-bold" style="color: #666;">${expired}</div>
+          </div>
+        `;
+      }
+    }
+
+    function renderizarCalendario() {
+      const year = calendarioDataAtual.getFullYear();
+      const month = calendarioDataAtual.getMonth();
+
+      document.getElementById('calendario-mes-atual').textContent = `${monthNames[month]} ${year}`;
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+      let calendarHTML = '<div class="bg-white rounded-xl border-2 overflow-hidden w-full" style="border-color: #A0C5CF;"><table class="w-full" style="table-layout: fixed; border-collapse: collapse; width: 100%;"><thead><tr>';
+      weekDays.forEach(day => {
+        calendarHTML += `<th style="width: calc(100% / 7); padding: 0.5rem; text-align: center; font-weight: bold; color: white; background: var(--primary-blue); border-right: 1px solid rgba(255,255,255,0.2); box-sizing: border-box;">${day}</th>`;
+      });
+      calendarHTML += '</tr></thead><tbody>';
+
+      // Primeira linha - dias do mês anterior
+      calendarHTML += '<tr>';
+      for (let i = startDay - 1; i >= 0; i--) {
+        const day = prevMonthLastDay - i;
+        calendarHTML += `<td class="bg-gray-50" style="width: calc(100% / 7); height: 140px; min-height: 140px; max-height: 140px; padding: 0.5rem; vertical-align: top; overflow: hidden; box-sizing: border-box; border: 1px solid #e5e7eb;"><div class="text-xs md:text-sm font-semibold text-gray-400 mb-1">${day}</div><div class="eventos-container" style="max-height: calc(140px - 2rem); overflow-y: auto;"></div></td>`;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Dias do mês atual
+      for (let day = 1; day <= lastDay.getDate(); day++) {
+        const currentDay = new Date(year, month, day);
+        currentDay.setHours(0, 0, 0, 0);
+        
+        const isToday = currentDay.getTime() === today.getTime();
+        const dayBgClass = isToday ? 'bg-blue-50' : 'bg-white';
+        const dayBorderStyle = isToday ? 'border-4' : 'border';
+        const dayBorderColor = isToday ? 'border-black' : 'border-gray-200';
+        const dayTextStyle = isToday ? 'font-bold text-lg text-blue-700' : 'font-semibold text-gray-700';
+
+        const daySolutions = calendarioSolucoes.filter(s => {
+          if (!s._dataParsed) return false;
+          try {
+            const validade = new Date(s._dataParsed);
+            if (isNaN(validade.getTime())) return false;
+            validade.setHours(0, 0, 0, 0);
+            return validade.getTime() === currentDay.getTime();
+          } catch (e) {
+            console.warn('Erro ao processar proxima_data:', s.proxima_data, e);
+            return false;
+          }
+        });
+
+        const borderWidth = isToday ? '4px' : '1px';
+        const borderColor = isToday ? '#000000' : '#e5e7eb';
+        calendarHTML += `<td class="${dayBgClass}" style="width: calc(100% / 7); height: 140px; min-height: 140px; max-height: 140px; padding: 0.5rem; vertical-align: top; overflow: hidden; box-sizing: border-box; border: ${borderWidth} solid ${borderColor};"><div class="text-sm md:text-base mb-1 ${dayTextStyle}">${day}</div><div class="eventos-container" style="max-height: calc(140px - 2.5rem); overflow-y: auto; width: 100%;">`;
+
+        // Mostrar eventos do dia (soluções)
+        if (daySolutions.length > 0) {
+          daySolutions.forEach(solution => {
+            const validade = solution._dataParsed ? new Date(solution._dataParsed) : null;
+            if (!validade || isNaN(validade.getTime())) return;
+            
+            validade.setHours(0, 0, 0, 0);
+            
+            let bgColor = '';
+            let textColor = '#fff';
+            if (validade < today) {
+              bgColor = '#e74c3c'; // Vermelho para data passada
+            } else {
+              const daysUntilExpiry = Math.ceil((validade - today) / (1000 * 60 * 60 * 24));
+              if (daysUntilExpiry <= 7) {
+                bgColor = '#f39c12'; // Laranja para próximo (7 dias)
+              } else {
+                bgColor = '#00A859'; // Verde para válida (mais de 7 dias)
+              }
+            }
+
+            const nome = solution.assessoria_nome || 'Sem nome';
+            const nomeTruncado = nome.length > 30 ? nome.substring(0, 30) + '...' : nome;
+            
+            calendarHTML += `<div class="evento-dia mb-1 p-1 rounded text-white cursor-pointer transition-all hover:shadow-lg text-[10px] md:text-xs font-medium leading-tight" 
+              onclick="mostrarDetalhesSolucao('${solution.id}')" 
+              style="background: ${bgColor}; color: ${textColor};"
+              title="${nome}">
+              ${nomeTruncado}
+            </div>`;
+          });
+        }
+        calendarHTML += '</div>';
+        calendarHTML += '</td>';
+
+        // Nova linha a cada domingo
+        if ((startDay + day) % 7 === 0) {
+          calendarHTML += '</tr>';
+          if (day < lastDay.getDate()) {
+            calendarHTML += '<tr>';
+          }
+        }
+      }
+
+      // Preencher últimos dias do mês seguinte
+      const remainingDays = 7 - ((startDay + lastDay.getDate()) % 7);
+      if (remainingDays < 7 && remainingDays > 0) {
+        for (let day = 1; day <= remainingDays; day++) {
+          calendarHTML += `<td class="bg-gray-50" style="width: calc(100% / 7); height: 140px; min-height: 140px; max-height: 140px; padding: 0.5rem; vertical-align: top; overflow: hidden; box-sizing: border-box; border: 1px solid #e5e7eb;"><div class="text-xs md:text-sm font-semibold text-gray-400 mb-1">${day}</div><div class="eventos-container" style="max-height: calc(140px - 2rem); overflow-y: auto;"></div></td>`;
+        }
+        calendarHTML += '</tr>';
+      } else if ((startDay + lastDay.getDate()) % 7 !== 0) {
+        calendarHTML += '</tr>';
+      }
+
+      calendarHTML += '</tbody></table></div>';
+      
+      // Adicionar mensagem se não houver soluções
+      if (calendarioSolucoes.length === 0) {
+        calendarHTML += `
+          <div class="mt-4 text-center p-6 bg-yellow-50 rounded-lg border-2 border-yellow-200">
+            <div class="text-4xl mb-3">📅</div>
+            <p class="text-sm font-semibold text-yellow-800 mb-2">Nenhuma solução com data de validade encontrada</p>
+            <p class="text-xs text-yellow-700">Cadastre soluções com <strong>próxima data</strong> na aba <strong>Gestão</strong> para visualizá-las no calendário.</p>
+          </div>
+        `;
+      }
+      
+      document.getElementById('calendario-container').innerHTML = calendarHTML;
+      
+      console.log('✅ Calendário renderizado com sucesso');
+    }
+
+    function calendarioMesAnterior() {
+      calendarioDataAtual.setMonth(calendarioDataAtual.getMonth() - 1);
+      renderizarCalendario();
+    }
+
+    function calendarioProximoMes() {
+      calendarioDataAtual.setMonth(calendarioDataAtual.getMonth() + 1);
+      renderizarCalendario();
+    }
+
+
+    function mostrarDetalhesSolucao(id) {
+      const solution = calendarioSolucoes.find(s => s.id === id);
+      if (!solution) return;
+
+      const validade = solution._dataParsed ? new Date(solution._dataParsed) : null;
+      if (!validade || isNaN(validade.getTime())) {
+        alert('Data inválida para esta solução');
+        return;
+      }
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      validade.setHours(0, 0, 0, 0);
+
+      const daysUntilExpiry = Math.ceil((validade - today) / (1000 * 60 * 60 * 24));
+      let statusText = '';
+      let statusClass = '';
+
+      if (validade < today) {
+        statusText = `Data passada há ${Math.abs(daysUntilExpiry)} dia(s)`;
+        statusClass = 'text-red-600';
+      } else if (daysUntilExpiry <= 7) {
+        statusText = `Próxima data em ${daysUntilExpiry} dia(s)`;
+        statusClass = 'text-orange-600';
+      } else {
+        statusText = `Próxima data: ${validade.toLocaleDateString('pt-BR')}`;
+        statusClass = 'text-green-600';
+      }
+
+      const modalHTML = `
+        <div id="modal-calendario-detalhes" class="modal-overlay" onclick="fecharModalCalendario(event)">
+          <div class="modal-content max-w-2xl" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-2xl font-bold" style="color: var(--primary-blue);">${solution.assessoria_nome || 'Sem nome'}</h3>
+              <button onclick="fecharModalCalendario(event)" class="text-2xl font-bold text-gray-500 hover:text-gray-700">&times;</button>
+            </div>
+            ${solution.codigo ? `<p class="mb-2"><strong style="color: var(--primary-blue);">Código:</strong> ${solution.codigo}</p>` : ''}
+            ${solution.assessoria_descricao ? `<p class="mb-4"><strong style="color: var(--primary-blue);">Descrição:</strong><br>${solution.assessoria_descricao}</p>` : ''}
+            <p class="mb-2"><strong style="color: var(--primary-blue);">Próxima Data:</strong> ${solution.proxima_data || solution._dataStr || 'N/A'}</p>
+            <p class="mb-2"><strong style="color: var(--primary-blue);">Status:</strong> <span class="${statusClass} font-semibold">${statusText}</span></p>
+            ${solution.porte ? `<p class="mb-2"><strong style="color: var(--primary-blue);">Porte:</strong> ${solution.porte}</p>` : ''}
+            ${solution.setor ? `<p class="mb-2"><strong style="color: var(--primary-blue);">Setor:</strong> ${solution.setor}</p>` : ''}
+            ${solution.valor !== undefined ? `<p class="mb-2"><strong style="color: var(--primary-blue);">Valor:</strong> ${solution.valor > 0 ? `R$ ${parseFloat(solution.valor).toFixed(2)}` : 'Gratuito'}</p>` : ''}
+            ${solution.link_direcionamento ? `<p class="mt-4"><a href="${solution.link_direcionamento}" target="_blank" rel="noopener noreferrer" class="btn-modern px-6 py-3 text-white font-semibold rounded-lg inline-block" style="background: var(--primary-blue);">🔗 Acessar Solução →</a></p>` : ''}
+          </div>
+        </div>
+      `;
+
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    function fecharModalCalendario(event) {
+      const modal = document.getElementById('modal-calendario-detalhes');
+      if (modal) {
+        modal.remove();
       }
     }
   </script>
