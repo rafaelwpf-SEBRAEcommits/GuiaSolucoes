@@ -1386,7 +1386,17 @@
     </section>    <!-- Resultados -->
     <section id="step-resultados" class="hidden fade-in">
      <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
-      <h3 class="text-xl font-bold mb-4" style="color: #00608B;">Sua seleção:</h3>
+      <div class="flex items-center justify-between flex-wrap gap-4 mb-4">
+       <h3 class="text-xl font-bold" style="color: #00608B;">Sua seleção:</h3>
+       <div class="flex items-center gap-3 flex-wrap">
+        <button onclick="selecionarTodasSolucoes()" class="px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 text-sm" style="background: #E8F7F0; color: #00A859; border: 2px solid #00A859;">
+         ✓ Selecionar Todas
+        </button>
+        <button onclick="desselecionarTodasSolucoes()" class="px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 text-sm" style="background: #FFF4E6; color: #FF8C00; border: 2px solid #FF8C00;">
+         ✗ Desselecionar Todas
+        </button>
+       </div>
+      </div>
       <div class="flex flex-wrap gap-2" id="resumo-selecao"></div>
      </div>
      <div class="mb-8 hidden" id="header-trilha-container">
@@ -1764,6 +1774,7 @@
     let ultimosResultados = [];
     let sugestoesData = [];
     let todasJornadasData = []; // Armazenar todas as jornadas para uso no modal
+    let solucoesSelecionadas = new Set(); // Armazenar IDs das soluções selecionadas para relatório
     let selecao = {
       tipoMomento: null,
       categorias: [],
@@ -2006,6 +2017,8 @@
       renderCardsEmpresarial();
       renderCardsCrescimento();
       atualizarVisibilidadeAbaGestor();
+      
+      // Botão flutuante será criado apenas após uma busca ser realizada
 
       if (window.elementSdk) {
         await window.elementSdk.init({
@@ -2343,6 +2356,10 @@
       document.getElementById('step-3').classList.remove('active');
       document.getElementById('step-3').classList.add('completed');
       
+      // Limpar seleções anteriores ao fazer nova busca
+      solucoesSelecionadas.clear();
+      atualizarContadorSelecionadas();
+      
       const resultados = assessoriasData.filter(a => {
         const categoriaAtual = selecao.tipoMomento === 'empresarial' 
           ? a.momento_empresarial 
@@ -2379,9 +2396,16 @@
       if (resultados.length > 0) {
         renderResultados(resultados);
         document.getElementById('mensagem-sem-resultados').classList.add('hidden');
+        
+        // Criar e exibir botão flutuante apenas quando houver resultados
+        criarModalSelecaoRelatorio();
+        mostrarBotaoFlutuante();
       } else {
         document.getElementById('resultados-container').innerHTML = '';
         document.getElementById('mensagem-sem-resultados').classList.remove('hidden');
+        
+        // Ocultar botão flutuante quando não houver resultados
+        ocultarBotaoFlutuante();
       }
       
       // Buscar e exibir sugestão de ferramenta
@@ -2701,8 +2725,11 @@
                                 const valorBadgeColor = temValor ? '#B45309' : '#00A859';
                                 const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
                                 
+                                const solucaoId = assessoria.id || `sol_${assessoria.__index}`;
+                                const isSelected = solucoesSelecionadas.has(solucaoId);
+                                
                                 return `
-                                  <div onclick="abrirDetalheSolucao(${assessoria.__index})" class="trilha-solucao-card card-clicavel p-4 md:p-5 mb-3 md:mb-4 fade-in" style="animation-delay: ${(ordemIndex * 0.2) + (dorIndex * 0.15) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor};">
+                                  <div class="trilha-solucao-card p-4 md:p-5 mb-3 md:mb-4 fade-in relative" style="animation-delay: ${(ordemIndex * 0.2) + (dorIndex * 0.15) + (solIndex * 0.1)}s; --card-hexagon-color: ${infoMomento.cor}; ${isSelected ? 'border: 3px solid #00A859; background-color: #F0FDF4;' : ''}">
                                     <!-- Destaque: Preço e Tipo de Produto -->
                                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 md:mb-4 p-2 md:p-3 rounded-lg gap-2" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${infoMomento.cor};">
                                       <div class="flex-1 w-full sm:w-auto">
@@ -2719,7 +2746,21 @@
                                     
                                     <h3 class="text-lg md:text-xl font-bold mb-2 md:mb-3" style="color: #1F2937;">${assessoria.assessoria_nome}</h3>
                                     <p class="mb-3 md:mb-4 leading-relaxed line-clamp-3 text-sm md:text-base" style="color: #4B5563;">${assessoria.assessoria_descricao || ''}</p>
-                                    ${assessoria.proxima_data ? `<div class="border-t-2 pt-2 md:pt-3 mt-2 md:mt-3" style="border-color: #E5E7EB;"><p class="text-xs" style="color: #6B7280;">📅 Próxima turma: <strong style="color: #1F2937;">${assessoria.proxima_data}</strong></p></div>` : ''}
+                                    ${assessoria.proxima_data ? `<div class="border-t-2 pt-2 md:pt-3 mt-2 md:mt-3 mb-3" style="border-color: #E5E7EB;"><p class="text-xs" style="color: #6B7280;">📅 Próxima turma: <strong style="color: #1F2937;">${assessoria.proxima_data}</strong></p></div>` : ''}
+                                    
+                                    <!-- CTAs: Saiba Mais e Selecionar -->
+                                    <div class="flex gap-2 mt-4">
+                                      <button onclick="abrirDetalheSolucao(${assessoria.__index})" 
+                                              class="flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md"
+                                              style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%); color: white;">
+                                        ℹ️ Saiba Mais
+                                      </button>
+                                      <button onclick="toggleSelecaoSolucao('${solucaoId}', ${assessoria.__index}, event)" 
+                                              class="flex-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-105 shadow-md ${isSelected ? '' : ''}"
+                                              style="${isSelected ? 'background: linear-gradient(135deg, #00A859 0%, #059669 100%); color: white;' : 'background: #E8F7F0; color: #00A859; border: 2px solid #00A859;'}">
+                                        ${isSelected ? '✓ Selecionado' : '➕ Selecionar'}
+                                      </button>
+                                    </div>
                                   </div>
                                 `;
                               }).join('')}
@@ -2743,6 +2784,9 @@
       }).filter(html => html !== '').join('');
       
       container.innerHTML = html;
+      
+      // Atualizar contador de seleções após renderizar
+      atualizarContadorSelecionadas();
     }
 
     async function carregarTodasJornadas() {
@@ -3286,6 +3330,1205 @@
     function fecharDetalheSolucao() {
       document.getElementById('modal-detalhe-solucao').classList.add('hidden');
     }
+
+    // Função para alternar seleção de solução
+    function toggleSelecaoSolucao(solucaoId, index, event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      
+      if (solucoesSelecionadas.has(solucaoId)) {
+        solucoesSelecionadas.delete(solucaoId);
+      } else {
+        solucoesSelecionadas.add(solucaoId);
+      }
+      
+      atualizarContadorSelecionadas();
+      atualizarVisualSelecao(solucaoId);
+      
+      // Re-renderizar resultados para atualizar os botões
+      if (ultimosResultados.length > 0) {
+        renderResultados(ultimosResultados);
+      }
+      
+      // Atualizar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+      
+      // Atualizar painel (carrinho) - sempre atualizar, mesmo se não estiver visível
+      // Isso garante que o modal de relatório seja atualizado automaticamente
+      atualizarPreviewSelecionadas();
+      
+      // Se o painel estiver aberto, atualizar também a lista de disponíveis
+      const painel = document.getElementById('painel-selecao-relatorio');
+      if (painel && !painel.classList.contains('hidden')) {
+        renderizarListaDisponiveisPainel();
+      }
+    }
+
+    // Função para atualizar o contador de soluções selecionadas
+    function atualizarContadorSelecionadas() {
+      // Função mantida para compatibilidade, mas não é mais necessária
+      // pois o modal gerencia sua própria seleção
+    }
+
+    // Função para atualizar o visual do card quando selecionado
+    function atualizarVisualSelecao(solucaoId) {
+      // Esta função não é mais necessária pois o visual é atualizado via re-renderização
+      // Mantida para compatibilidade
+    }
+
+    // Função para selecionar todas as soluções
+    function selecionarTodasSolucoes() {
+      ultimosResultados.forEach((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        solucoesSelecionadas.add(solucaoId);
+      });
+      atualizarContadorSelecionadas();
+      // Re-renderizar para atualizar os botões
+      if (ultimosResultados.length > 0) {
+        renderResultados(ultimosResultados);
+      }
+      
+      // Atualizar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+      
+      // Atualizar preview (que automaticamente abre/atualiza o modal)
+      atualizarPreviewSelecionadas();
+      
+      // Se o painel estiver aberto, atualizar também a lista de disponíveis
+      const painel = document.getElementById('painel-selecao-relatorio');
+      if (painel && !painel.classList.contains('hidden')) {
+        renderizarListaDisponiveisPainel();
+      }
+    }
+
+    // Função para desselecionar todas as soluções
+    function desselecionarTodasSolucoes() {
+      solucoesSelecionadas.clear();
+      atualizarContadorSelecionadas();
+      // Re-renderizar para atualizar os botões
+      if (ultimosResultados.length > 0) {
+        renderResultados(ultimosResultados);
+      }
+      
+      // Atualizar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+      
+      // Atualizar preview (que automaticamente fecha o modal se não houver seleções)
+      atualizarPreviewSelecionadas();
+      
+      // Se o painel estiver aberto, atualizar também a lista de disponíveis
+      const painel = document.getElementById('painel-selecao-relatorio');
+      if (painel && !painel.classList.contains('hidden')) {
+        renderizarListaDisponiveisPainel();
+      }
+    }
+
+    // Função auxiliar para ordenar soluções (reutilizável)
+    // Ordena por: 1) Data (mais próxima de hoje primeiro), 2) Valor (menor primeiro) se não houver data
+    function ordenarSolucoes(solucoes) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      
+      return [...solucoes].sort((a, b) => {
+        // Primeiro critério: DATA (mais próxima de hoje primeiro)
+        const dataAStr = a.proxima_data || null;
+        const dataBStr = b.proxima_data || null;
+        
+        let dataA = null;
+        let dataB = null;
+        
+        if (dataAStr) {
+          try {
+            // Tentar parsear formato DD/MM/YYYY primeiro
+            const partesBR = String(dataAStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (partesBR) {
+              dataA = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+            } else {
+              dataA = new Date(dataAStr);
+            }
+            dataA.setHours(0, 0, 0, 0);
+            if (isNaN(dataA.getTime())) dataA = null;
+          } catch (e) {
+            dataA = null;
+          }
+        }
+        
+        if (dataBStr) {
+          try {
+            // Tentar parsear formato DD/MM/YYYY primeiro
+            const partesBR = String(dataBStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (partesBR) {
+              dataB = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+            } else {
+              dataB = new Date(dataBStr);
+            }
+            dataB.setHours(0, 0, 0, 0);
+            if (isNaN(dataB.getTime())) dataB = null;
+          } catch (e) {
+            dataB = null;
+          }
+        }
+        
+        // Se ambas têm data, ordenar pela mais próxima de hoje
+        if (dataA && dataB) {
+          // Calcular diferença absoluta em dias de hoje
+          const diffA = Math.abs(dataA - hoje);
+          const diffB = Math.abs(dataB - hoje);
+          
+          // A mais próxima vem primeiro
+          return diffA - diffB;
+        }
+        
+        // Se apenas uma tem data, ela vem primeiro
+        if (dataA && !dataB) return -1;
+        if (!dataA && dataB) return 1;
+        
+        // Se nenhuma tem data, ordenar por VALOR (menor primeiro)
+        const valorA = (a.valor != null && a.valor !== '') ? Number(a.valor) : 999999;
+        const valorB = (b.valor != null && b.valor !== '') ? Number(b.valor) : 999999;
+        
+        // Se ambos são gratuitos (valor 0 ou null), manter ordem original
+        if (valorA === 999999 && valorB === 999999) return 0;
+        
+        return valorA - valorB;
+      });
+    }
+
+    // Função para abrir/fechar painel de seleção
+    function togglePainelSelecaoRelatorio() {
+      if (ultimosResultados.length === 0) {
+        showToast('Nenhuma solução disponível para seleção', 'error');
+        return;
+      }
+
+      // Criar painel se não existir
+      criarModalSelecaoRelatorio();
+      
+      const painel = document.getElementById('painel-selecao-relatorio');
+      const overlay = document.getElementById('overlay-painel-relatorio');
+      
+      if (!painel || !overlay) return;
+      
+      const isAberto = !painel.classList.contains('translate-x-full');
+      
+      if (isAberto) {
+        // Fechar
+        painel.classList.add('translate-x-full');
+        overlay.classList.add('hidden');
+      } else {
+        // Abrir
+        painel.classList.remove('translate-x-full');
+        overlay.classList.remove('hidden');
+        
+        // Atualizar conteúdo
+        atualizarConteudoPainel();
+      }
+    }
+
+    // Função para abrir modal de seleção de soluções (mantida para compatibilidade)
+    function abrirModalSelecaoRelatorio() {
+      togglePainelSelecaoRelatorio();
+    }
+
+    // Função para atualizar conteúdo do painel
+    function atualizarConteudoPainel() {
+      // Atualizar total de soluções
+      const totalSolucoes = document.getElementById('total-solucoes-modal');
+      if (totalSolucoes) {
+        totalSolucoes.textContent = ultimosResultados.length;
+      }
+      
+      // Renderizar lista de soluções disponíveis
+      renderizarListaDisponiveisPainel();
+      
+      // Mostrar preview das selecionadas
+      atualizarPreviewSelecionadas();
+      
+      // Atualizar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+    }
+
+    // Função para renderizar lista de soluções disponíveis no painel
+    function renderizarListaDisponiveisPainel() {
+      const container = document.getElementById('lista-solucoes-disponiveis-painel');
+      if (!container) return;
+
+      const formatarData = (dataStr) => {
+        if (!dataStr || String(dataStr).trim() === '') return 'A definir';
+        try {
+          // Tentar parsear data no formato DD/MM/YYYY primeiro (formato brasileiro comum)
+          const partesBR = String(dataStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+          let data;
+          if (partesBR) {
+            // Formato brasileiro DD/MM/YYYY
+            data = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+          } else {
+            // Tentar formato ISO (YYYY-MM-DD) ou outros formatos
+            data = new Date(dataStr);
+          }
+          
+          // Verificar se a data é válida
+          if (isNaN(data.getTime())) {
+            return 'A definir';
+          }
+          
+          // Verificar se a data não é muito antiga ou muito futura (indicando erro de parse)
+          const ano = data.getFullYear();
+          if (ano < 1900 || ano > 2100) {
+            return 'A definir';
+          }
+          
+          return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch {
+          return 'A definir';
+        }
+      };
+
+      const solucoesNaoSelecionadas = ultimosResultados.filter((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        return !solucoesSelecionadas.has(solucaoId);
+      });
+
+      if (solucoesNaoSelecionadas.length === 0) {
+        container.innerHTML = '<p class="text-xs text-center py-4" style="color: #999;">Todas as soluções já foram selecionadas</p>';
+        return;
+      }
+
+      container.innerHTML = solucoesNaoSelecionadas.map((sol, idx) => {
+        const index = ultimosResultados.findIndex(s => 
+          (s.id && s.id === sol.id) || 
+          (!s.id && !sol.id && s.assessoria_nome === sol.assessoria_nome)
+        );
+        const solucaoId = sol.id || `sol_${index}`;
+        // Usar proxima_data diretamente da base
+        const dataExibicao = sol.proxima_data || null;
+        const dataFormatada = dataExibicao ? formatarData(dataExibicao) : 'A definir';
+        const v = sol.valor;
+        const n = (v != null && v !== '') ? Number(v) : NaN;
+        const valorTexto = !isNaN(n) && n > 0 ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
+        
+        return `
+          <div class="bg-white rounded-lg p-3 border border-gray-200 hover:border-blue-400 transition-all cursor-pointer" 
+               onclick="adicionarSolucaoAoPainel('${solucaoId}', ${index})">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h4 class="font-semibold text-sm mb-1" style="color: #1F2937;">${sol.assessoria_nome || 'Sem nome'}</h4>
+                <div class="flex flex-wrap gap-1 text-xs mt-1">
+                  <span class="px-2 py-0.5 rounded" style="background: #E8F7F0; color: #047857;">📅 ${dataFormatada}</span>
+                  <span class="px-2 py-0.5 rounded" style="background: #FFF4E6; color: #B45309;">💰 ${valorTexto}</span>
+                </div>
+              </div>
+              <button onclick="event.stopPropagation(); adicionarSolucaoAoPainel('${solucaoId}', ${index})" 
+                      class="ml-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full p-1 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Função para adicionar solução ao painel
+    function adicionarSolucaoAoPainel(solucaoId, index) {
+      solucoesSelecionadas.add(solucaoId);
+      atualizarPreviewSelecionadas();
+      renderizarListaDisponiveisPainel();
+    }
+
+    // Função para toggle da seção de adicionar
+    function toggleSecaoAdicionar() {
+      const secao = document.getElementById('secao-adicionar-solucoes');
+      const icone = document.getElementById('icone-toggle-adicionar');
+      if (secao && icone) {
+        secao.classList.toggle('hidden');
+        icone.textContent = secao.classList.contains('hidden') ? '▼' : '▲';
+      }
+    }
+
+    // Função para criar modal de seleção
+    function criarModalSelecaoRelatorio() {
+      // Verificar se o botão flutuante já existe
+      if (document.getElementById('btn-abrir-painel-relatorio')) {
+        return; // Botão e painel já existem
+      }
+
+      // Criar botão flutuante (inicialmente oculto)
+      const botaoFlutuanteHTML = `
+        <button id="btn-abrir-painel-relatorio" onclick="togglePainelSelecaoRelatorio()" 
+                class="fixed bottom-6 right-6 z-40 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 active:scale-95 hidden"
+                style="background: linear-gradient(135deg, #00608B 0%, #6366F1 100%); color: white; display: none;"
+                title="Ver soluções selecionadas">
+          <span class="text-2xl">📊</span>
+          <span id="badge-contador-painel" class="absolute -top-1 -right-1 min-w-[24px] h-6 rounded-full flex items-center justify-center text-xs font-bold hidden px-1" 
+                style="background: #DC2626; color: white;">0</span>
+        </button>
+      `;
+
+      // Criar painel lateral
+      const painelHTML = `
+        <!-- Overlay escuro -->
+        <div id="overlay-painel-relatorio" onclick="togglePainelSelecaoRelatorio()" 
+             class="fixed inset-0 bg-black bg-opacity-30 z-40 hidden transition-opacity"></div>
+        
+        <!-- Painel lateral -->
+        <div id="painel-selecao-relatorio" 
+             class="fixed right-0 top-0 h-full w-full sm:w-[500px] md:w-[600px] lg:w-[700px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col"
+             style="max-width: 95vw;">
+          <!-- Header do painel -->
+          <div class="p-6 border-b-2 flex items-center justify-between" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%); border-color: #00608B;">
+            <div class="flex items-center gap-3">
+              <h2 class="text-xl md:text-2xl font-bold text-white">Selecionar Soluções</h2>
+              <span id="contador-painel-header" class="px-3 py-1 rounded-full text-sm font-bold bg-white" style="color: #00608B;">0</span>
+            </div>
+            <button onclick="togglePainelSelecaoRelatorio()" class="text-white hover:text-gray-200 text-2xl font-bold transition-all hover:scale-110">
+              &times;
+            </button>
+          </div>
+          
+          <!-- Controles -->
+          <div class="p-4 border-b-2 bg-gray-50" style="border-color: #E5E7EB;">
+            <div class="flex items-center gap-2 flex-wrap mb-3">
+              <button onclick="selecionarTodasNoModal()" class="px-3 py-2 rounded-lg font-semibold text-xs transition-all hover:scale-105" style="background: #E8F7F0; color: #00A859; border: 2px solid #00A859;">
+                ✓ Todas
+              </button>
+              <button onclick="desselecionarTodasNoModal()" class="px-3 py-2 rounded-lg font-semibold text-xs transition-all hover:scale-105" style="background: #FFF4E6; color: #FF8C00; border: 2px solid #FF8C00;">
+                ✗ Nenhuma
+              </button>
+              <span class="text-xs font-semibold ml-auto" style="color: #666;">
+                <span id="contador-modal-selecao" style="color: #00608B; font-weight: bold;">0</span> de <span id="total-solucoes-modal">0</span>
+              </span>
+            </div>
+            <p class="text-xs" style="color: #999;">Ordenadas por data (mais próxima primeiro) ou valor (menor primeiro)</p>
+          </div>
+          
+          <!-- Conteúdo scrollável -->
+          <div class="flex-1 overflow-y-auto p-4">
+            <!-- Seção de adicionar soluções (colapsável) -->
+            <div class="mb-4">
+              <button onclick="toggleSecaoAdicionar()" id="btn-toggle-adicionar" 
+                      class="w-full p-3 rounded-lg font-semibold text-sm transition-all hover:bg-gray-100 flex items-center justify-between"
+                      style="background: #F3F4F6; color: #00608B;">
+                <span>➕ Adicionar Soluções</span>
+                <span id="icone-toggle-adicionar">▼</span>
+              </button>
+              <div id="secao-adicionar-solucoes" class="hidden mt-3 max-h-[300px] overflow-y-auto space-y-2">
+                <div id="lista-solucoes-disponiveis-painel">
+                  <!-- Lista será preenchida aqui -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Preview das soluções selecionadas -->
+            <div>
+              <h3 class="text-sm font-bold mb-3" style="color: #00608B;">Soluções Selecionadas (Ordenadas)</h3>
+              <div id="preview-selecionadas-modal" class="space-y-3">
+                <p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução selecionada</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Footer com botão de ação -->
+          <div class="p-4 border-t-2 bg-gray-50" style="border-color: #E5E7EB;">
+            <button onclick="confirmarSelecaoERelatorio()" id="btn-confirmar-selecao" 
+                    class="w-full py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg" 
+                    style="background: linear-gradient(135deg, #00608B 0%, #6366F1 100%); color: white;" disabled>
+              📊 Gerar Relatório (<span id="contador-footer">0</span>)
+            </button>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', botaoFlutuanteHTML);
+      document.body.insertAdjacentHTML('beforeend', painelHTML);
+      
+      // Inicializar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+    }
+
+    // Função para renderizar lista de soluções no modal (não mais usada, mas mantida)
+    function renderizarListaSelecaoModal(solucoes) {
+      // Esta função não é mais necessária pois não mostramos lista completa no painel
+      // Apenas o preview das selecionadas
+      return;
+
+      const formatarData = (dataStr) => {
+        if (!dataStr || String(dataStr).trim() === '') return 'A definir';
+        try {
+          // Tentar parsear data no formato DD/MM/YYYY primeiro (formato brasileiro comum)
+          const partesBR = String(dataStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+          let data;
+          if (partesBR) {
+            // Formato brasileiro DD/MM/YYYY
+            data = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+          } else {
+            // Tentar formato ISO (YYYY-MM-DD) ou outros formatos
+            data = new Date(dataStr);
+          }
+          
+          // Verificar se a data é válida
+          if (isNaN(data.getTime())) {
+            return 'A definir';
+          }
+          
+          // Verificar se a data não é muito antiga ou muito futura (indicando erro de parse)
+          const ano = data.getFullYear();
+          if (ano < 1900 || ano > 2100) {
+            return 'A definir';
+          }
+          
+          return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch {
+          return 'A definir';
+        }
+      };
+
+      container.innerHTML = solucoes.map((sol) => {
+        // Encontrar índice original no ultimosResultados
+        const indexOriginal = ultimosResultados.findIndex(s => 
+          (s.id && s.id === sol.id) || 
+          (!s.id && !sol.id && s.assessoria_nome === sol.assessoria_nome)
+        );
+        const index = indexOriginal >= 0 ? indexOriginal : sol.__index || 0;
+        const solucaoId = sol.id || `sol_${index}`;
+        const isSelected = solucoesSelecionadas.has(solucaoId);
+        // Usar proxima_data diretamente da base
+        const dataExibicao = sol.proxima_data || null;
+        const dataFormatada = dataExibicao ? formatarData(dataExibicao) : 'A definir';
+        const v = sol.valor;
+        const n = (v != null && v !== '') ? Number(v) : NaN;
+        const valorTexto = !isNaN(n) && n > 0 ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
+        
+        return `
+          <div class="bg-white rounded-lg p-4 border-2 transition-all hover:shadow-md cursor-pointer ${isSelected ? 'border-green-500 bg-green-50' : 'border-gray-200'}" onclick="toggleSelecaoNoModal('${solucaoId}', ${index})">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" 
+                     id="modal-checkbox-${solucaoId}" 
+                     class="w-5 h-5 mt-1 rounded cursor-pointer" 
+                     style="accent-color: #00A859;"
+                     ${isSelected ? 'checked' : ''}
+                     onclick="event.stopPropagation(); toggleSelecaoNoModal('${solucaoId}', ${index})">
+              <div class="flex-1">
+                <h4 class="font-bold mb-1" style="color: #1F2937;">${sol.assessoria_nome || 'Sem nome'}</h4>
+                <p class="text-xs mb-2 line-clamp-2" style="color: #666;">${sol.assessoria_descricao || 'Sem descrição'}</p>
+                <div class="flex flex-wrap gap-2 text-xs">
+                  <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">📅 ${dataFormatada}</span>
+                  <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">💰 ${valorTexto}</span>
+                  <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${sol.porte || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Função para atualizar preview das soluções selecionadas
+    function atualizarPreviewSelecionadas() {
+      const preview = document.getElementById('preview-selecionadas-modal');
+      const contador = document.getElementById('contador-modal-selecao');
+      const btnConfirmar = document.getElementById('btn-confirmar-selecao');
+      
+      if (!preview) return;
+
+      // Coletar soluções selecionadas
+      const solucoesSelecionadasArray = ultimosResultados.filter((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        return solucoesSelecionadas.has(solucaoId);
+      });
+
+      // Ordenar
+      const solucoesOrdenadas = ordenarSolucoes(solucoesSelecionadasArray);
+
+      // Atualizar contadores
+      if (contador) {
+        contador.textContent = solucoesSelecionadas.size;
+      }
+      
+      const contadorHeader = document.getElementById('contador-painel-header');
+      if (contadorHeader) {
+        contadorHeader.textContent = solucoesSelecionadas.size;
+      }
+      
+      const contadorFooter = document.getElementById('contador-footer');
+      if (contadorFooter) {
+        contadorFooter.textContent = solucoesSelecionadas.size;
+      }
+
+      // Atualizar botão
+      if (btnConfirmar) {
+        btnConfirmar.disabled = solucoesSelecionadas.size === 0;
+      }
+      
+      // Atualizar badge do botão flutuante
+      atualizarBadgeBotaoFlutuante();
+
+      // Renderizar preview
+      if (solucoesOrdenadas.length === 0) {
+        preview.innerHTML = '<p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução selecionada</p>';
+        // Fechar modal de relatório se não houver seleções
+        const modalRelatorio = document.getElementById('modal-relatorio');
+        if (modalRelatorio && !modalRelatorio.classList.contains('hidden')) {
+          fecharRelatorioModal();
+        }
+        return;
+      }
+
+      const formatarData = (dataStr) => {
+        if (!dataStr || String(dataStr).trim() === '') return 'A definir';
+        try {
+          // Tentar parsear data no formato DD/MM/YYYY primeiro (formato brasileiro comum)
+          const partesBR = String(dataStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+          let data;
+          if (partesBR) {
+            // Formato brasileiro DD/MM/YYYY
+            data = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+          } else {
+            // Tentar formato ISO (YYYY-MM-DD) ou outros formatos
+            data = new Date(dataStr);
+          }
+          
+          // Verificar se a data é válida
+          if (isNaN(data.getTime())) {
+            return 'A definir';
+          }
+          
+          // Verificar se a data não é muito antiga ou muito futura (indicando erro de parse)
+          const ano = data.getFullYear();
+          if (ano < 1900 || ano > 2100) {
+            return 'A definir';
+          }
+          
+          return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch {
+          return 'A definir';
+        }
+      };
+
+      // Encontrar índice original para cada solução
+      preview.innerHTML = solucoesOrdenadas.map((sol, index) => {
+        const indexOriginal = ultimosResultados.findIndex(s => 
+          (s.id && s.id === sol.id) || 
+          (!s.id && !sol.id && s.assessoria_nome === sol.assessoria_nome)
+        );
+        const idx = indexOriginal >= 0 ? indexOriginal : sol.__index || 0;
+        const solucaoId = sol.id || `sol_${idx}`;
+        
+        // Usar proxima_data diretamente da base
+        const dataExibicao = sol.proxima_data || null;
+        const dataFormatada = dataExibicao ? formatarData(dataExibicao) : 'A definir';
+        const v = sol.valor;
+        const n = (v != null && v !== '') ? Number(v) : NaN;
+        const valorTexto = !isNaN(n) && n > 0 ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
+        
+        return `
+          <div class="bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition-all" style="border-color: #00608B;">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg font-bold" style="color: #00608B;">${index + 1}.</span>
+                  <h4 class="font-bold flex-1" style="color: #1F2937;">${sol.assessoria_nome || 'Sem nome'}</h4>
+                </div>
+                <p class="text-xs mb-2 line-clamp-2" style="color: #666;">${sol.assessoria_descricao || 'Sem descrição'}</p>
+              </div>
+              <button onclick="removerSolucaoDoPainel('${solucaoId}', ${idx})" 
+                      class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all" 
+                      title="Remover">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">📅 ${dataFormatada}</span>
+              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">💰 ${valorTexto}</span>
+              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${sol.porte || 'N/A'}</span>
+              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">🏢 ${sol.setor || 'N/A'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      // Modal de relatório só abre ao clicar em "Gerar Relatório", não ao selecionar soluções
+    }
+
+    // Função para alternar seleção no modal (mantida para compatibilidade)
+    function toggleSelecaoNoModal(solucaoId, index) {
+      if (solucoesSelecionadas.has(solucaoId)) {
+        solucoesSelecionadas.delete(solucaoId);
+      } else {
+        solucoesSelecionadas.add(solucaoId);
+      }
+      atualizarPreviewSelecionadas();
+    }
+
+    // Função para remover solução do painel
+    function removerSolucaoDoPainel(solucaoId, index) {
+      solucoesSelecionadas.delete(solucaoId);
+      atualizarPreviewSelecionadas();
+    }
+
+    // Função para selecionar todas no modal
+    function selecionarTodasNoModal() {
+      ultimosResultados.forEach((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        solucoesSelecionadas.add(solucaoId);
+      });
+      atualizarPreviewSelecionadas();
+    }
+
+    // Função para desselecionar todas no modal
+    function desselecionarTodasNoModal() {
+      solucoesSelecionadas.clear();
+      atualizarPreviewSelecionadas();
+    }
+
+    // Função para confirmar seleção e gerar relatório
+    function confirmarSelecaoERelatorio() {
+      if (solucoesSelecionadas.size === 0) {
+        showToast('Selecione pelo menos uma solução para gerar o relatório', 'error');
+        return;
+      }
+
+      // Fechar painel de seleção
+      togglePainelSelecaoRelatorio();
+
+      // Coletar soluções selecionadas
+      const solucoesRelatorio = ultimosResultados.filter((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        return solucoesSelecionadas.has(solucaoId);
+      });
+
+      // Ordenar
+      const solucoesOrdenadas = ordenarSolucoes(solucoesRelatorio);
+
+      // Exibir modal com relatório
+      exibirRelatorioModal(solucoesOrdenadas);
+    }
+
+    // Função para fechar modal de seleção
+    function fecharModalSelecaoRelatorio() {
+      togglePainelSelecaoRelatorio();
+    }
+
+    // Função para atualizar badge do botão flutuante
+    function atualizarBadgeBotaoFlutuante() {
+      const badge = document.getElementById('badge-contador-painel');
+      const botao = document.getElementById('btn-abrir-painel-relatorio');
+      
+      if (badge && botao) {
+        if (solucoesSelecionadas.size > 0) {
+          badge.textContent = solucoesSelecionadas.size;
+          badge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+        }
+      }
+    }
+    
+    // Função para mostrar botão flutuante
+    function mostrarBotaoFlutuante() {
+      const botao = document.getElementById('btn-abrir-painel-relatorio');
+      if (botao) {
+        botao.style.setProperty('display', 'flex', 'important');
+        botao.classList.remove('hidden');
+      }
+    }
+    
+    // Função para ocultar botão flutuante
+    function ocultarBotaoFlutuante() {
+      const botao = document.getElementById('btn-abrir-painel-relatorio');
+      if (botao) {
+        botao.style.setProperty('display', 'none', 'important');
+        botao.classList.add('hidden');
+      }
+    }
+
+    // Função para gerar relatório com soluções selecionadas ordenadas cronologicamente
+    function gerarRelatorioSolucoes() {
+      if (solucoesSelecionadas.size === 0) {
+        showToast('Selecione pelo menos uma solução para gerar o relatório', 'error');
+        return;
+      }
+
+      // Coletar todas as soluções selecionadas
+      const solucoesRelatorio = ultimosResultados.filter((sol, index) => {
+        const solucaoId = sol.id || `sol_${index}`;
+        return solucoesSelecionadas.has(solucaoId);
+      });
+
+      // Ordenar usando função auxiliar
+      const solucoesOrdenadas = ordenarSolucoes(solucoesRelatorio);
+
+      // Exibir modal com relatório
+      exibirRelatorioModal(solucoesOrdenadas);
+    }
+
+    // Função para exibir modal com relatório formatado
+    function exibirRelatorioModal(solucoes) {
+      // Criar modal se não existir
+      let modal = document.getElementById('modal-relatorio');
+      if (!modal) {
+        criarModalRelatorio();
+        // Buscar novamente após criar
+        modal = document.getElementById('modal-relatorio');
+      }
+
+      if (!modal) {
+        console.error('Erro ao criar modal de relatório');
+        return;
+      }
+
+      const conteudoRelatorio = document.getElementById('conteudo-relatorio');
+      if (!conteudoRelatorio) {
+        console.error('Erro: elemento conteudo-relatorio não encontrado');
+        return;
+      }
+
+      // Formatar data para exibição
+      const formatarData = (dataStr) => {
+        if (!dataStr || String(dataStr).trim() === '') return 'A definir';
+        try {
+          // Tentar parsear data no formato DD/MM/YYYY primeiro (formato brasileiro comum)
+          const partesBR = String(dataStr).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+          let data;
+          if (partesBR) {
+            // Formato brasileiro DD/MM/YYYY
+            data = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+          } else {
+            // Tentar formato ISO (YYYY-MM-DD) ou outros formatos
+            data = new Date(dataStr);
+          }
+          
+          // Verificar se a data é válida
+          if (isNaN(data.getTime())) {
+            return 'A definir';
+          }
+          
+          // Verificar se a data não é muito antiga ou muito futura (indicando erro de parse)
+          const ano = data.getFullYear();
+          if (ano < 1900 || ano > 2100) {
+            return 'A definir';
+          }
+          
+          return data.toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric' 
+          });
+        } catch {
+          return 'A definir';
+        }
+      };
+
+      // Texto padrão do relatório
+      const textoPadrao = `Olá, segue o Relatório:
+
+Identificamos os pontos que já são fortes e, principalmente, as oportunidades de crescimento que podem ser trabalhadas para aumentar a eficiência e o faturamento da sua empresa.
+
+Meu papel é ser seu parceiro nesta jornada. este plano é o mapa para transformarmos os desafios em resultados concretos com as Soluções que temos aqui no Sebrae
+
+O próximo passo é você me dar um "ok" sobre datas e organizarmos o calendário das Etapas
+
+Estou à total disposição para conversarmos sobre este relatório, tirar qualquer dúvida e ajustarmos o que for necessário.`;
+
+      // Cor padrão para o fluxograma
+      const corPadrao = '#00608B';
+      
+      // Gerar HTML do relatório com fluxograma
+      const htmlRelatorio = `
+        <!-- Texto padrão -->
+        <div class="mb-8 p-6 rounded-xl bg-white border-l-4 shadow-md" style="border-color: ${corPadrao};">
+          <div class="prose max-w-none">
+            <p class="text-base leading-relaxed whitespace-pre-line" style="color: #333; font-family: 'Inter', sans-serif;">
+              ${textoPadrao}
+            </p>
+          </div>
+        </div>
+        
+        <!-- Fluxograma de Soluções -->
+        <div class="mb-6">
+          <h3 class="text-xl font-bold mb-4" style="color: #00608B;">Plano de Ação - Soluções Selecionadas</h3>
+          <p class="text-sm mb-4" style="color: #666;">Total de ${solucoes.length} solução(ões) ordenada(s) por data (mais próxima primeiro) ou valor (menor primeiro)</p>
+          
+          <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem 1rem; min-height: 300px; overflow-x: auto;">
+            ${solucoes.map((sol, index) => {
+              // Usar proxima_data diretamente da base, sem fallback para criado_em no relatório
+              const dataExibicao = sol.proxima_data || null;
+              const dataFormatada = dataExibicao ? formatarData(dataExibicao) : 'A definir';
+              const v = sol.valor;
+              const n = (v != null && v !== '') ? Number(v) : NaN;
+              const temValor = !isNaN(n) && n > 0;
+              const valorTexto = temValor ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
+              const valorBadgeColor = temValor ? '#B45309' : '#00A859';
+              const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
+              const isLast = index === solucoes.length - 1;
+              const inst = (sol.instrumento && String(sol.instrumento).trim()) ? sol.instrumento : 'Solução';
+              
+              return `
+                <div class="trilha-step fade-in" style="animation-delay: ${index * 0.1}s;">
+                  ${!isLast ? `<div class="trilha-step-divider" style="background: linear-gradient(180deg, ${corPadrao} 0%, ${corPadrao}dd 100%);"></div>` : ''}
+                  
+                  <!-- Chevron ETAPA -->
+                  <div class="trilha-assessoria-chevron" style="background: linear-gradient(135deg, ${corPadrao} 0%, ${corPadrao}dd 100%); --chevron-color: ${corPadrao};">
+                    <div class="trilha-assessoria-text">ETAPA ${index + 1}</div>
+                  </div>
+                  
+                  <!-- Linha tracejada e hexágono -->
+                  <div class="trilha-dashed-line"></div>
+                  <div class="trilha-hexagon" style="background: linear-gradient(135deg, ${corPadrao} 0%, ${corPadrao}dd 100%);"></div>
+                  
+                  <div class="trilha-step-content">
+                    <div class="trilha-solucao-card p-5 mb-4 fade-in" style="--card-hexagon-color: ${corPadrao};">
+                      <!-- Destaque: Preço e Tipo de Produto -->
+                      <div class="flex items-center justify-between mb-4 p-3 rounded-lg" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${corPadrao};">
+                        <div class="flex-1">
+                          <p class="text-xs font-semibold mb-1" style="color: #00608B;">Tipo de Produto</p>
+                          <p class="text-base font-bold" style="color: #00608B;">${inst}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                          <p class="text-xs font-semibold mb-1" style="color: #00608B;">Preço</p>
+                          <span class="inline-block px-3 py-1 rounded-lg font-bold text-lg" style="background-color: ${valorBadgeBg}; color: ${valorBadgeColor};">
+                            ${valorTexto}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <h3 class="text-xl font-bold mb-3" style="color: #1F2937;">${sol.assessoria_nome || 'Sem nome'}</h3>
+                      <p class="mb-4 leading-relaxed" style="color: #4B5563;">${sol.assessoria_descricao || 'Sem descrição disponível'}</p>
+                      
+                      <!-- Informações adicionais -->
+                      <div class="grid grid-cols-2 gap-2 mb-4 text-xs">
+                        <div class="p-2 rounded-lg" style="background: #E8F7F0;">
+                          <p class="font-semibold mb-1" style="color: #00A859;">📅 Data</p>
+                          <p class="font-bold" style="color: #047857;">${dataFormatada}</p>
+                        </div>
+                        <div class="p-2 rounded-lg" style="background: #E8F7F0;">
+                          <p class="font-semibold mb-1" style="color: #00A859;">🎯 Dor do Momento</p>
+                          <p class="font-bold" style="color: #047857;">${sol.momento_empresarial || sol.crescimento_empresarial || 'N/A'}</p>
+                        </div>
+                        ${sol.area_conhecimento ? `
+                        <div class="p-2 rounded-lg col-span-2" style="background: #FFF4E6;">
+                          <p class="font-semibold mb-1" style="color: #B45309;">📚 Área de Conhecimento</p>
+                          <p class="font-bold" style="color: #92400E;">${sol.area_conhecimento}</p>
+                        </div>
+                        ` : ''}
+                        ${sol.carga_horaria ? `
+                        <div class="p-2 rounded-lg col-span-2" style="background: #E0E7FF;">
+                          <p class="font-semibold mb-1" style="color: #4F46E5;">⏱️ Carga Horária</p>
+                          <p class="font-bold" style="color: #3730A3;">${sol.carga_horaria}</p>
+                        </div>
+                        ` : ''}
+                      </div>
+                      
+                      ${sol.link_direcionamento ? `
+                        <div class="mt-4 p-3 rounded-lg border-2" style="background: #F0F9FF; border-color: #00608B;">
+                          <p class="text-xs font-semibold mb-2" style="color: #00608B;">🔗 Link de Acesso:</p>
+                          <a href="${sol.link_direcionamento}" target="_blank" rel="noopener noreferrer" 
+                             class="inline-block px-4 py-2 rounded-lg font-semibold transition-all hover:scale-105 break-all text-sm" 
+                             style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%); color: white;">
+                            ${sol.link_direcionamento}
+                          </a>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                </div>
+                ${!isLast ? `
+                <div class="trilha-connector">
+                  <div class="trilha-connector-line" style="background: linear-gradient(90deg, ${corPadrao} 0%, ${corPadrao}dd 100%);"></div>
+                  <div class="trilha-connector-hexagon" style="background: linear-gradient(135deg, ${corPadrao} 0%, ${corPadrao}dd 100%);"></div>
+                </div>
+                ` : ''}
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      conteudoRelatorio.innerHTML = htmlRelatorio;
+      
+      // Buscar modal novamente após criar conteúdo (caso tenha sido criado)
+      modal = document.getElementById('modal-relatorio');
+      
+      // Sempre mostrar o modal (mesmo que já esteja aberto, garante que está visível)
+      if (modal) {
+        // Remover classe hidden e garantir display flex com !important
+        modal.classList.remove('hidden');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.setProperty('align-items', 'center', 'important');
+        modal.style.setProperty('justify-content', 'center', 'important');
+        modal.style.setProperty('z-index', '60', 'important');
+        
+        // Scroll para o topo do conteúdo
+        const conteudo = modal.querySelector('#conteudo-relatorio');
+        if (conteudo) {
+          conteudo.scrollTop = 0;
+        }
+      } else {
+        console.error('Modal de relatório não encontrado após criação');
+        // Tentar criar novamente
+        criarModalRelatorio();
+        modal = document.getElementById('modal-relatorio');
+        if (modal && conteudoRelatorio) {
+          conteudoRelatorio.innerHTML = htmlRelatorio;
+          modal.classList.remove('hidden');
+          modal.style.setProperty('display', 'flex', 'important');
+          modal.style.setProperty('align-items', 'center', 'important');
+          modal.style.setProperty('justify-content', 'center', 'important');
+        }
+      }
+    }
+
+    // Função para criar o modal de relatório se não existir
+    function criarModalRelatorio() {
+      // Verificar se já existe
+      if (document.getElementById('modal-relatorio')) {
+        return;
+      }
+      
+      const modalHTML = `
+        <div id="modal-relatorio" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden" style="display: none !important;">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col m-4" style="margin: 1rem;">
+            <div class="p-6 border-b-2" style="border-color: #E5E7EB;">
+              <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold" style="color: #00608B;">Relatório de Soluções Selecionadas</h2>
+                <button onclick="fecharRelatorioModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+              </div>
+            </div>
+            <div class="p-6 overflow-y-auto overflow-x-auto flex-1" id="conteudo-relatorio" style="max-height: calc(90vh - 200px);">
+              <!-- Conteúdo do relatório será inserido aqui -->
+            </div>
+            <div class="p-6 border-t-2 flex justify-end gap-4" style="border-color: #E5E7EB;">
+              <button onclick="exportarRelatorioDOCX()" class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105" style="background: #DC2626; color: white;">
+                📄 Exportar Word (.docx)
+              </button>
+              <button onclick="fecharRelatorioModal()" class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 bg-gray-200" style="color: #333;">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Função para fechar modal de relatório
+    function fecharRelatorioModal() {
+      const modal = document.getElementById('modal-relatorio');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    // Função para exportar relatório como PDF (simplificado - pode usar biblioteca como jsPDF)
+    function exportarRelatorioDOCX() {
+      const solucoes = Array.from(solucoesSelecionadas).map(id => {
+        return ultimosResultados.find((sol, index) => {
+          const solucaoId = sol.id || `sol_${index}`;
+          return solucaoId === id;
+        });
+      }).filter(Boolean);
+
+      // Usar a mesma função de ordenação do relatório (que considera ordem, data e valor)
+      const solucoesOrdenadas = ordenarSolucoes(solucoes);
+
+      // Texto padrão do relatório
+      const textoPadrao = `Olá, segue o Relatório:
+
+Identificamos os pontos que já são fortes e, principalmente, as oportunidades de crescimento que podem ser trabalhadas para aumentar a eficiência e o faturamento da sua empresa.
+
+Meu papel é ser seu parceiro nesta jornada. este plano é o mapa para transformarmos os desafios em resultados concretos com as Soluções que temos aqui no Sebrae
+
+O próximo passo é você me dar um "ok" sobre datas e organizarmos o calendário das Etapas
+
+Estou à total disposição para conversarmos sobre este relatório, tirar qualquer dúvida e ajustarmos o que for necessário.`;
+
+      // Criar conteúdo HTML formatado para Word (.docx)
+      // Word pode abrir HTML e salvar como .docx
+      let conteudoDOCX = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:w="urn:schemas-microsoft-com:office:word"
+              xmlns="http://www.w3.org/TR/REC-html40">
+          <head>
+            <meta charset="utf-8">
+            <meta name="ProgId" content="Word.Document">
+            <meta name="Generator" content="Microsoft Word">
+            <meta name="Originator" content="Microsoft Word">
+            <title>Relatório de Soluções - ${new Date().toLocaleDateString('pt-BR')}</title>
+            <!--[if gte mso 9]>
+            <xml>
+              <w:WordDocument>
+                <w:View>Print</w:View>
+                <w:Zoom>100</w:Zoom>
+                <w:DoNotOptimizeForBrowser/>
+              </w:WordDocument>
+            </xml>
+            <![endif]-->
+            <style>
+              @page {
+                size: A4;
+                margin: 2.5cm 2cm 2.5cm 2cm;
+              }
+              body { 
+                font-family: 'Calibri', 'Arial', sans-serif; 
+                font-size: 11pt;
+                line-height: 1.5; 
+                color: #000000;
+              }
+              h1 { 
+                color: #00608B; 
+                font-size: 18pt;
+                font-weight: bold;
+                margin-top: 0;
+                margin-bottom: 20pt;
+              }
+              h2 { 
+                color: #00608B; 
+                font-size: 14pt;
+                font-weight: bold;
+                margin-top: 20pt; 
+                margin-bottom: 10pt; 
+              }
+              h3 {
+                font-size: 12pt;
+                font-weight: bold;
+                margin-top: 10pt;
+                margin-bottom: 8pt;
+              }
+              .texto-padrao { 
+                background: #f8f9fa; 
+                padding: 15pt; 
+                border-left: 4pt solid #00608B; 
+                margin-bottom: 20pt; 
+                white-space: pre-line;
+                font-size: 11pt;
+              }
+              .etapa { 
+                margin-bottom: 30pt; 
+                padding: 15pt; 
+                border: 1.5pt solid #00608B; 
+                page-break-inside: avoid;
+              }
+              .etapa-numero { 
+                display: inline-block; 
+                background: #00608B; 
+                color: white; 
+                padding: 5pt 12pt; 
+                font-weight: bold; 
+                margin-bottom: 10pt;
+                font-size: 11pt;
+              }
+              .info { 
+                margin-top: 12pt;
+              }
+              .info-item { 
+                padding: 6pt; 
+                background: #f0f0f0; 
+                margin-bottom: 6pt;
+                font-size: 10pt;
+              }
+              .link { 
+                color: #00608B; 
+                text-decoration: underline;
+              }
+              p {
+                margin: 6pt 0;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Relatório de Soluções Selecionadas</h1>
+            
+            <div class="texto-padrao">
+              ${textoPadrao.replace(/\n/g, '<br>')}
+            </div>
+            
+            <h2>Plano de Ação - Soluções Selecionadas</h2>
+            <p><strong>Total: ${solucoesOrdenadas.length} solução(ões) ordenada(s) por data (mais próxima primeiro) ou valor (menor primeiro)</strong></p>
+            <hr style="margin: 15pt 0; border: none; border-top: 1pt solid #ccc;">
+      `;
+
+      solucoesOrdenadas.forEach((sol, index) => {
+        // Usar proxima_data diretamente da base, sem fallback para criado_em no relatório
+        const dataExibicao = sol.proxima_data || null;
+        const dataFormatada = dataExibicao ? (() => {
+          if (!dataExibicao || String(dataExibicao).trim() === '') return 'A definir';
+          try {
+            // Tentar parsear data no formato DD/MM/YYYY primeiro
+            const partesBR = String(dataExibicao).trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            let data;
+            if (partesBR) {
+              // Formato brasileiro DD/MM/YYYY
+              data = new Date(parseInt(partesBR[3]), parseInt(partesBR[2]) - 1, parseInt(partesBR[1]));
+            } else {
+              // Tentar formato ISO ou outros
+              data = new Date(dataExibicao);
+            }
+            // Verificar se a data é válida
+            if (isNaN(data.getTime())) {
+              return 'A definir';
+            }
+            // Verificar se a data não é muito antiga ou muito futura
+            const ano = data.getFullYear();
+            if (ano < 1900 || ano > 2100) {
+              return 'A definir';
+            }
+            return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          } catch {
+            return 'A definir';
+          }
+        })() : 'A definir';
+        const v = sol.valor;
+        const n = (v != null && v !== '') ? Number(v) : NaN;
+        const valorTexto = !isNaN(n) && n > 0 ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
+        const inst = (sol.instrumento && String(sol.instrumento).trim()) ? sol.instrumento : 'Solução';
+        
+        conteudoDOCX += `
+          <div class="etapa">
+            <div class="etapa-numero">ETAPA ${index + 1}</div>
+            <h3>${sol.assessoria_nome || 'Sem nome'}</h3>
+            <p><strong>Tipo:</strong> ${inst}</p>
+            <p>${(sol.assessoria_descricao || 'Sem descrição').replace(/\n/g, '<br>')}</p>
+            <div class="info">
+              <div class="info-item"><strong>Data:</strong> ${dataFormatada}</div>
+              <div class="info-item"><strong>Valor:</strong> ${valorTexto}</div>
+              <div class="info-item"><strong>Dor do Momento:</strong> ${sol.momento_empresarial || sol.crescimento_empresarial || 'N/A'}</div>
+              ${sol.area_conhecimento ? `<div class="info-item"><strong>Área de Conhecimento:</strong> ${sol.area_conhecimento}</div>` : ''}
+              ${sol.carga_horaria ? `<div class="info-item"><strong>Carga Horária:</strong> ${sol.carga_horaria}</div>` : ''}
+              ${sol.link_direcionamento ? `<div class="info-item"><strong>Link:</strong> <a href="${sol.link_direcionamento}" class="link">${sol.link_direcionamento}</a></div>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      conteudoDOCX += '</body></html>';
+
+      // Criar Blob com HTML formatado para Word
+      // Word pode abrir HTML e salvar como .docx
+      const blob = new Blob(['\ufeff', conteudoDOCX], { 
+        type: 'application/msword' 
+      });
+      
+      // Criar link de download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const dataAtual = new Date().toISOString().split('T')[0];
+      link.download = `Relatorio_Solucoes_${dataAtual}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showToast('Relatório exportado! Abra o arquivo no Word e salve como .docx', 'success');
+    }
+
 
     // Função para buscar sugestões de ferramentas
     async function carregarSugestoes() {
@@ -3971,6 +5214,9 @@
     }
 
     function voltarEtapa(etapa) {
+      // Ocultar botão flutuante ao voltar para outras etapas
+      ocultarBotaoFlutuante();
+      
       if (etapa === 'momento') {
         document.getElementById('cards-empresarial').classList.add('hidden');
         document.getElementById('cards-crescimento').classList.add('hidden');
@@ -4017,6 +5263,15 @@
       
       document.getElementById('step-resultados').classList.add('hidden');
       document.getElementById('step-momento').classList.remove('hidden');
+      
+      // Ocultar botão flutuante ao reiniciar
+      ocultarBotaoFlutuante();
+      
+      // Limpar seleções de soluções
+      solucoesSelecionadas.clear();
+      
+      // Ocultar botão flutuante ao voltar para outras etapas
+      ocultarBotaoFlutuante();
       
       document.querySelectorAll('.step-circle').forEach(circle => {
         circle.classList.remove('active', 'completed');
