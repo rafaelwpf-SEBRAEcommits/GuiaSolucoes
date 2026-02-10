@@ -100,39 +100,49 @@
       gap: 0.5rem;
     }
 
+    /* Barra de progresso: passo atual = azul, concluídos = verde, pendentes = cinza */
+    .step-indicator .step-circle,
     .step-circle {
       width: 40px;
       height: 40px;
+      min-width: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      background: #E0E0E0;
-      color: #666;
-      transition: all 0.3s ease;
+      font-size: 1rem;
+      background: #b0b0b0;
+      color: #fff;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
     }
 
+    .step-indicator .step-circle.active,
     .step-circle.active {
-      background: #00608B;
-      color: white;
-      transform: scale(1.15);
+      background: #00608B !important;
+      color: #fff !important;
+      transform: scale(1.12);
+      box-shadow: 0 0 0 3px rgba(0, 96, 139, 0.4);
     }
 
-    .step-circle.completed {
-      background: #00A859;
-      color: white;
+    .step-indicator .step-circle.completed:not(.active),
+    .step-circle.completed:not(.active) {
+      background: #00A859 !important;
+      color: #fff !important;
     }
 
+    .step-indicator .step-line,
     .step-line {
       flex: 1;
-      height: 3px;
-      background: #E0E0E0;
-      transition: all 0.3s ease;
+      height: 4px;
+      min-width: 8px;
+      background: #b0b0b0;
+      transition: background 0.25s ease;
     }
 
+    .step-indicator .step-line.completed,
     .step-line.completed {
-      background: #00A859;
+      background: #00A859 !important;
     }
 
     .btn-primary {
@@ -386,6 +396,15 @@
       transform: translateY(-6px) translateX(4px);
       box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
       border-color: #00608B;
+    }
+
+    /* Card da etapa em verde quando ação concluída */
+    .trilha-solucao-card.etapa-concluida {
+      background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+      border: 2px solid #059669;
+    }
+    .trilha-solucao-card.etapa-concluida:hover {
+      border-color: #047857;
     }
 
     /* Destaque de Preço e Tipo de Produto */
@@ -1228,17 +1247,25 @@
        <span class="nav-icon" aria-hidden="true">🔍</span>
        <span>Busca</span>
       </button>
+      <button type="button" id="nav-clientes" class="sidebar-nav-item" onclick="trocarAba('clientes'); fecharSidebar();">
+       <span class="nav-icon" aria-hidden="true">📋</span>
+       <span>Clientes</span>
+      </button>
       <button type="button" id="nav-jornadas" class="sidebar-nav-item" onclick="trocarAba('jornadas'); fecharSidebar();">
        <span class="nav-icon" aria-hidden="true">🗺️</span>
        <span>Jornadas</span>
+      </button>
+      <button type="button" id="nav-calendario" class="sidebar-nav-item" onclick="trocarAba('calendario'); fecharSidebar();">
+       <span class="nav-icon" aria-hidden="true">📅</span>
+       <span>Calendário</span>
       </button>
       <button type="button" id="nav-ferramentas" class="sidebar-nav-item" onclick="trocarAba('ferramentas'); fecharSidebar();">
        <span class="nav-icon" aria-hidden="true">🛠️</span>
        <span>Ferramentas</span>
       </button>
-      <button type="button" id="nav-calendario" class="sidebar-nav-item" onclick="trocarAba('calendario'); fecharSidebar();">
-       <span class="nav-icon" aria-hidden="true">📅</span>
-       <span>Calendário</span>
+      <button type="button" id="nav-projetos" class="sidebar-nav-item" onclick="trocarAba('projetos'); fecharSidebar();">
+       <span class="nav-icon" aria-hidden="true">📁</span>
+       <span>Projetos</span>
       </button>
       <button type="button" id="nav-gestao" class="sidebar-nav-item" onclick="verificarGestor(); fecharSidebar();">
        <span id="nav-gestao-lock" class="nav-icon nav-icon--lock" aria-hidden="true">🔒</span>
@@ -1261,7 +1288,7 @@
       <button type="button" id="btn-menu-mobile" onclick="abrirSidebar();" aria-label="Abrir menu">
        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <a href="#" onclick="trocarAba('consulta'); return false;" class="topbar-logo">Soluções de Diagnóstico</a>
+      <a href="#" onclick="trocarAba('consulta'); return false;" class="topbar-logo">Soluções de Momento Empresarial</a>
       <span style="width: 40px;"></span>
      </header>
      <main id="app-wrapper" class="flex-1 overflow-auto">
@@ -1322,33 +1349,40 @@
      <div class="sebrae-gradient text-white py-8 md:py-12 px-4 md:px-8 rounded-3xl shadow-2xl relative overflow-hidden">
       <div class="relative z-10">
        <h1 id="titulo-principal" class="text-3xl md:text-5xl font-bold mb-3 drop-shadow-lg"> Guia de Soluções</h1>
-       <p id="subtitulo" class="text-lg md:text-xl opacity-95 drop-shadow-md">Encontre a solução ideal para o diagnóstico</p>
+       <p id="subtitulo" class="text-lg md:text-xl opacity-95 drop-shadow-md">Encontre a solução ideal para o momento empresarial</p>
       </div>
      </div>
-    </header><!-- Progress Indicator -->
+    </header>    <!-- Progress Indicator: 6 steps -->
     <div class="glass-card rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
-     <div class="flex items-center justify-between max-w-3xl mx-auto">
-      <div class="step-indicator flex-1">
-       <div class="step-circle active" id="step-1">
-        1
-       </div>
+     <div class="flex items-center justify-between max-w-5xl mx-auto gap-0">
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle active" id="step-1">1</div>
        <div class="step-line" id="line-1"></div>
       </div>
-      <div class="step-indicator flex-1">
-       <div class="step-circle" id="step-2">
-        2
-       </div>
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle" id="step-2">2</div>
        <div class="step-line" id="line-2"></div>
       </div>
-      <div class="step-circle" id="step-3">
-       3
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle" id="step-3">3</div>
+       <div class="step-line" id="line-3"></div>
+      </div>
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle" id="step-4">4</div>
+       <div class="step-line" id="line-4"></div>
+      </div>
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle" id="step-5">5</div>
+       <div class="step-line" id="line-5"></div>
+      </div>
+      <div class="step-indicator flex-1 min-w-0">
+       <div class="step-circle" id="step-6">6</div>
       </div>
      </div>
-     <div class="flex justify-between mt-3 text-xs md:text-sm font-semibold text-center" style="color: #00608B;"><span class="flex-1">Momento</span> <span class="flex-1">Porte</span> <span class="flex-1">Setor</span>
-     </div>
+     <div class="flex justify-between mt-3 text-xs font-semibold text-center" style="color: #00608B;"><span class="flex-1 min-w-0">Momento</span><span class="flex-1 min-w-0">Dores</span><span class="flex-1 min-w-0">Porte</span><span class="flex-1 min-w-0">Setor</span><span class="flex-1 min-w-0">Segmento</span><span class="flex-1 min-w-0">Resultados</span></div>
     </div>    <!-- Step 1: Momento da Empresa -->
     <section id="step-momento" class="fade-in">
-     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: var(--primary-blue);">Qual o momento da empresa?</h2>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: var(--primary-blue);">Qual Diagnóstico?</h2>
      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><button onclick="selecionarMomento('empresarial')" class="card-option rounded-2xl p-6 text-left">
        <div class="flex items-center gap-3 mb-3"><span class="text-3xl">🏢</span>
         <h3 class="text-xl font-bold" style="color: var(--primary-blue);">Momento Empresarial</h3>
@@ -1374,7 +1408,23 @@
      <div class="text-center"><button onclick="avancarParaPorte()" id="btn-avancar-crescimento" disabled class="btn-primary btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--primary-blue);"> Avançar para Porte → </button>
      </div>
     </section><!-- Step 2: Porte -->
-    <section id="step-porte" class="hidden fade-in"><button onclick="voltarEtapa('cards')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+   <!-- Step 1.3: Intensidade das Dores -->
+   <section id="step-intensidade" class="hidden fade-in">
+    <button onclick="voltarEtapa('intensidade')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+    <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 md:mb-6" style="color: #00608B;">Qual a intensidade de cada dor?</h2>
+    <p class="text-sm md:text-base text-center mb-6 md:mb-8" style="color: #666;">
+     Para cada área selecionada, indique aproximadamente o quanto ela representa dos seus desafios hoje.
+    </p>
+    <div id="lista-intensidade-dores" class="space-y-4 mb-6">
+     <!-- Gerado dinamicamente conforme as dores selecionadas -->
+    </div>
+    <div class="text-center">
+     <button onclick="avancarParaPortePosIntensidade()" id="btn-avancar-intensidade" disabled class="btn-primary btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--primary-blue);">
+      Avançar para Porte →
+     </button>
+    </div>
+   </section>
+   <section id="step-porte" class="hidden fade-in"><button onclick="voltarEtapa('cards')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
      <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o porte da empresa?</h2>
      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><button onclick="selecionarPorte('MEI')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">👤</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">MEI</h3><p class="text-sm" style="color: #666;">Microempreendedor Individual</p></button> <button onclick="selecionarPorte('ME')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">👥</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">ME</h3><p class="text-sm" style="color: #666;">Microempresa</p></button> <button onclick="selecionarPorte('EPP')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏢</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">EPP</h3><p class="text-sm" style="color: #666;">Empresa de Pequeno Porte</p></button>
      </div>
@@ -1383,6 +1433,13 @@
      <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o setor de atuação?</h2>
      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"><button onclick="selecionarSetor('Comercio')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🛒</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Comércio</h3><p class="text-sm" style="color: #666;">Compra e venda de produtos</p></button> <button onclick="selecionarSetor('Industria')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🏭</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Indústria</h3><p class="text-sm" style="color: #666;">Produção e transformação</p></button> <button onclick="selecionarSetor('Servicos')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">💼</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Serviços</h3><p class="text-sm" style="color: #666;">Prestação de serviços</p></button> <button onclick="selecionarSetor('Multissetorial')" class="card-option bg-white rounded-xl shadow-lg p-6"> <span class="text-4xl mb-3 block">🌐</span> <h3 class="text-xl font-bold mb-2" style="color: #00608B;">Multissetorial</h3><p class="text-sm" style="color: #666;">Múltiplos setores</p></button>
      </div>
+    </section><!-- Step 4: Segmento -->
+    <section id="step-segmento" class="hidden fade-in"><button onclick="voltarEtapa('setor')" class="mb-4 text-sm font-semibold flex items-center gap-2" style="color: #00608B;"> ← Voltar </button>
+     <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8" style="color: #00608B;">Qual o segmento?</h2>
+     <p class="text-center text-sm mb-6" style="color: #666;">Selecione um ou mais segmentos de atuação (opcional). Se não selecionar nenhum, todas as soluções do setor serão exibidas.</p>
+     <div class="flex justify-center gap-4 mb-6 flex-wrap"><button onclick="selecionarTodosSegmentos()" class="btn-modern px-4 py-2 rounded-xl font-semibold text-sm" style="background: #E8F7F0; color: #00A859;">✓ Todos</button><button onclick="selecionarNenhumSegmento()" class="btn-modern px-4 py-2 rounded-xl font-semibold text-sm" style="background: #FFF4E6; color: #FF8C00;">✗ Nenhum</button></div>
+     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6" id="grid-segmentos"></div>
+     <div class="text-center"><button onclick="avancarDeSegmento()" class="btn-primary btn-modern px-8 py-4 text-white font-bold rounded-xl text-lg" style="background: var(--primary-blue);">Avançar para Resultados →</button></div>
     </section>    <!-- Resultados -->
     <section id="step-resultados" class="hidden fade-in">
      <div class="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
@@ -1466,7 +1523,7 @@
        <h3 class="text-lg font-bold mb-4" style="color: #00608B;">Filtros</h3>
        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-         <label class="block text-sm font-semibold mb-2" style="color: #00608B;">Tipo de Momento</label>
+         <label class="block text-sm font-semibold mb-2" style="color: #00608B;">Tipo de Diagnóstico</label>
          <select id="ferramentas-tipo-momento" class="input-modern w-full px-4 py-3 rounded-xl" onchange="atualizarFiltroDorFerramentas(); renderListaFerramentas();">
           <option value="">Todos</option>
           <option value="empresarial">Momento Empresarial</option>
@@ -1554,6 +1611,70 @@
       </div>
      </div>
     </div>
+    <!-- Aba Projetos -->
+    <div id="aba-projetos" class="tab-content">
+     <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4" style="border-color: var(--primary-blue);">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6" style="color: var(--primary-blue);">Projetos</h2>
+      <p class="text-sm mb-6" style="color: #666;">Projetos cadastrados. Para cadastrar ou editar, use a aba Gestão.</p>
+      <div id="lista-projetos" class="space-y-3 max-h-96 overflow-y-auto"></div>
+     </div>
+    </div>
+    <!-- Aba Clientes -->
+    <div id="aba-clientes" class="tab-content">
+     <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4" style="border-color: var(--primary-blue);">
+      <h2 class="text-3xl md:text-4xl font-bold mb-6" style="color: var(--primary-blue);">Clientes</h2>
+      <h4 class="text-xl font-bold mb-4" style="color: #00608B;">📋 Jornadas de busca</h4>
+       <p class="text-sm mb-4" style="color: #666;">Todas as buscas refletidas no Supabase. Salve pelo relatório com &quot;Salvar jornada&quot;.</p>
+       <!-- Filtros da lista de jornadas -->
+       <div class="mb-4 p-4 rounded-xl border-2" style="background: #F0F9FF; border-color: #A0C5CF;">
+        <h5 class="font-bold mb-3 text-sm" style="color: #00608B;">🔍 Filtros</h5>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+         <div>
+          <label class="block text-xs font-semibold mb-1" style="color: #00608B;">Nome do Cliente</label>
+          <input type="text" id="filtro-cliente-nome" placeholder="Buscar por nome..." class="input-modern w-full px-3 py-2 rounded-lg text-sm" oninput="renderizarTabelaJornadasClientes()">
+         </div>
+         <div>
+          <label class="block text-xs font-semibold mb-1" style="color: #00608B;">Nome do Gestor</label>
+          <input type="text" id="filtro-gestor-nome" placeholder="Buscar por gestor..." class="input-modern w-full px-3 py-2 rounded-lg text-sm" oninput="renderizarTabelaJornadasClientes()">
+         </div>
+         <div>
+          <label class="block text-xs font-semibold mb-1" style="color: #00608B;">Porte</label>
+          <select id="filtro-cliente-porte" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="renderizarTabelaJornadasClientes()">
+           <option value="">Todos</option>
+           <option value="MEI">MEI</option>
+           <option value="ME">ME</option>
+           <option value="EPP">EPP</option>
+          </select>
+         </div>
+         <div>
+          <label class="block text-xs font-semibold mb-1" style="color: #00608B;">Dor</label>
+          <select id="filtro-cliente-dor" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="renderizarTabelaJornadasClientes()">
+           <option value="">Todas</option>
+           <option value="Gerencie">Gerencie</option>
+           <option value="Planeje">Planeje</option>
+           <option value="Organize">Organize</option>
+           <option value="Lidere">Lidere</option>
+           <option value="Potencialize">Potencialize</option>
+           <option value="Marketing e Vendas">Marketing e Vendas</option>
+           <option value="Financas">Financas</option>
+           <option value="Planejamento">Planejamento</option>
+           <option value="Pessoas">Pessoas</option>
+           <option value="Operacoes">Operacoes</option>
+          </select>
+         </div>
+        </div>
+       </div>
+       <div class="mb-4 flex justify-end">
+        <button type="button" onclick="carregarJornadasSalvas()" class="btn-modern px-4 py-2 rounded-xl font-semibold text-sm" style="background: #E3ECEE; color: #00608B;">🔄 Atualizar lista</button>
+       </div>
+       <div id="jornadas-salvas-container" class="overflow-x-auto">
+        <div class="text-center py-8 text-gray-500">Carregando...</div>
+       </div>
+       <div id="jornadas-salvas-vazia" class="hidden text-center py-8">
+        <p style="color: #999;">Nenhuma jornada no banco ainda</p>
+       </div>
+     </div>
+    </div>
     <!-- Aba Gerenciamento -->
     <div id="aba-gerenciamento" class="tab-content">
      <div class="glass-card rounded-2xl p-6 md:p-8 border-t-4" style="border-color: var(--primary-blue);">
@@ -1601,8 +1722,8 @@
          <p class="text-xs" style="color: #1e40af;">As soluções são ofertadas de acordo com o <strong>momento empresarial</strong> e o <strong>foco principal da dor</strong> selecionados. Preencha os campos abaixo para que esta solução apareça nas recomendações corretas da consulta.</p>
        </div>
        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Momento empresarial -->
-        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Momento empresarial *</label> <select id="cad-tipo-momento" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="empresarial">Momento Empresarial (estruturação e gestão)</option> <option value="crescimento">Crescimento Empresarial (expansão e escalabilidade)</option> </select>
+        <!-- Momento Empresarial -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Momento Empresarial *</label> <select id="cad-tipo-momento" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="empresarial">Momento Empresarial (estruturação e gestão)</option> <option value="crescimento">Crescimento Empresarial (expansão e escalabilidade)</option> </select>
         </div>
         <!-- Foco principal da dor -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Foco principal da dor *</label> <select id="cad-categoria" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione o momento empresarial primeiro</option> </select><p class="text-xs mt-1" style="color: #666;">Área/foco que define quando esta solução será recomendada.</p>
@@ -1644,6 +1765,9 @@
         </div>
         <!-- Ordem -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Ordem de Exibição *</label> <select id="cad-ordem" required class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="1">1 - Primeira Assessoria</option> <option value="2">2 - Segunda Assessoria</option> </select>
+        </div>
+        <!-- Porcentagem -->
+        <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Porcentagem</label> <select id="cad-porcentagem" class="input-modern w-full px-4 py-3 rounded-xl"> <option value="">Selecione...</option> <option value="baixa">Abaixo de 25%</option> <option value="media">25% a 50%</option> <option value="alta">Acima de 50%</option> </select>
         </div>
         <!-- Link de Direcionamento -->
         <div><label class="block text-sm font-semibold mb-2" style="color: var(--primary-blue);">Link de Direcionamento</label> <input type="url" id="cad-link-direcionamento" placeholder="Ex: https://www.sebrae.com.br/solucao" class="input-modern w-full px-4 py-3 rounded-xl"><p class="text-xs mt-1" style="color: #666;">URL para direcionar o usuário à solução.</p>
@@ -1736,6 +1860,31 @@
        </form>
        <div id="lista-sugestoes" class="space-y-3 max-h-96 overflow-y-auto"></div>
       </div>
+      <!-- Gerenciar Projetos (cadastro) -->
+      <div class="mt-12 pt-8 border-t-4" style="border-color: #00608B;">
+       <h4 class="text-xl font-bold mb-4" style="color: #00608B;">📁 Gerenciar Projetos</h4>
+       <p class="text-sm mb-6" style="color: #666;">Cadastre projetos que podem ser utilizados em planejamentos e relatórios. Eles aparecerão na aba Projetos.</p>
+       <form id="form-projeto" class="space-y-4 mb-6 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #A0C5CF;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Título do Projeto *</label><input type="text" id="proj-titulo" required placeholder="Ex: Projeto de Transformação Digital" class="input-modern w-full px-4 py-3 rounded-xl"></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Link</label><input type="url" id="proj-link" placeholder="https://..." class="input-modern w-full px-4 py-3 rounded-xl"></div>
+        </div>
+        <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Descrição</label><textarea id="proj-descricao" rows="3" placeholder="Descreva brevemente o projeto..." class="input-modern w-full px-4 py-3 rounded-xl"></textarea></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Tipo de Momento</label><select id="proj-tipo-momento" class="input-modern w-full px-4 py-3 rounded-xl" onchange="atualizarCategoriasProjeto()"><option value="">Todos</option><option value="empresarial">Momento Empresarial</option><option value="crescimento">Crescimento Empresarial</option></select></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Área de Crescimento (Dor)</label><select id="proj-crescimento" class="input-modern w-full px-4 py-3 rounded-xl"><option value="">Selecione o tipo de momento primeiro</option></select></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Porte</label><select id="proj-porte" class="input-modern w-full px-4 py-3 rounded-xl"><option value="">Todos</option><option value="MEI">MEI</option><option value="ME">ME</option><option value="EPP">EPP</option></select></div>
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Setor</label><select id="proj-setor" class="input-modern w-full px-4 py-3 rounded-xl"><option value="">Todos</option><option value="Comercio">Comércio</option><option value="Industria">Indústria</option><option value="Servicos">Serviços</option><option value="Multissetorial">Multissetorial</option></select></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+         <div><label class="block text-sm font-semibold mb-2" style="color: #00608B;">Ordem de Exibição</label><input type="number" id="proj-ordem" min="1" value="1" class="input-modern w-full px-4 py-3 rounded-xl"></div>
+         <div class="flex items-center gap-2 mt-6 md:mt-8"><input type="checkbox" id="proj-ativo" checked class="h-4 w-4"><label for="proj-ativo" class="text-sm font-semibold" style="color: #00608B;">Ativo</label></div>
+        </div>
+        <button type="button" onclick="salvarProjeto()" class="btn-modern w-full px-6 py-3 text-white font-bold rounded-xl" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%);">💾 Salvar Projeto</button>
+       </form>
+      </div>
      </div>
     </div>
    </div>
@@ -1773,13 +1922,20 @@
     let assessoriasData = [];
     let ultimosResultados = [];
     let sugestoesData = [];
+    let projetosData = [];
     let todasJornadasData = []; // Armazenar todas as jornadas para uso no modal
+    let ultimasJornadasSalvasData = []; // Jornadas da tabela (aba Clientes) para abrir relatório ao clicar
     let solucoesSelecionadas = new Set(); // Armazenar IDs das soluções selecionadas para relatório
+    let projetosSelecionados = new Set(); // Armazenar IDs dos projetos selecionados para relatório
+    let ferramentasSelecionadas = new Set(); // Armazenar IDs das ferramentas selecionadas para a jornada/relatório
+    const SEGMENTOS_OPCOES = ['Alimentação Fora Do Lar', 'Alimentos E Bebidas', 'Beleza E Estética', 'Construção Civil', 'Economia Criativa', 'Multisegmento', 'Pet Shop', 'Reparação Automotiva', 'Tecnologia Da Informação', 'Turismo', 'Vestuário'];
     let selecao = {
       tipoMomento: null,
       categorias: [],
       porte: null,
-      setor: null
+      setor: null,
+      segmentos: [],
+      intensidades: {} // mapa: dor/categoria -> faixa de intensidade selecionada
     };
     const STORAGE_KEY = 'guia_sebrae_solucoes';
     const STORAGE_KEY_SUGESTOES = 'guia_sebrae_sugestoes';
@@ -1805,7 +1961,7 @@
     async function carregarDados() {
       if (supabaseClient) {
         try {
-          const { data, error } = await supabaseClient.from('solucoes').select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, link_direcionamento, proxima_data, data_validade, criado_em');
+          const { data, error } = await supabaseClient.from('solucoes').select('id, codigo, porte, setor, momento_empresarial, crescimento_empresarial, assessoria_nome, assessoria_descricao, segmento, area_conhecimento, temas, carga_horaria, instrumento, fornecedor, valor, ordem, porcentagem, link_direcionamento, proxima_data, data_validade, criado_em');
           if (error) throw error;
           assessoriasData = (data || []).map(a => {
             if (!a.__backendId) a.__backendId = a.id;
@@ -1856,7 +2012,9 @@
             proxima_data: obj.proxima_data || null,
             valor: (obj.valor != null && obj.valor !== '') ? Number(obj.valor) : 0,
             ordem: (obj.ordem != null && obj.ordem !== '') ? parseInt(obj.ordem, 10) : 1,
-            link_direcionamento: obj.link_direcionamento || null
+            porcentagem: (obj.porcentagem && ['baixa','media','alta'].includes(obj.porcentagem)) ? obj.porcentagem : null,
+            link_direcionamento: obj.link_direcionamento || null,
+            data_validade: obj.data_validade || null
           };
           console.log('Tentando inserir no Supabase:', toInsert);
           const { data, error } = await supabaseClient.from('solucoes').insert(toInsert).select().single();
@@ -2250,9 +2408,11 @@
 
     function selecionarMomento(tipo) {
       selecao.tipoMomento = tipo;
-      
       document.getElementById('step-momento').classList.add('hidden');
-      
+      document.getElementById('step-1').classList.remove('active');
+      document.getElementById('step-1').classList.add('completed');
+      document.getElementById('line-1').classList.add('completed');
+      document.getElementById('step-2').classList.add('active');
       if (tipo === 'empresarial') {
         document.getElementById('cards-empresarial').classList.remove('hidden');
       } else {
@@ -2266,10 +2426,17 @@
       
       if (selecao.categorias.includes(categoria)) {
         selecao.categorias = selecao.categorias.filter(c => c !== categoria);
-        card.classList.remove('selected');
+        if (selecao.intensidades && selecao.intensidades[categoria]) {
+          delete selecao.intensidades[categoria];
+        }
+        if (card) {
+          card.classList.remove('selected');
+        }
       } else {
         selecao.categorias.push(categoria);
-        card.classList.add('selected');
+        if (card) {
+          card.classList.add('selected');
+        }
       }
       
       const btnId = selecao.tipoMomento === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
@@ -2281,6 +2448,7 @@
       const gridAtual = tipo === 'empresarial' ? 'grid-empresarial' : 'grid-crescimento';
       
       selecao.categorias = lista.map(item => item.id);
+      selecao.intensidades = selecao.intensidades || {};
       
       document.querySelectorAll(`#${gridAtual} .card-option`).forEach(card => {
         card.classList.add('selected');
@@ -2294,6 +2462,7 @@
       const gridAtual = tipo === 'empresarial' ? 'grid-empresarial' : 'grid-crescimento';
       
       selecao.categorias = [];
+      selecao.intensidades = {};
       
       document.querySelectorAll(`#${gridAtual} .card-option`).forEach(card => {
         card.classList.remove('selected');
@@ -2302,16 +2471,128 @@
       const btnId = tipo === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
       document.getElementById(btnId).disabled = true;
     }
-
-    function avancarParaPorte() {
+    
+    function irDiretoParaPorte() {
       document.getElementById('cards-empresarial').classList.add('hidden');
       document.getElementById('cards-crescimento').classList.add('hidden');
+      document.getElementById('step-intensidade').classList.add('hidden');
       document.getElementById('step-porte').classList.remove('hidden');
+      document.getElementById('step-2').classList.remove('active');
+      document.getElementById('step-2').classList.add('completed');
+      document.getElementById('line-2').classList.add('completed');
+      document.getElementById('step-3').classList.add('active');
+    }
+    
+    function mostrarStepIntensidade() {
+      const categoriasValidas = (selecao.categorias || []).filter(c => c !== 'Nenhuma');
       
-      document.getElementById('step-1').classList.remove('active');
-      document.getElementById('step-1').classList.add('completed');
-      document.getElementById('line-1').classList.add('completed');
-      document.getElementById('step-2').classList.add('active');
+      if (categoriasValidas.length === 0) {
+        // Sem dores específicas selecionadas: manter fluxo antigo
+        irDiretoParaPorte();
+        return;
+      }
+      
+      selecao.intensidades = selecao.intensidades || {};
+      
+      // Esconder grids e mostrar etapa de intensidade
+      document.getElementById('cards-empresarial').classList.add('hidden');
+      document.getElementById('cards-crescimento').classList.add('hidden');
+      const stepIntensidade = document.getElementById('step-intensidade');
+      if (!stepIntensidade) {
+        // Fallback de segurança: se por algum motivo a seção não existir, seguir fluxo antigo
+        irDiretoParaPorte();
+        return;
+      }
+      stepIntensidade.classList.remove('hidden');
+      
+      const container = document.getElementById('lista-intensidade-dores');
+      if (!container) return;
+      
+      const todasCategorias = [...momentoEmpresarial, ...crescimentoEmpresarial];
+      const encontrarTitulo = (id) => {
+        const item = todasCategorias.find(i => i.id === id);
+        return item ? item.titulo : id;
+      };
+      
+      const faixaLabel = {
+        baixa: 'Abaixo de 25%',
+        media: 'De 25% até 50%',
+        alta: 'Acima de 50%'
+      };
+      
+      const html = categoriasValidas.map(cat => {
+        const titulo = encontrarTitulo(cat);
+        const faixaSelecionada = selecao.intensidades[cat] || null;
+        return `
+          <div class="p-4 md:p-5 rounded-2xl border-2 bg-white shadow-sm" style="border-color: #A0C5CF;" data-dor-intensidade="${cat}">
+            <h3 class="text-base md:text-lg font-bold mb-3" style="color: #00608B;">${titulo}</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+              <button type="button" class="btn-modern px-4 py-2 rounded-xl text-sm font-semibold ${faixaSelecionada === 'baixa' ? 'bg-blue-100 border-2' : 'bg-white border'}" data-intensidade-btn data-dor="${cat}" data-faixa="baixa" style="border-color: ${faixaSelecionada === 'baixa' ? '#00608B' : '#A0C5CF'}; color: ${faixaSelecionada === 'baixa' ? '#00608B' : '#444'};">
+                Abaixo de 25%
+              </button>
+              <button type="button" class="btn-modern px-4 py-2 rounded-xl text-sm font-semibold ${faixaSelecionada === 'media' ? 'bg-blue-100 border-2' : 'bg-white border'}" data-intensidade-btn data-dor="${cat}" data-faixa="media" style="border-color: ${faixaSelecionada === 'media' ? '#00608B' : '#A0C5CF'}; color: ${faixaSelecionada === 'media' ? '#00608B' : '#444'};">
+                De 25% até 50%
+              </button>
+              <button type="button" class="btn-modern px-4 py-2 rounded-xl text-sm font-semibold ${faixaSelecionada === 'alta' ? 'bg-blue-100 border-2' : 'bg-white border'}" data-intensidade-btn data-dor="${cat}" data-faixa="alta" style="border-color: ${faixaSelecionada === 'alta' ? '#00608B' : '#A0C5CF'}; color: ${faixaSelecionada === 'alta' ? '#00608B' : '#444'};">
+                Acima de 50%
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      container.innerHTML = html;
+      
+      // Adicionar listeners para seleção de faixa
+      container.querySelectorAll('[data-intensidade-btn]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const dor = btn.getAttribute('data-dor');
+          const faixa = btn.getAttribute('data-faixa');
+          
+          selecao.intensidades = selecao.intensidades || {};
+          selecao.intensidades[dor] = faixa;
+          
+          // Atualizar estilos dos botões da mesma dor
+          container.querySelectorAll(`[data-intensidade-btn][data-dor="${dor}"]`).forEach(b => {
+            const f = b.getAttribute('data-faixa');
+            const isAtiva = f === faixa;
+            b.style.borderColor = isAtiva ? '#00608B' : '#A0C5CF';
+            b.style.backgroundColor = isAtiva ? '#DBEAFE' : '#FFFFFF';
+            b.style.color = isAtiva ? '#00608B' : '#444444';
+          });
+          
+          atualizarEstadoBotaoAvancarIntensidade();
+        });
+      });
+      
+      atualizarEstadoBotaoAvancarIntensidade();
+    }
+    
+    function atualizarEstadoBotaoAvancarIntensidade() {
+      const btn = document.getElementById('btn-avancar-intensidade');
+      if (!btn) return;
+      const categoriasValidas = (selecao.categorias || []).filter(c => c !== 'Nenhuma');
+      const intensidades = selecao.intensidades || {};
+      const todasPreenchidas = categoriasValidas.length === 0 || categoriasValidas.every(c => !!intensidades[c]);
+      btn.disabled = !todasPreenchidas;
+    }
+    
+    function avancarParaPortePosIntensidade() {
+      const categoriasValidas = (selecao.categorias || []).filter(c => c !== 'Nenhuma');
+      const intensidades = selecao.intensidades || {};
+      const todasPreenchidas = categoriasValidas.length === 0 || categoriasValidas.every(c => !!intensidades[c]);
+      if (!todasPreenchidas) {
+        if (typeof showToast === 'function') {
+          showToast('Defina a porcentagem para cada dor antes de avançar.', 'error');
+        }
+        return;
+      }
+      irDiretoParaPorte();
+    }
+    
+    function avancarParaPorte() {
+      // Nova lógica: após selecionar as dores, abrimos a etapa de intensidade
+      mostrarStepIntensidade();
     }
 
     function selecionarPorte(porte) {
@@ -2325,38 +2606,84 @@
       setTimeout(() => {
         document.getElementById('step-porte').classList.add('hidden');
         document.getElementById('step-setor').classList.remove('hidden');
-        
-        document.getElementById('step-2').classList.remove('active');
-        document.getElementById('step-2').classList.add('completed');
-        document.getElementById('line-2').classList.add('completed');
-        document.getElementById('step-3').classList.add('active');
+        document.getElementById('step-3').classList.remove('active');
+        document.getElementById('step-3').classList.add('completed');
+        document.getElementById('line-3').classList.add('completed');
+        document.getElementById('step-4').classList.add('active');
       }, 300);
     }
 
     function selecionarSetor(setor) {
       selecao.setor = setor;
-      
       document.querySelectorAll('#step-setor .card-option').forEach(card => {
         card.classList.remove('selected');
       });
-      event.currentTarget.classList.add('selected');
-      
-      setTimeout(() => {
-        buscarAssessorias();
-      }, 300);
+      if (event && event.currentTarget) event.currentTarget.classList.add('selected');
+      document.getElementById('step-setor').classList.add('hidden');
+      document.getElementById('step-segmento').classList.remove('hidden');
+      document.getElementById('step-4').classList.remove('active');
+      document.getElementById('step-4').classList.add('completed');
+      document.getElementById('line-4').classList.add('completed');
+      document.getElementById('step-5').classList.add('active');
+      renderizarGridSegmentos();
+    }
+
+    function renderizarGridSegmentos() {
+      const grid = document.getElementById('grid-segmentos');
+      if (!grid) return;
+      grid.innerHTML = SEGMENTOS_OPCOES.map(seg => {
+        const selected = (selecao.segmentos || []).includes(seg);
+        return `<button type="button" onclick="toggleSegmento('${seg.replace(/'/g, "\\'")}')" class="card-option bg-white rounded-xl shadow-lg p-4 text-left ${selected ? 'selected' : ''}" data-segmento="${seg.replace(/"/g, '&quot;')}"><span class="font-semibold" style="color: #00608B;">${seg}</span></button>`;
+      }).join('');
+    }
+
+    function toggleSegmento(seg) {
+      const arr = selecao.segmentos || [];
+      const idx = arr.indexOf(seg);
+      if (idx >= 0) {
+        arr.splice(idx, 1);
+      } else {
+        arr.push(seg);
+      }
+      selecao.segmentos = arr;
+      const grid = document.getElementById('grid-segmentos');
+      if (grid) {
+        const btn = Array.from(grid.querySelectorAll('button')).find(b => b.getAttribute('data-segmento') === seg);
+        if (btn) {
+          if (arr.includes(seg)) btn.classList.add('selected');
+          else btn.classList.remove('selected');
+        }
+      }
+    }
+
+    function selecionarTodosSegmentos() {
+      selecao.segmentos = SEGMENTOS_OPCOES.slice();
+      document.querySelectorAll('#grid-segmentos button').forEach(btn => {
+        btn.classList.add('selected');
+      });
+    }
+
+    function selecionarNenhumSegmento() {
+      selecao.segmentos = [];
+      document.querySelectorAll('#grid-segmentos button').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+    }
+
+    function avancarDeSegmento() {
+      document.getElementById('step-segmento').classList.add('hidden');
+      document.getElementById('step-resultados').classList.remove('hidden');
+      document.getElementById('step-5').classList.remove('active');
+      document.getElementById('step-5').classList.add('completed');
+      document.getElementById('line-5').classList.add('completed');
+      document.getElementById('step-6').classList.add('completed');
+      buscarAssessorias();
     }
 
     const VALID_EMPRESARIAL = ['Gerencie','Planeje','Organize','Lidere','Potencialize'];
     const VALID_CRESCIMENTO = ['Marketing e Vendas','Financas','Planejamento','Pessoas','Operacoes'];
 
     function buscarAssessorias() {
-      document.getElementById('step-setor').classList.add('hidden');
-      document.getElementById('step-resultados').classList.remove('hidden');
-      
-      document.getElementById('step-3').classList.remove('active');
-      document.getElementById('step-3').classList.add('completed');
-      
-      // Limpar seleções anteriores ao fazer nova busca
       solucoesSelecionadas.clear();
       atualizarContadorSelecionadas();
       
@@ -2379,15 +2706,18 @@
           }
         }
         
-        // Normalizar setor para comparação
         let setorA = a.setor || '';
         if (setorA === 'Comércio') setorA = 'Comercio';
         else if (setorA === 'Indústria') setorA = 'Industria';
         else if (setorA === 'Serviços') setorA = 'Servicos';
         
+        const segmentoMatch = !(selecao.segmentos && selecao.segmentos.length > 0) ||
+          (a.segmento && selecao.segmentos.includes(a.segmento));
+        
         return categoriaMatch && 
                a.porte === selecao.porte && 
-               setorA === selecao.setor;
+               setorA === selecao.setor &&
+               segmentoMatch;
       }).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
       renderResumoSelecao();
@@ -2410,6 +2740,44 @@
       
       // Buscar e exibir sugestão de ferramenta
       buscarEExibirSugestao();
+      
+      // Persistir jornada (incluindo intensidades por dor) no Supabase
+      salvarJornadaNoSupabase();
+      
+      // Destacar a solução que mais faz sentido com este perfil
+      renderMelhorSolucao(resultados);
+    }
+
+    function renderMelhorSolucao(resultados) {
+      // Bloco "Solução em destaque" removido a pedido do usuário
+    }
+
+    /** Salva a jornada de busca no Supabase (tipo_momento, porte, setor, categorias, intensidades, ferramentas_ids). */
+    async function salvarJornadaNoSupabase() {
+      if (!supabaseClient) return;
+      try {
+        const categorias = Array.isArray(selecao.categorias) ? selecao.categorias : [];
+        const intensidades = selecao.intensidades && typeof selecao.intensidades === 'object' ? selecao.intensidades : {};
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const ferramentasIds = Array.from(ferramentasSelecionadas || []).filter(id => uuidRegex.test(String(id)));
+        const idsFromTitulo = Array.from(ferramentasSelecionadas || []).filter(id => !uuidRegex.test(String(id)));
+        idsFromTitulo.forEach(tituloOuId => {
+          const s = sugestoesData.find(sug => (sug.titulo === tituloOuId) || (String(sug.id) === String(tituloOuId)) || (String(sug.__backendId) === String(tituloOuId)));
+          if (s && s.id && uuidRegex.test(String(s.id))) ferramentasIds.push(s.id);
+        });
+        const payload = {
+          tipo_momento: selecao.tipoMomento || null,
+          porte: selecao.porte || null,
+          setor: selecao.setor || null,
+          categorias: categorias,
+          intensidades: intensidades,
+          ferramentas_ids: ferramentasIds
+        };
+        const { error } = await supabaseClient.from('jornadas_busca').insert(payload);
+        if (error) console.warn('Supabase jornadas_busca:', error.message);
+      } catch (e) {
+        console.warn('Erro ao salvar jornada no Supabase:', e);
+      }
     }
 
     function renderResumoSelecao() {
@@ -2425,16 +2793,33 @@
         'Potencialize': { bg: '#FF6B35', color: '#FFFFFF' } // Laranja vibrante
       };
       
+      const faixaResumoLabel = {
+        baixa: '< 25%',
+        media: '25% a 50%',
+        alta: '> 50%'
+      };
+      
       const categoriasBadges = selecao.categorias.map(cat => {
         const cor = coresMomentoEmpresarial[cat] || { bg: '#E3ECEE', color: '#00608B' };
-        return `<span class="badge" style="background-color: ${cor.bg}; color: ${cor.color}; font-weight: 600;">${cat}</span>`;
+        let label = cat;
+        if (selecao.intensidades && selecao.intensidades[cat] && cat !== 'Nenhuma') {
+          const faixa = faixaResumoLabel[selecao.intensidades[cat]] || '';
+          if (faixa) {
+            label = `${cat} (${faixa})`;
+          }
+        }
+        return `<span class="badge" style="background-color: ${cor.bg}; color: ${cor.color}; font-weight: 600;">${label}</span>`;
       }).join('');
       
+      const segmentosBadges = (selecao.segmentos && selecao.segmentos.length > 0)
+        ? selecao.segmentos.map(s => `<span class="badge" style="background-color: #E0E7FF; color: #3730A3;">${(s || '').replace(/</g, '&lt;')}</span>`).join('')
+        : '';
       resumo.innerHTML = `
         <span class="badge" style="background-color: #E3ECEE; color: #00608B;">${tipoTexto}</span>
         ${categoriasBadges}
         <span class="badge" style="background-color: #E8F7F0; color: #00A859;">${selecao.porte}</span>
-        <span class="badge" style="background-color: #FFF4E6; color: #FF8C00;">${selecao.setor}</span>
+        <span class="badge" style="background-color: #FFF4E6; color: #FF8C00;">${(selecao.setor || '').replace(/</g, '&lt;')}</span>
+        ${segmentosBadges}
       `;
       
       // Atualizar header do fluxograma
@@ -3498,8 +3883,10 @@
 
     // Função para abrir/fechar painel de seleção
     function togglePainelSelecaoRelatorio() {
-      if (ultimosResultados.length === 0) {
-        showToast('Nenhuma solução disponível para seleção', 'error');
+      const temSolucoes = ultimosResultados.length > 0;
+      const temProjetos = (projetosData || []).length > 0;
+      if (!temSolucoes && !temProjetos) {
+        showToast('Carregue uma busca ou tenha projetos cadastrados para selecionar', 'error');
         return;
       }
 
@@ -3518,7 +3905,8 @@
         painel.classList.add('translate-x-full');
         overlay.classList.add('hidden');
       } else {
-        // Abrir
+        // Abrir: garantir que projetos estejam carregados
+        if (typeof carregarProjetos === 'function') carregarProjetos();
         painel.classList.remove('translate-x-full');
         overlay.classList.remove('hidden');
         
@@ -3534,20 +3922,25 @@
 
     // Função para atualizar conteúdo do painel
     function atualizarConteudoPainel() {
-      // Atualizar total de soluções
-      const totalSolucoes = document.getElementById('total-solucoes-modal');
-      if (totalSolucoes) {
-        totalSolucoes.textContent = ultimosResultados.length;
-      }
+      const totalSolucoes = ultimosResultados.length;
+      const totalProjetos = (projetosData || []).length;
+      const totalItens = totalSolucoes + totalProjetos;
+      const elTotal = document.getElementById('total-solucoes-modal');
+      if (elTotal) elTotal.textContent = totalItens;
       
-      // Renderizar lista de soluções disponíveis
       renderizarListaDisponiveisPainel();
-      
-      // Mostrar preview das selecionadas
+      renderizarListaProjetosDisponiveisPainel();
       atualizarPreviewSelecionadas();
-      
-      // Atualizar badge do botão flutuante
       atualizarBadgeBotaoFlutuante();
+    }
+
+    function toggleSecaoAdicionarProjetos() {
+      const secao = document.getElementById('secao-adicionar-projetos');
+      const icone = document.getElementById('icone-toggle-adicionar-projetos');
+      if (secao && icone) {
+        secao.classList.toggle('hidden');
+        icone.textContent = secao.classList.contains('hidden') ? '▼' : '▲';
+      }
     }
 
     // Função para renderizar lista de soluções disponíveis no painel
@@ -3632,6 +4025,48 @@
       }).join('');
     }
 
+    function renderizarListaProjetosDisponiveisPainel() {
+      const container = document.getElementById('lista-projetos-disponiveis-painel');
+      if (!container) return;
+      const projetos = (projetosData || []).filter(p => p.ativo !== false);
+      const naoSelecionados = projetos.filter(p => !projetosSelecionados.has(String(p.id)));
+      const esc = (t) => (t ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;');
+      if (naoSelecionados.length === 0) {
+        container.innerHTML = projetos.length === 0 ? '<p class="text-xs text-center py-4" style="color: #999;">Nenhum projeto cadastrado</p>' : '<p class="text-xs text-center py-4" style="color: #999;">Todos os projetos já foram selecionados</p>';
+        return;
+      }
+      container.innerHTML = naoSelecionados.map(p => {
+        const idSafe = String(p.id).replace(/'/g, "\\'");
+        const titulo = esc(p.titulo || 'Sem título');
+        const meta = [p.porte, p.setor].filter(Boolean).join(' · ') || '—';
+        return `<div class="bg-white rounded-lg p-3 border border-gray-200 hover:border-blue-400 transition-all cursor-pointer" onclick="adicionarProjetoAoPainel('${idSafe}')">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm mb-1" style="color: #1F2937;">${titulo}</h4>
+              <div class="flex flex-wrap gap-1 text-xs mt-1">
+                <span class="px-2 py-0.5 rounded" style="background: #E8F7F0; color: #047857;">👤 ${esc(meta)}</span>
+              </div>
+            </div>
+            <button onclick="event.stopPropagation(); adicionarProjetoAoPainel('${idSafe}')" class="ml-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-full p-1 transition-all">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function adicionarProjetoAoPainel(projectId) {
+      projetosSelecionados.add(projectId);
+      atualizarPreviewSelecionadas();
+      renderizarListaProjetosDisponiveisPainel();
+    }
+
+    function removerProjetoDoPainel(projectId) {
+      projetosSelecionados.delete(projectId);
+      atualizarPreviewSelecionadas();
+      renderizarListaProjetosDisponiveisPainel();
+    }
+
     // Função para adicionar solução ao painel
     function adicionarSolucaoAoPainel(solucaoId, index) {
       solucoesSelecionadas.add(solucaoId);
@@ -3681,7 +4116,7 @@
           <!-- Header do painel -->
           <div class="p-6 border-b-2 flex items-center justify-between" style="background: linear-gradient(135deg, #00608B 0%, #0092BA 100%); border-color: #00608B;">
             <div class="flex items-center gap-3">
-              <h2 class="text-xl md:text-2xl font-bold text-white">Selecionar Soluções</h2>
+              <h2 class="text-xl md:text-2xl font-bold text-white">Soluções e Projetos</h2>
               <span id="contador-painel-header" class="px-3 py-1 rounded-full text-sm font-bold bg-white" style="color: #00608B;">0</span>
             </div>
             <button onclick="togglePainelSelecaoRelatorio()" class="text-white hover:text-gray-200 text-2xl font-bold transition-all hover:scale-110">
@@ -3702,7 +4137,7 @@
                 <span id="contador-modal-selecao" style="color: #00608B; font-weight: bold;">0</span> de <span id="total-solucoes-modal">0</span>
               </span>
             </div>
-            <p class="text-xs" style="color: #999;">Ordenadas por data (mais próxima primeiro) ou valor (menor primeiro)</p>
+            <p class="text-xs" style="color: #999;">Soluções: data/valor. Projetos: ordem.</p>
           </div>
           
           <!-- Conteúdo scrollável -->
@@ -3721,10 +4156,24 @@
                 </div>
               </div>
             </div>
+            <!-- Seção de adicionar projetos (colapsável) -->
+            <div class="mb-4">
+              <button onclick="toggleSecaoAdicionarProjetos()" id="btn-toggle-adicionar-projetos" 
+                      class="w-full p-3 rounded-lg font-semibold text-sm transition-all hover:bg-gray-100 flex items-center justify-between"
+                      style="background: #F3F4F6; color: #00608B;">
+                <span>📁 Adicionar Projetos</span>
+                <span id="icone-toggle-adicionar-projetos">▼</span>
+              </button>
+              <div id="secao-adicionar-projetos" class="hidden mt-3 max-h-[300px] overflow-y-auto space-y-2">
+                <div id="lista-projetos-disponiveis-painel">
+                  <!-- Lista de projetos será preenchida aqui -->
+                </div>
+              </div>
+            </div>
             
-            <!-- Preview das soluções selecionadas -->
+            <!-- Preview das soluções e projetos selecionados -->
             <div>
-              <h3 class="text-sm font-bold mb-3" style="color: #00608B;">Soluções Selecionadas (Ordenadas)</h3>
+              <h3 class="text-sm font-bold mb-3" style="color: #00608B;">Soluções e Projetos Selecionados (Ordenados)</h3>
               <div id="preview-selecionadas-modal" class="space-y-3">
                 <p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução selecionada</p>
               </div>
@@ -3834,46 +4283,29 @@
       
       if (!preview) return;
 
-      // Coletar soluções selecionadas
       const solucoesSelecionadasArray = ultimosResultados.filter((sol, index) => {
         const solucaoId = sol.id || `sol_${index}`;
         return solucoesSelecionadas.has(solucaoId);
       });
-
-      // Ordenar
       const solucoesOrdenadas = ordenarSolucoes(solucoesSelecionadasArray);
-
-      // Atualizar contadores
-      if (contador) {
-        contador.textContent = solucoesSelecionadas.size;
-      }
       
+      const projetosArray = (projetosData || []).filter(p => projetosSelecionados.has(String(p.id)));
+      const projetosOrdenados = [...projetosArray].sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.titulo || '').localeCompare(b.titulo || ''));
+
+      const totalSelecionados = solucoesSelecionadas.size + projetosSelecionados.size;
+
+      if (contador) contador.textContent = totalSelecionados;
       const contadorHeader = document.getElementById('contador-painel-header');
-      if (contadorHeader) {
-        contadorHeader.textContent = solucoesSelecionadas.size;
-      }
-      
+      if (contadorHeader) contadorHeader.textContent = totalSelecionados;
       const contadorFooter = document.getElementById('contador-footer');
-      if (contadorFooter) {
-        contadorFooter.textContent = solucoesSelecionadas.size;
-      }
-
-      // Atualizar botão
-      if (btnConfirmar) {
-        btnConfirmar.disabled = solucoesSelecionadas.size === 0;
-      }
-      
-      // Atualizar badge do botão flutuante
+      if (contadorFooter) contadorFooter.textContent = totalSelecionados;
+      if (btnConfirmar) btnConfirmar.disabled = totalSelecionados === 0;
       atualizarBadgeBotaoFlutuante();
 
-      // Renderizar preview
-      if (solucoesOrdenadas.length === 0) {
-        preview.innerHTML = '<p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução selecionada</p>';
-        // Fechar modal de relatório se não houver seleções
+      if (totalSelecionados === 0) {
+        preview.innerHTML = '<p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução ou projeto selecionado</p>';
         const modalRelatorio = document.getElementById('modal-relatorio');
-        if (modalRelatorio && !modalRelatorio.classList.contains('hidden')) {
-          fecharRelatorioModal();
-        }
+        if (modalRelatorio && !modalRelatorio.classList.contains('hidden')) fecharRelatorioModal();
         return;
       }
 
@@ -3908,49 +4340,71 @@
         }
       };
 
-      // Encontrar índice original para cada solução
-      preview.innerHTML = solucoesOrdenadas.map((sol, index) => {
+      const esc = (t) => (t ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      let numero = 0;
+      const htmlSolucoes = solucoesOrdenadas.map((sol) => {
+        numero++;
         const indexOriginal = ultimosResultados.findIndex(s => 
           (s.id && s.id === sol.id) || 
           (!s.id && !sol.id && s.assessoria_nome === sol.assessoria_nome)
         );
         const idx = indexOriginal >= 0 ? indexOriginal : sol.__index || 0;
-        const solucaoId = sol.id || `sol_${idx}`;
-        
-        // Usar proxima_data diretamente da base
+        const solucaoId = (sol.id || `sol_${idx}`).toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const dataExibicao = sol.proxima_data || null;
         const dataFormatada = dataExibicao ? formatarData(dataExibicao) : 'A definir';
         const v = sol.valor;
         const n = (v != null && v !== '') ? Number(v) : NaN;
         const valorTexto = !isNaN(n) && n > 0 ? ('R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'Gratuito';
-        
         return `
           <div class="bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition-all" style="border-color: #00608B;">
             <div class="flex items-start justify-between mb-2">
               <div class="flex-1">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-lg font-bold" style="color: #00608B;">${index + 1}.</span>
-                  <h4 class="font-bold flex-1" style="color: #1F2937;">${sol.assessoria_nome || 'Sem nome'}</h4>
+                  <span class="text-lg font-bold" style="color: #00608B;">${numero}.</span>
+                  <h4 class="font-bold flex-1" style="color: #1F2937;">${esc(sol.assessoria_nome || 'Sem nome')}</h4>
+                  <span class="text-xs px-2 py-0.5 rounded" style="background: #E0E7FF; color: #4338CA;">Solução</span>
                 </div>
-                <p class="text-xs mb-2 line-clamp-2" style="color: #666;">${sol.assessoria_descricao || 'Sem descrição'}</p>
+                <p class="text-xs mb-2 line-clamp-2" style="color: #666;">${esc(sol.assessoria_descricao || 'Sem descrição')}</p>
               </div>
-              <button onclick="removerSolucaoDoPainel('${solucaoId}', ${idx})" 
-                      class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all" 
-                      title="Remover">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+              <button onclick="removerSolucaoDoPainel('${solucaoId}', ${idx})" class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all" title="Remover">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
             <div class="flex flex-wrap gap-2 text-xs">
-              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">📅 ${dataFormatada}</span>
-              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">💰 ${valorTexto}</span>
-              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${sol.porte || 'N/A'}</span>
-              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">🏢 ${sol.setor || 'N/A'}</span>
+              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">📅 ${esc(dataFormatada)}</span>
+              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">💰 ${esc(valorTexto)}</span>
+              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${esc(sol.porte || 'N/A')}</span>
+              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">🏢 ${esc(sol.setor || 'N/A')}</span>
             </div>
           </div>
         `;
       }).join('');
+      const htmlProjetos = projetosOrdenados.map((p) => {
+        numero++;
+        const idAttr = esc(String(p.id));
+        return `
+          <div class="bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition-all" style="border-color: #059669;">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg font-bold" style="color: #059669;">${numero}.</span>
+                  <h4 class="font-bold flex-1" style="color: #1F2937;">${esc(p.titulo || 'Sem título')}</h4>
+                  <span class="text-xs px-2 py-0.5 rounded" style="background: #D1FAE5; color: #047857;">Projeto</span>
+                </div>
+                ${p.descricao ? `<p class="text-xs mb-2 line-clamp-2" style="color: #666;">${esc((p.descricao || '').substring(0, 120))}${(p.descricao || '').length > 120 ? '...' : ''}</p>` : ''}
+              </div>
+              <button onclick="removerProjetoDoPainel(this.getAttribute('data-projeto-id'))" data-projeto-id="${idAttr}" class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all" title="Remover">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${esc(p.porte || '—')}</span>
+              <span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">🏢 ${esc(p.setor || '—')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+      preview.innerHTML = htmlSolucoes + htmlProjetos;
       
       // Modal de relatório só abre ao clicar em "Gerar Relatório", não ao selecionar soluções
     }
@@ -3974,39 +4428,40 @@
     // Função para selecionar todas no modal
     function selecionarTodasNoModal() {
       ultimosResultados.forEach((sol, index) => {
-        const solucaoId = sol.id || `sol_${index}`;
-        solucoesSelecionadas.add(solucaoId);
+        solucoesSelecionadas.add(sol.id || `sol_${index}`);
       });
+      (projetosData || []).filter(p => p.ativo !== false).forEach(p => projetosSelecionados.add(String(p.id)));
       atualizarPreviewSelecionadas();
+      renderizarListaDisponiveisPainel();
+      renderizarListaProjetosDisponiveisPainel();
     }
 
     // Função para desselecionar todas no modal
     function desselecionarTodasNoModal() {
       solucoesSelecionadas.clear();
+      projetosSelecionados.clear();
       atualizarPreviewSelecionadas();
+      renderizarListaDisponiveisPainel();
+      renderizarListaProjetosDisponiveisPainel();
     }
 
     // Função para confirmar seleção e gerar relatório
     function confirmarSelecaoERelatorio() {
-      if (solucoesSelecionadas.size === 0) {
-        showToast('Selecione pelo menos uma solução para gerar o relatório', 'error');
+      const total = solucoesSelecionadas.size + projetosSelecionados.size;
+      if (total === 0) {
+        showToast('Selecione pelo menos uma solução ou projeto para gerar o relatório', 'error');
         return;
       }
 
-      // Fechar painel de seleção
       togglePainelSelecaoRelatorio();
 
-      // Coletar soluções selecionadas
-      const solucoesRelatorio = ultimosResultados.filter((sol, index) => {
-        const solucaoId = sol.id || `sol_${index}`;
-        return solucoesSelecionadas.has(solucaoId);
-      });
-
-      // Ordenar
+      const solucoesRelatorio = ultimosResultados.filter((sol, index) => solucoesSelecionadas.has(sol.id || `sol_${index}`));
       const solucoesOrdenadas = ordenarSolucoes(solucoesRelatorio);
+      
+      const projetosRelatorio = (projetosData || []).filter(p => projetosSelecionados.has(String(p.id)));
+      const projetosOrdenados = [...projetosRelatorio].sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.titulo || '').localeCompare(b.titulo || ''));
 
-      // Exibir modal com relatório
-      exibirRelatorioModal(solucoesOrdenadas);
+      exibirRelatorioModal(solucoesOrdenadas, null, projetosOrdenados);
     }
 
     // Função para fechar modal de seleção
@@ -4018,10 +4473,10 @@
     function atualizarBadgeBotaoFlutuante() {
       const badge = document.getElementById('badge-contador-painel');
       const botao = document.getElementById('btn-abrir-painel-relatorio');
-      
+      const total = solucoesSelecionadas.size + projetosSelecionados.size;
       if (badge && botao) {
-        if (solucoesSelecionadas.size > 0) {
-          badge.textContent = solucoesSelecionadas.size;
+        if (total > 0) {
+          badge.textContent = total;
           badge.classList.remove('hidden');
         } else {
           badge.classList.add('hidden');
@@ -4068,7 +4523,10 @@
     }
 
     // Função para exibir modal com relatório formatado
-    function exibirRelatorioModal(solucoes) {
+    // opcoes (opcional): { tituloJornada, momento, porte, setor, dores } para exibir cabeçalho da jornada (histórico)
+    // projetos (opcional): array de projetos selecionados para incluir no relatório
+    function exibirRelatorioModal(solucoes, opcoes, projetos) {
+      if (!Array.isArray(projetos)) projetos = [];
       // Criar modal se não existir
       let modal = document.getElementById('modal-relatorio');
       if (!modal) {
@@ -4138,8 +4596,22 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       // Cor padrão para o fluxograma
       const corPadrao = '#00608B';
       
+      // Cabeçalho da jornada (quando aberto do histórico)
+      const cabecalhoJornada = (opcoes && opcoes.tituloJornada) ? `
+        <div class="mb-6 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #00608B;">
+          <h3 class="text-lg font-bold mb-2" style="color: #00608B;">Relatório da jornada: ${(opcoes.tituloJornada || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm" style="color: #333;">
+            ${opcoes.momento ? '<p><strong>Momento:</strong> ' + String(opcoes.momento).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' : ''}
+            ${opcoes.porte ? '<p><strong>Porte:</strong> ' + String(opcoes.porte).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' : ''}
+            ${opcoes.setor ? '<p><strong>Setor:</strong> ' + String(opcoes.setor).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' : ''}
+            ${opcoes.dores ? '<p class="sm:col-span-2"><strong>Dores:</strong> ' + String(opcoes.dores).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' : ''}
+          </div>
+        </div>
+      ` : '';
+      
       // Gerar HTML do relatório com fluxograma
       const htmlRelatorio = `
+        ${cabecalhoJornada}
         <!-- Texto padrão -->
         <div class="mb-8 p-6 rounded-xl bg-white border-l-4 shadow-md" style="border-color: ${corPadrao};">
           <div class="prose max-w-none">
@@ -4151,9 +4623,6 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         
         <!-- Fluxograma de Soluções -->
         <div class="mb-6">
-          <h3 class="text-xl font-bold mb-4" style="color: #00608B;">Plano de Ação - Soluções Selecionadas</h3>
-          <p class="text-sm mb-4" style="color: #666;">Total de ${solucoes.length} solução(ões) ordenada(s) por data (mais próxima primeiro) ou valor (menor primeiro)</p>
-          
           <div class="trilha-fluxograma" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 1.5rem; padding: 2rem 1rem; min-height: 300px; overflow-x: auto;">
             ${solucoes.map((sol, index) => {
               // Usar proxima_data diretamente da base, sem fallback para criado_em no relatório
@@ -4167,6 +4636,18 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
               const valorBadgeBg = temValor ? '#FFEDD5' : '#E8F7F0';
               const isLast = index === solucoes.length - 1;
               const inst = (sol.instrumento && String(sol.instrumento).trim()) ? sol.instrumento : 'Solução';
+              const solId = (sol.id || '').toString();
+              const ehRelatorioJornada = opcoes && opcoes.jornadaId;
+              const concluida = ehRelatorioJornada && Array.isArray(opcoes.solucoesConcluidas) && opcoes.solucoesConcluidas.indexOf(solId) >= 0;
+              const jornadaIdAttr = ehRelatorioJornada ? (opcoes.jornadaId || '').toString().replace(/"/g, '&quot;') : '';
+              const solucaoIdAttr = solId.replace(/"/g, '&quot;');
+              const checkConcluida = ehRelatorioJornada ? `
+                      <div class="mt-4 p-3 rounded-lg border-2 flex items-center gap-2" style="background: #E8F7F0; border-color: #00A859;">
+                        <label class="flex items-center gap-2 cursor-pointer font-semibold select-none" style="color: #047857;">
+                          <input type="checkbox" class="acao-concluida-jornada h-5 w-5 rounded border-2" style="border-color: #00A859;" data-jornada-id="${jornadaIdAttr}" data-solucao-id="${solucaoIdAttr}" ${concluida ? 'checked' : ''} onchange="toggleAcaoConcluidaJornada(this)">
+                          <span>✓ Ação concluída</span>
+                        </label>
+                      </div>` : '';
               
               return `
                 <div class="trilha-step fade-in" style="animation-delay: ${index * 0.1}s;">
@@ -4182,7 +4663,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
                   <div class="trilha-hexagon" style="background: linear-gradient(135deg, ${corPadrao} 0%, ${corPadrao}dd 100%);"></div>
                   
                   <div class="trilha-step-content">
-                    <div class="trilha-solucao-card p-5 mb-4 fade-in" style="--card-hexagon-color: ${corPadrao};">
+                    <div class="trilha-solucao-card p-5 mb-4 fade-in ${concluida ? 'etapa-concluida' : ''}" style="--card-hexagon-color: ${corPadrao};">
                       <!-- Destaque: Preço e Tipo de Produto -->
                       <div class="flex items-center justify-between mb-4 p-3 rounded-lg" style="background: linear-gradient(135deg, #E3ECEE 0%, #A0C5CF 100%); border: 2px solid ${corPadrao};">
                         <div class="flex-1">
@@ -4234,6 +4715,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
                           </a>
                         </div>
                       ` : ''}
+                      ${checkConcluida}
                     </div>
                   </div>
                 </div>
@@ -4247,6 +4729,29 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
             }).join('')}
           </div>
         </div>
+        ${projetos.length > 0 ? `
+        <div class="mb-6 mt-8">
+          <h2 class="text-xl font-bold mb-4" style="color: #00608B;">Projetos</h2>
+          <div class="space-y-4">
+            ${projetos.map((p, idx) => {
+              const titulo = (p.titulo || 'Sem título').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const descricao = (p.descricao || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const link = (p.link || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+              return `
+                <div class="p-5 rounded-xl border-2 shadow-sm" style="border-color: #059669; background: linear-gradient(135deg, #F0FDF4 0%, #D1FAE5 100%);">
+                  <h3 class="text-lg font-bold mb-2" style="color: #047857;">Projeto ${idx + 1}: ${titulo}</h3>
+                  ${descricao ? `<p class="mb-3 text-sm" style="color: #374151;">${descricao}</p>` : ''}
+                  <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    ${p.porte ? `<span class="px-2 py-1 rounded" style="background: #E8F7F0; color: #047857;">👤 ${(p.porte || '').replace(/</g, '&lt;')}</span>` : ''}
+                    ${p.setor ? `<span class="px-2 py-1 rounded" style="background: #FFF4E6; color: #B45309;">🏢 ${(p.setor || '').replace(/</g, '&lt;')}</span>` : ''}
+                  </div>
+                  ${link ? `<p class="text-sm"><strong>Link:</strong> <a href="${link}" target="_blank" rel="noopener noreferrer" class="underline" style="color: #00608B;">${link}</a></p>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+        ` : ''}
       `;
 
       conteudoRelatorio.innerHTML = htmlRelatorio;
@@ -4295,14 +4800,17 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
           <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col m-4" style="margin: 1rem;">
             <div class="p-6 border-b-2" style="border-color: #E5E7EB;">
               <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-bold" style="color: #00608B;">Relatório de Soluções Selecionadas</h2>
+                <h2 class="text-2xl font-bold" style="color: #00608B;">Relatório de Soluções</h2>
                 <button onclick="fecharRelatorioModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
               </div>
             </div>
             <div class="p-6 overflow-y-auto overflow-x-auto flex-1" id="conteudo-relatorio" style="max-height: calc(90vh - 200px);">
               <!-- Conteúdo do relatório será inserido aqui -->
             </div>
-            <div class="p-6 border-t-2 flex justify-end gap-4" style="border-color: #E5E7EB;">
+            <div class="p-6 border-t-2 flex flex-wrap justify-end gap-3" style="border-color: #E5E7EB;">
+              <button onclick="abrirModalSalvarJornada()" class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105" style="background: #00608B; color: white;">
+                💾 Salvar jornada
+              </button>
               <button onclick="exportarRelatorioDOCX()" class="px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105" style="background: #DC2626; color: white;">
                 📄 Exportar Word (.docx)
               </button>
@@ -4315,6 +4823,436 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       `;
       
       document.body.insertAdjacentHTML('beforeend', modalHTML);
+      criarModalSalvarJornada();
+    }
+
+    function criarModalSalvarJornada() {
+      if (document.getElementById('modal-salvar-jornada')) return;
+      const modalHTML = `
+        <div id="modal-salvar-jornada" class="fixed inset-0 bg-black bg-opacity-50 z-[70] hidden" style="display: none !important;">
+          <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col m-4 mx-auto" style="margin: 1rem auto;">
+            <div class="p-6 border-b-2" style="border-color: #E5E7EB;">
+              <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold" style="color: #00608B;">Salvar jornada</h2>
+                <button type="button" onclick="fecharModalSalvarJornada()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+              </div>
+            </div>
+            <form id="form-salvar-jornada" class="p-6 overflow-y-auto flex-1 space-y-4">
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #00608B;">Nome do cliente *</label>
+                <input type="text" id="salvar-jornada-nome" required placeholder="Ex: Empresa ABC" class="input-modern w-full px-4 py-3 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-2" style="color: #00608B;">Nome do gestor do cliente</label>
+                <input type="text" id="salvar-jornada-gestor" placeholder="Ex: João Silva" class="input-modern w-full px-4 py-3 rounded-xl">
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1" style="color: #00608B;">Tipo do momento</label>
+                <p id="salvar-jornada-tipo" class="py-2 px-3 rounded-xl bg-gray-100 text-gray-800"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1" style="color: #00608B;">Dores</label>
+                <p id="salvar-jornada-dores" class="py-2 px-3 rounded-xl bg-gray-100 text-gray-800"></p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold mb-1" style="color: #00608B;">Porcentagem (intensidade por dor)</label>
+                <p id="salvar-jornada-porcentagem" class="py-2 px-3 rounded-xl bg-gray-100 text-gray-800 text-sm"></p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #00608B;">Porte</label>
+                  <p id="salvar-jornada-porte" class="py-2 px-3 rounded-xl bg-gray-100 text-gray-800"></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold mb-1" style="color: #00608B;">Setor</label>
+                  <p id="salvar-jornada-setor" class="py-2 px-3 rounded-xl bg-gray-100 text-gray-800"></p>
+                </div>
+              </div>
+              <div class="flex gap-3 pt-4">
+                <button type="submit" class="px-6 py-3 rounded-xl font-semibold transition-all" style="background: #00608B; color: white;">Salvar</button>
+                <button type="button" onclick="fecharModalSalvarJornada()" class="px-6 py-3 rounded-xl font-semibold bg-gray-200" style="color: #333;">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      document.getElementById('form-salvar-jornada').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submeterSalvarJornada();
+      });
+    }
+
+    function abrirModalSalvarJornada() {
+      criarModalSalvarJornada();
+      const tipoTexto = selecao.tipoMomento === 'empresarial' ? 'Momento Empresarial' : 'Crescimento Empresarial';
+      const porteTexto = { MEI: 'MEI', ME: 'ME', EPP: 'EPP' }[selecao.porte] || selecao.porte || '—';
+      const setorMap = { Comercio: 'Comércio', Industria: 'Indústria', Servicos: 'Serviços', Multissetorial: 'Multissetorial' };
+      const setorTexto = setorMap[selecao.setor] || selecao.setor || '—';
+      const dores = (selecao.categorias || []).filter(c => c !== 'Nenhuma');
+      const doresTexto = dores.length ? dores.join(', ') : 'Nenhuma';
+      const faixaLabel = { baixa: 'Abaixo de 25%', media: 'De 25% até 50%', alta: 'Acima de 50%' };
+      const intensidades = selecao.intensidades || {};
+      const porcentagemLinhas = dores.map(d => d + ': ' + (faixaLabel[intensidades[d]] || '—')).join(' | ');
+      document.getElementById('salvar-jornada-nome').value = '';
+      const salvarGestor = document.getElementById('salvar-jornada-gestor');
+      if (salvarGestor) salvarGestor.value = '';
+      document.getElementById('salvar-jornada-tipo').textContent = tipoTexto;
+      document.getElementById('salvar-jornada-dores').textContent = doresTexto;
+      document.getElementById('salvar-jornada-porcentagem').textContent = porcentagemLinhas || '—';
+      document.getElementById('salvar-jornada-porte').textContent = porteTexto;
+      document.getElementById('salvar-jornada-setor').textContent = setorTexto;
+      const modal = document.getElementById('modal-salvar-jornada');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+      }
+    }
+
+    function fecharModalSalvarJornada() {
+      const modal = document.getElementById('modal-salvar-jornada');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    async function submeterSalvarJornada() {
+      const nomeCliente = (document.getElementById('salvar-jornada-nome') || {}).value?.trim();
+      if (!nomeCliente) {
+        if (typeof showToast === 'function') showToast('Informe o nome do cliente.', 'error');
+        return;
+      }
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      let ferramentasIds = Array.from(ferramentasSelecionadas || []).filter(id => uuidRegex.test(String(id)));
+      Array.from(ferramentasSelecionadas || []).filter(id => !uuidRegex.test(String(id))).forEach(tituloOuId => {
+        const s = sugestoesData.find(sug => (sug.titulo === tituloOuId) || (String(sug.id) === String(tituloOuId)) || (String(sug.__backendId) === String(tituloOuId)));
+        if (s && s.id && uuidRegex.test(String(s.id))) ferramentasIds.push(s.id);
+      });
+      const solucoesRelatorio = ultimosResultados.filter((sol, index) => solucoesSelecionadas.has(sol.id || 'sol_' + index));
+      const solucoesOrdenadasParaSalvar = ordenarSolucoes(solucoesRelatorio);
+      const solucoesIds = solucoesOrdenadasParaSalvar.map(s => (s.__backendId || s.id)).filter(id => id && uuidRegex.test(String(id)));
+      const nomeGestor = (document.getElementById('salvar-jornada-gestor') || {}).value?.trim() || null;
+      const payload = {
+        nome_cliente: nomeCliente,
+        nome_gestor: nomeGestor,
+        tipo_momento: selecao.tipoMomento || null,
+        porte: selecao.porte || null,
+        setor: selecao.setor || null,
+        categorias: Array.isArray(selecao.categorias) ? selecao.categorias : [],
+        intensidades: selecao.intensidades && typeof selecao.intensidades === 'object' ? selecao.intensidades : {},
+        ferramentas_ids: ferramentasIds,
+        solucoes_ids: solucoesIds
+      };
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient.from('jornadas_busca').insert(payload);
+          if (error) throw error;
+          if (typeof showToast === 'function') showToast('Jornada salva com sucesso.', 'success');
+          fecharModalSalvarJornada();
+          if (typeof carregarJornadasSalvas === 'function') carregarJornadasSalvas();
+        } catch (e) {
+          if (typeof showToast === 'function') showToast('Erro ao salvar: ' + (e.message || e), 'error');
+        }
+      } else {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+      }
+    }
+
+    async function carregarJornadasSalvas(containerId, vaziaId) {
+      const cid = containerId || 'jornadas-salvas-container';
+      const vid = vaziaId || 'jornadas-salvas-vazia';
+      const container = document.getElementById(cid);
+      const vazia = document.getElementById(vid);
+      if (!container) return;
+      container.innerHTML = '<div class="text-center py-6 text-gray-500">Carregando...</div>';
+      if (vazia) vazia.classList.add('hidden');
+      if (!supabaseClient) {
+        container.innerHTML = '<p class="text-center py-6 text-gray-500">Conexão com o banco não disponível.</p>';
+        return;
+      }
+      try {
+        const { data, error } = await supabaseClient
+          .from('jornadas_busca')
+          .select('id, nome_cliente, nome_gestor, tipo_momento, porte, setor, categorias, intensidades, ferramentas_ids, solucoes_ids, acoes_concluidas, criado_em')
+          .order('criado_em', { ascending: false })
+          .limit(200);
+        if (error) throw error;
+        const lista = data || [];
+        ultimasJornadasSalvasData = lista;
+        renderizarTabelaJornadasClientes();
+      } catch (e) {
+        container.innerHTML = '<p class="text-center py-6 text-red-600">Erro ao carregar: ' + (e.message || e) + '</p>';
+      }
+    }
+
+    /** Retorna a lista de jornadas filtrada pelos valores dos filtros (Nome do Cliente, Nome do Gestor, Porte, Dor). */
+    function aplicarFiltrosClientes(lista) {
+      if (!Array.isArray(lista)) return [];
+      const nomeCliente = (document.getElementById('filtro-cliente-nome') || {}).value || '';
+      const nomeGestor = (document.getElementById('filtro-gestor-nome') || {}).value || '';
+      const porte = (document.getElementById('filtro-cliente-porte') || {}).value || '';
+      const dor = (document.getElementById('filtro-cliente-dor') || {}).value || '';
+      const nomeClienteNorm = nomeCliente.trim().toLowerCase();
+      const nomeGestorNorm = nomeGestor.trim().toLowerCase();
+      return lista.filter(j => {
+        if (nomeClienteNorm && !(String(j.nome_cliente || '').toLowerCase().includes(nomeClienteNorm))) return false;
+        if (nomeGestorNorm && !(String(j.nome_gestor || '').toLowerCase().includes(nomeGestorNorm))) return false;
+        if (porte && (j.porte || '') !== porte) return false;
+        if (dor) {
+          const categorias = Array.isArray(j.categorias) ? j.categorias : [];
+          if (!categorias.includes(dor)) return false;
+        }
+        return true;
+      });
+    }
+
+    /** Renderiza a tabela de jornadas (Guia de Clientes) aplicando os filtros atuais a ultimasJornadasSalvasData. */
+    function renderizarTabelaJornadasClientes() {
+      const container = document.getElementById('jornadas-salvas-container');
+      const vazia = document.getElementById('jornadas-salvas-vazia');
+      if (!container) return;
+      const lista = aplicarFiltrosClientes(ultimasJornadasSalvasData);
+      if (ultimasJornadasSalvasData.length === 0) {
+        container.innerHTML = '';
+        if (vazia) { vazia.classList.remove('hidden'); vazia.innerHTML = '<p style="color: #999;">Nenhuma jornada no banco ainda</p>'; }
+        return;
+      }
+      if (vazia) vazia.classList.add('hidden');
+      if (lista.length === 0) {
+        container.innerHTML = '<p class="text-center py-6 text-gray-500">Nenhuma jornada corresponde aos filtros.</p>';
+        return;
+      }
+      const faixaLabel = { baixa: '<25%', media: '25-50%', alta: '>50%' };
+      const setorMap = { Comercio: 'Comércio', Industria: 'Indústria', Servicos: 'Serviços', Multissetorial: 'Multissetorial' };
+      const tipoMap = { empresarial: 'Momento Empresarial', crescimento: 'Crescimento Empresarial' };
+      const esc = (t) => (t ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const formatarData = (d) => {
+        if (!d) return '—';
+        try {
+          const dt = new Date(d);
+          return isNaN(dt.getTime()) ? '—' : dt.toLocaleDateString('pt-BR') + ' ' + dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) { return '—'; }
+      };
+      const thead = '<thead><tr><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Cliente</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Gestor</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Data</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Momento</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Porte</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Setor</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Dores</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Porcentagem</th><th class="text-left py-2 px-3 border-b-2" style="border-color: #A0C5CF;">Ação</th></tr></thead>';
+      const tbody = '<tbody>' + lista.map(j => {
+        const categorias = Array.isArray(j.categorias) ? j.categorias : [];
+        const intensidades = j.intensidades && typeof j.intensidades === 'object' ? j.intensidades : {};
+        const doresTexto = categorias.filter(c => c !== 'Nenhuma').join(', ') || '—';
+        const porcentagemTexto = categorias.filter(c => c !== 'Nenhuma').map(d => d + ': ' + (faixaLabel[intensidades[d]] || '—')).join('; ') || '—';
+        const nomeExibe = j.nome_cliente ? esc(j.nome_cliente) : '—';
+        const gestorExibe = j.nome_gestor ? esc(j.nome_gestor) : '—';
+        const jId = (j.id || '').toString().replace(/'/g, "\\'");
+        const btnRelatorio = '<button type="button" onclick="event.stopPropagation(); abrirRelatorioJornada(\'' + jId + '\')" class="px-2 py-1 rounded-lg text-xs font-semibold mr-1" style="background: #00A859; color: white;">Ver relatório</button>';
+        const btnApagar = '<button type="button" onclick="event.stopPropagation(); excluirJornada(\'' + jId + '\')" class="p-1.5 rounded-lg inline-flex items-center justify-center" style="background: #DC2626; color: white;" title="Apagar"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>';
+        const acao = '<span class="flex flex-wrap gap-1 items-center">' + btnRelatorio + btnApagar + '</span>';
+        return '<tr class="border-b cursor-pointer hover:bg-blue-50/50 transition-colors" style="border-color: #E5E7EB;" onclick="abrirRelatorioJornada(\'' + jId + '\')" role="button" tabindex="0" title="Clique para ver o relatório desta jornada"><td class="py-2 px-3 font-semibold" style="color: #00608B;">' + nomeExibe + '</td><td class="py-2 px-3 text-sm">' + gestorExibe + '</td><td class="py-2 px-3 text-sm text-gray-600">' + formatarData(j.criado_em) + '</td><td class="py-2 px-3 text-sm">' + esc(tipoMap[j.tipo_momento] || j.tipo_momento || '—') + '</td><td class="py-2 px-3 text-sm">' + esc(j.porte || '—') + '</td><td class="py-2 px-3 text-sm">' + esc(setorMap[j.setor] || j.setor || '—') + '</td><td class="py-2 px-3 text-sm max-w-xs truncate" title="' + esc(doresTexto) + '">' + esc(doresTexto) + '</td><td class="py-2 px-3 text-sm max-w-xs truncate" title="' + esc(porcentagemTexto) + '">' + esc(porcentagemTexto) + '</td><td class="py-2 px-3" onclick="event.stopPropagation();">' + acao + '</td></tr>';
+      }).join('') + '</tbody>';
+      container.innerHTML = '<table class="w-full text-sm border-collapse">' + thead + tbody + '</table>';
+    }
+
+    /** Abre o modal de relatório com as soluções da jornada salva (histórico). Usa solucoes_ids quando existir; senão refiltra por perfil (jornadas antigas). */
+    function abrirRelatorioJornada(jornadaId) {
+      const jornada = ultimasJornadasSalvasData.find(j => (j.id || '') === (jornadaId || ''));
+      if (!jornada) {
+        if (typeof showToast === 'function') showToast('Jornada não encontrada.', 'error');
+        return;
+      }
+      const tipoMomento = jornada.tipo_momento || 'empresarial';
+      const categorias = Array.isArray(jornada.categorias) ? jornada.categorias : [];
+      const porte = jornada.porte || '';
+      const setor = jornada.setor || '';
+      const dados = assessoriasData || [];
+      let solucoesOrdenadas;
+      const idsSalvos = Array.isArray(jornada.solucoes_ids) ? jornada.solucoes_ids : [];
+      if (idsSalvos.length > 0) {
+        const mapa = new Map();
+        dados.forEach(a => { const id = (a.__backendId || a.id); if (id) mapa.set(String(id), a); });
+        solucoesOrdenadas = idsSalvos.map(id => mapa.get(String(id))).filter(Boolean);
+      } else {
+        const resultados = dados.filter(a => {
+          const categoriaAtual = tipoMomento === 'empresarial' ? a.momento_empresarial : a.crescimento_empresarial;
+          var categoriaMatch;
+          if (categorias.indexOf('Nenhuma') >= 0) {
+            categoriaMatch = !categoriaAtual || categoriaAtual === '' || categoriaAtual === null;
+          } else {
+            var validas = tipoMomento === 'empresarial' ? VALID_EMPRESARIAL : VALID_CRESCIMENTO;
+            if (categoriaAtual && validas.indexOf(categoriaAtual) >= 0) {
+              categoriaMatch = categorias.indexOf(categoriaAtual) >= 0;
+            } else {
+              var padrao = tipoMomento === 'empresarial' ? 'Gerencie' : 'Marketing e Vendas';
+              categoriaMatch = categorias.indexOf(padrao) >= 0;
+            }
+          }
+          let setorA = a.setor || '';
+          if (setorA === 'Comércio') setorA = 'Comercio';
+          else if (setorA === 'Indústria') setorA = 'Industria';
+          else if (setorA === 'Serviços') setorA = 'Servicos';
+          return categoriaMatch && a.porte === porte && setorA === setor;
+        }).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+        solucoesOrdenadas = ordenarSolucoes(resultados);
+      }
+      const tipoMap = { empresarial: 'Momento Empresarial', crescimento: 'Crescimento Empresarial' };
+      const setorMap = { Comercio: 'Comércio', Industria: 'Indústria', Servicos: 'Serviços', Multissetorial: 'Multissetorial' };
+      const doresTexto = categorias.filter(c => c !== 'Nenhuma').join(', ') || '—';
+      const acoesConcluidas = Array.isArray(jornada.acoes_concluidas) ? jornada.acoes_concluidas : [];
+      exibirRelatorioModal(solucoesOrdenadas, {
+        jornadaId: jornada.id,
+        tituloJornada: jornada.nome_cliente || 'Jornada (sem nome)',
+        momento: tipoMap[tipoMomento] || tipoMomento,
+        porte: porte || '—',
+        setor: setorMap[setor] || setor || '—',
+        dores: doresTexto,
+        solucoesConcluidas: acoesConcluidas
+      });
+    }
+
+    /** Marca ou desmarca uma ação (solução) como concluída na jornada salva. Persiste no Supabase. */
+    function toggleAcaoConcluidaJornada(checkboxEl) {
+      if (!checkboxEl || !checkboxEl.getAttribute) return;
+      const jornadaId = checkboxEl.getAttribute('data-jornada-id');
+      const solucaoId = checkboxEl.getAttribute('data-solucao-id');
+      if (!jornadaId || !solucaoId) return;
+      const concluida = !!checkboxEl.checked;
+      const card = checkboxEl.closest && checkboxEl.closest('.trilha-solucao-card');
+      if (card) {
+        if (concluida) card.classList.add('etapa-concluida');
+        else card.classList.remove('etapa-concluida');
+      }
+      atualizarAcaoConcluidaJornada(jornadaId, solucaoId, concluida);
+    }
+
+    async function atualizarAcaoConcluidaJornada(jornadaId, solucaoId, concluida) {
+      const jornada = ultimasJornadasSalvasData.find(j => (j.id || '') === jornadaId);
+      let lista = Array.isArray(jornada && jornada.acoes_concluidas) ? [...jornada.acoes_concluidas] : [];
+      const idx = lista.indexOf(solucaoId);
+      if (concluida && idx < 0) lista.push(solucaoId);
+      if (!concluida && idx >= 0) lista.splice(idx, 1);
+      if (jornada) jornada.acoes_concluidas = lista;
+      if (!supabaseClient) return;
+      try {
+        const { error } = await supabaseClient.from('jornadas_busca').update({ acoes_concluidas: lista }).eq('id', jornadaId);
+        if (error) throw error;
+        if (typeof showToast === 'function') showToast(concluida ? 'Ação marcada como concluída.' : 'Ação desmarcada.', 'success');
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro ao salvar: ' + (e.message || e), 'error');
+        if (jornada) jornada.acoes_concluidas = Array.isArray(jornada.acoes_concluidas) ? [...jornada.acoes_concluidas] : [];
+      }
+    }
+
+    /** Exclui uma jornada salva (Guia de Clientes). Pede confirmação e remove no Supabase. */
+    async function excluirJornada(jornadaId) {
+      if (!jornadaId) return;
+      const nome = (ultimasJornadasSalvasData.find(j => (j.id || '') === jornadaId) || {}).nome_cliente;
+      const msg = nome ? 'Excluir a jornada do cliente "' + String(nome).replace(/"/g, '') + '"?' : 'Excluir esta jornada?';
+      if (!confirm(msg + '\n\nEsta ação não pode ser desfeita.')) return;
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.from('jornadas_busca').delete().eq('id', jornadaId);
+        if (error) throw error;
+        if (typeof showToast === 'function') showToast('Jornada excluída.', 'success');
+        ultimasJornadasSalvasData = ultimasJornadasSalvasData.filter(j => (j.id || '') !== jornadaId);
+        carregarJornadasSalvas();
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro ao excluir: ' + (e.message || e), 'error');
+      }
+    }
+
+    async function definirClienteJornada(id) {
+      const nome = prompt('Nome do cliente:');
+      if (nome === null || !nome.trim()) return;
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.from('jornadas_busca').update({ nome_cliente: nome.trim() }).eq('id', id);
+        if (error) throw error;
+        if (typeof showToast === 'function') showToast('Cliente definido.', 'success');
+        carregarJornadasSalvas();
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro: ' + (e.message || e), 'error');
+      }
+    }
+
+    function atualizarDoresFormJornadaGestao() {
+      const tipo = document.getElementById('gestao-jornada-tipo')?.value;
+      const wrapper = document.getElementById('gestao-jornada-dores-wrapper');
+      const checkboxesDiv = document.getElementById('gestao-jornada-dores-checkboxes');
+      const intensidadesDiv = document.getElementById('gestao-jornada-intensidades');
+      if (!wrapper || !checkboxesDiv || !intensidadesDiv) return;
+      if (!tipo) {
+        wrapper.classList.add('hidden');
+        return;
+      }
+      const lista = tipo === 'empresarial' ? momentoEmpresarial : crescimentoEmpresarial;
+      checkboxesDiv.innerHTML = lista.map(item => '<label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="gestao-dor-cb" data-dor-id="' + item.id + '" value="' + item.id + '"> <span>' + item.titulo + '</span></label>').join('');
+      intensidadesDiv.innerHTML = '';
+      wrapper.classList.remove('hidden');
+      checkboxesDiv.querySelectorAll('.gestao-dor-cb').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const selecionadas = Array.from(checkboxesDiv.querySelectorAll('.gestao-dor-cb:checked')).map(c => c.value);
+          intensidadesDiv.innerHTML = selecionadas.map(dorId => {
+            const item = lista.find(i => i.id === dorId);
+            const label = item ? item.titulo : dorId;
+            return '<div class="flex items-center gap-2 flex-wrap"><span class="text-sm w-40 truncate">' + (label || dorId) + '</span><select class="gestao-intensidade-select input-modern px-3 py-2 rounded-lg text-sm" data-dor-id="' + dorId + '"><option value="">—</option><option value="baixa">Abaixo de 25%</option><option value="media">De 25% até 50%</option><option value="alta">Acima de 50%</option></select></div>';
+          }).join('');
+        });
+      });
+    }
+
+    function submeterFormRegistrarJornadaGestao(e) {
+      e.preventDefault();
+      const nome = document.getElementById('gestao-jornada-nome')?.value?.trim();
+      const tipo = document.getElementById('gestao-jornada-tipo')?.value;
+      const porte = document.getElementById('gestao-jornada-porte')?.value;
+      const setor = document.getElementById('gestao-jornada-setor')?.value;
+      if (!nome || !tipo || !porte || !setor) {
+        if (typeof showToast === 'function') showToast('Preencha todos os campos obrigatórios.', 'error');
+        return;
+      }
+      const checkboxesDiv = document.getElementById('gestao-jornada-dores-checkboxes');
+      const categorias = checkboxesDiv ? Array.from(checkboxesDiv.querySelectorAll('.gestao-dor-cb:checked')).map(c => c.value) : [];
+      const intensidadesDiv = document.getElementById('gestao-jornada-intensidades');
+      const intensidades = {};
+      if (intensidadesDiv) {
+        intensidadesDiv.querySelectorAll('.gestao-intensidade-select').forEach(sel => {
+          const dorId = sel.getAttribute('data-dor-id');
+          if (dorId && sel.value) intensidades[dorId] = sel.value;
+        });
+      }
+      const nomeGestor = document.getElementById('gestao-jornada-gestor')?.value?.trim() || null;
+      const payload = {
+        nome_cliente: nome,
+        nome_gestor: nomeGestor,
+        tipo_momento: tipo,
+        porte: porte,
+        setor: setor,
+        categorias: categorias,
+        intensidades: intensidades,
+        ferramentas_ids: []
+      };
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      supabaseClient.from('jornadas_busca').insert(payload).then(({ error }) => {
+        if (error) {
+          if (typeof showToast === 'function') showToast('Erro ao salvar: ' + error.message, 'error');
+          return;
+        }
+        if (typeof showToast === 'function') showToast('Jornada registrada no Supabase.', 'success');
+        document.getElementById('form-registrar-jornada-gestao').reset();
+        document.getElementById('gestao-jornada-dores-wrapper').classList.add('hidden');
+        document.getElementById('gestao-jornada-dores-checkboxes').innerHTML = '';
+        document.getElementById('gestao-jornada-intensidades').innerHTML = '';
+        carregarJornadasSalvas();
+      });
     }
 
     // Função para fechar modal de relatório
@@ -4334,9 +5272,18 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
           return solucaoId === id;
         });
       }).filter(Boolean);
-
-      // Usar a mesma função de ordenação do relatório (que considera ordem, data e valor)
       const solucoesOrdenadas = ordenarSolucoes(solucoes);
+      
+      const projetosRelatorio = (projetosData || []).filter(p => projetosSelecionados.has(String(p.id)));
+      const projetosOrdenados = [...projetosRelatorio].sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.titulo || '').localeCompare(b.titulo || ''));
+      
+      // Coletar ferramentas selecionadas na jornada de busca (se houver)
+      const ferramentasSelecionadasArray = Array.from(ferramentasSelecionadas || []).map(id => {
+        return sugestoesData.find(s => {
+          const sId = s.id || s.__backendId || s.titulo;
+          return sId === id;
+        });
+      }).filter(Boolean);
 
       // Texto padrão do relatório
       const textoPadrao = `Olá, segue o Relatório:
@@ -4443,15 +5390,37 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
             </style>
           </head>
           <body>
-            <h1>Relatório de Soluções Selecionadas</h1>
+            <h1>Relatório de Soluções</h1>
             
             <div class="texto-padrao">
               ${textoPadrao.replace(/\n/g, '<br>')}
             </div>
             
-            <h2>Plano de Ação - Soluções Selecionadas</h2>
-            <p><strong>Total: ${solucoesOrdenadas.length} solução(ões) ordenada(s) por data (mais próxima primeiro) ou valor (menor primeiro)</strong></p>
             <hr style="margin: 15pt 0; border: none; border-top: 1pt solid #ccc;">
+
+            ${(() => {
+              if (!ferramentasSelecionadasArray || ferramentasSelecionadasArray.length === 0) return '';
+              const itensFerramentas = ferramentasSelecionadasArray.map((f, idx) => {
+                const titulo = (f.titulo || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const descricao = (f.descricao || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const link = (f.link || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                const desconto = (f.desconto || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `
+                  <div class="etapa">
+                    <div class="etapa-numero">Ferramenta ${idx + 1}</div>
+                    <h3>${titulo}</h3>
+                    ${descricao ? `<p>${descricao}</p>` : ''}
+                    ${desconto ? `<p><strong>Desconto:</strong> ${desconto}</p>` : ''}
+                    ${link ? `<p><strong>Link:</strong> <a href="${link}" class="link">${link}</a></p>` : ''}
+                  </div>
+                `;
+              }).join('');
+              return `
+                <h2>Ferramentas</h2>
+                <p>Além das soluções de assessoria, as seguintes ferramentas fazem parte da jornada:</p>
+                ${itensFerramentas}
+              `;
+            })()}
       `;
 
       solucoesOrdenadas.forEach((sol, index) => {
@@ -4506,6 +5475,31 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
           </div>
         `;
       });
+
+      if (projetosOrdenados.length > 0) {
+        conteudoDOCX += `
+            <hr style="margin: 15pt 0; border: none; border-top: 1pt solid #ccc;">
+            <h2>Projetos</h2>
+            <p>Projetos recomendados para esta jornada:</p>
+        `;
+        projetosOrdenados.forEach((p, idx) => {
+          const titulo = (p.titulo || 'Sem título').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const descricao = (p.descricao || '').replace(/\n/g, '<br>').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const link = (p.link || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+          conteudoDOCX += `
+          <div class="etapa" style="margin-top: 12pt;">
+            <div class="etapa-numero">Projeto ${idx + 1}</div>
+            <h3>${titulo}</h3>
+            ${descricao ? `<p>${descricao}</p>` : ''}
+            <div class="info">
+              ${p.porte ? `<div class="info-item"><strong>Porte:</strong> ${(p.porte || '').replace(/</g, '&lt;')}</div>` : ''}
+              ${p.setor ? `<div class="info-item"><strong>Setor:</strong> ${(p.setor || '').replace(/</g, '&lt;')}</div>` : ''}
+              ${link ? `<div class="info-item"><strong>Link:</strong> <a href="${link}" class="link">${link}</a></div>` : ''}
+            </div>
+          </div>
+        `;
+        });
+      }
 
       conteudoDOCX += '</body></html>';
 
@@ -4566,6 +5560,195 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
+    }
+
+    function atualizarCategoriasProjeto() {
+      const tipo = document.getElementById('proj-tipo-momento')?.value;
+      const selectDor = document.getElementById('proj-crescimento');
+      if (!selectDor) return;
+      selectDor.innerHTML = '<option value=\"\">Todos</option>';
+      let lista = [];
+      if (tipo === 'empresarial') {
+        lista = momentoEmpresarial;
+      } else if (tipo === 'crescimento') {
+        lista = crescimentoEmpresarial;
+      } else {
+        lista = momentoEmpresarial.concat(crescimentoEmpresarial);
+      }
+      lista.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = item.titulo;
+        selectDor.appendChild(opt);
+      });
+    }
+
+    async function carregarProjetos() {
+      const lista = document.getElementById('lista-projetos');
+      if (!lista) return;
+      lista.innerHTML = '<p class=\"text-center py-4 text-gray-500\">Carregando...</p>';
+      if (!supabaseClient) {
+        lista.innerHTML = '<p class=\"text-center py-4 text-gray-500\">Conexão com o banco não disponível.</p>';
+        return;
+      }
+      try {
+        const { data, error } = await supabaseClient.from('projetos')
+          .select('id, titulo, descricao, link, tipo_momento, crescimento_empresarial, porte, setor, ordem, ativo, criado_em')
+          .order('ordem', { ascending: true })
+          .order('criado_em', { ascending: false });
+        if (error) throw error;
+        projetosData = data || [];
+        atualizarListaProjetos();
+      } catch (e) {
+        lista.innerHTML = '<p class=\"text-center py-4 text-red-600\">Erro ao carregar projetos: ' + (e.message || e) + '</p>';
+      }
+    }
+
+    function atualizarListaProjetos() {
+      const lista = document.getElementById('lista-projetos');
+      if (!lista) return;
+      if (!projetosData || projetosData.length === 0) {
+        lista.innerHTML = '<p class=\"text-center py-4 text-gray-500\">Nenhum projeto cadastrado ainda</p>';
+        return;
+      }
+      const esc = (t) => (t ?? '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      lista.innerHTML = projetosData.map(p => {
+        const badgeAtivo = p.ativo ? '<span class=\"px-2 py-1 rounded-full text-xs font-semibold\" style=\"background:#DEF7EC; color:#03543F;\">Ativo</span>' : '<span class=\"px-2 py-1 rounded-full text-xs font-semibold\" style=\"background:#FDE8E8; color:#9B1C1C;\">Inativo</span>';
+        const meta = [
+          p.tipo_momento ? (p.tipo_momento === 'empresarial' ? 'Momento Empresarial' : 'Crescimento Empresarial') : null,
+          p.crescimento_empresarial || null,
+          p.porte || null,
+          p.setor || null
+        ].filter(Boolean).join(' · ');
+        return '<div class=\"bg-white rounded-xl border p-4 flex flex-col gap-2\">' +
+          '<div class=\"flex justify-between items-center gap-3\"><div class=\"min-w-0\">' +
+          '<h5 class=\"font-bold text-sm md:text-base\" style=\"color:#00608B;\">' + esc(p.titulo) + '</h5>' +
+          (meta ? '<p class=\"text-xs text-gray-600 truncate\">' + esc(meta) + '</p>' : '') +
+          '</div>' +
+          '<div class=\"flex items-center gap-2\">' + badgeAtivo +
+          '<span class=\"text-xs text-gray-500\">Ord. ' + (p.ordem || 1) + '</span></div></div>' +
+          (p.descricao ? '<p class=\"text-xs text-gray-700\">' + esc((p.descricao || '').substring(0, 180)) + ((p.descricao || '').length > 180 ? '...' : '') + '</p>' : '') +
+          (p.link ? '<a href=\"' + esc(p.link) + '\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"inline-flex items-center gap-1 text-xs font-semibold\" style=\"color:#00608B;\">Abrir projeto ↗</a>' : '') +
+          '<div class=\"flex gap-2 mt-1\"><button type=\"button\" onclick=\"editarProjeto(\'' + p.id + '\')\" class=\"px-3 py-1 rounded-lg text-xs font-semibold\" style=\"background:#E5E7EB; color:#374151;\">Editar</button>' +
+          '<button type=\"button\" onclick=\"excluirProjeto(\'' + p.id + '\')\" class=\"px-3 py-1 rounded-lg text-xs font-semibold\" style=\"background:#FEE2E2; color:#991B1B;\">Excluir</button></div>' +
+          '</div>';
+      }).join('');
+    }
+
+    async function salvarProjeto() {
+      const titulo = document.getElementById('proj-titulo')?.value.trim();
+      if (!titulo) {
+        if (typeof showToast === 'function') showToast('Preencha o título do projeto.', 'error');
+        return;
+      }
+      const payload = {
+        titulo: titulo,
+        descricao: document.getElementById('proj-descricao')?.value.trim() || null,
+        link: document.getElementById('proj-link')?.value.trim() || null,
+        tipo_momento: document.getElementById('proj-tipo-momento')?.value || null,
+        crescimento_empresarial: document.getElementById('proj-crescimento')?.value || null,
+        porte: document.getElementById('proj-porte')?.value || null,
+        setor: document.getElementById('proj-setor')?.value || null,
+        ordem: parseInt(document.getElementById('proj-ordem')?.value) || 1,
+        ativo: !!document.getElementById('proj-ativo')?.checked
+      };
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      try {
+        const { data, error } = await supabaseClient.from('projetos').insert(payload).select().single();
+        if (error) throw error;
+        projetosData.push(data);
+        if (typeof showToast === 'function') showToast('Projeto salvo com sucesso.', 'success');
+        document.getElementById('form-projeto').reset();
+        document.getElementById('proj-ordem').value = '1';
+        document.getElementById('proj-ativo').checked = true;
+        atualizarCategoriasProjeto();
+        atualizarListaProjetos();
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro ao salvar projeto: ' + (e.message || e), 'error');
+      }
+    }
+
+    function editarProjeto(id) {
+      const p = projetosData.find(pr => pr.id === id);
+      if (!p) return;
+      document.getElementById('proj-titulo').value = p.titulo || '';
+      document.getElementById('proj-descricao').value = p.descricao || '';
+      document.getElementById('proj-link').value = p.link || '';
+      document.getElementById('proj-tipo-momento').value = p.tipo_momento || '';
+      atualizarCategoriasProjeto();
+      document.getElementById('proj-crescimento').value = p.crescimento_empresarial || '';
+      document.getElementById('proj-porte').value = p.porte || '';
+      document.getElementById('proj-setor').value = p.setor || '';
+      document.getElementById('proj-ordem').value = p.ordem || 1;
+      document.getElementById('proj-ativo').checked = !!p.ativo;
+      const btn = document.querySelector('#form-projeto button[onclick^=\"salvarProjeto\"]');
+      if (btn) {
+        btn.textContent = '💾 Atualizar Projeto';
+        btn.setAttribute('onclick', 'atualizarProjeto(\'' + id + '\')');
+      }
+      document.getElementById('form-projeto').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function atualizarProjeto(id) {
+      const titulo = document.getElementById('proj-titulo')?.value.trim();
+      if (!titulo) {
+        if (typeof showToast === 'function') showToast('Preencha o título do projeto.', 'error');
+        return;
+      }
+      const dados = {
+        titulo: titulo,
+        descricao: document.getElementById('proj-descricao')?.value.trim() || null,
+        link: document.getElementById('proj-link')?.value.trim() || null,
+        tipo_momento: document.getElementById('proj-tipo-momento')?.value || null,
+        crescimento_empresarial: document.getElementById('proj-crescimento')?.value || null,
+        porte: document.getElementById('proj-porte')?.value || null,
+        setor: document.getElementById('proj-setor')?.value || null,
+        ordem: parseInt(document.getElementById('proj-ordem')?.value) || 1,
+        ativo: !!document.getElementById('proj-ativo')?.checked
+      };
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.from('projetos').update(dados).eq('id', id);
+        if (error) throw error;
+        const idx = projetosData.findIndex(pr => pr.id === id);
+        if (idx >= 0) projetosData[idx] = { ...projetosData[idx], ...dados };
+        if (typeof showToast === 'function') showToast('Projeto atualizado.', 'success');
+        document.getElementById('form-projeto').reset();
+        document.getElementById('proj-ordem').value = '1';
+        document.getElementById('proj-ativo').checked = true;
+        atualizarCategoriasProjeto();
+        const btn = document.querySelector('#form-projeto button[onclick^=\"atualizarProjeto\"]');
+        if (btn) {
+          btn.textContent = '💾 Salvar Projeto';
+          btn.setAttribute('onclick', 'salvarProjeto()');
+        }
+        atualizarListaProjetos();
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro ao atualizar: ' + (e.message || e), 'error');
+      }
+    }
+
+    async function excluirProjeto(id) {
+      if (!confirm('Deseja realmente excluir este projeto?')) return;
+      if (!supabaseClient) {
+        if (typeof showToast === 'function') showToast('Conexão com o banco não disponível.', 'error');
+        return;
+      }
+      try {
+        const { error } = await supabaseClient.from('projetos').delete().eq('id', id);
+        if (error) throw error;
+        projetosData = projetosData.filter(pr => pr.id !== id);
+        if (typeof showToast === 'function') showToast('Projeto excluído.', 'success');
+        atualizarListaProjetos();
+      } catch (e) {
+        if (typeof showToast === 'function') showToast('Erro ao excluir: ' + (e.message || e), 'error');
+      }
     }
 
     // Função para buscar e exibir até 5 sugestões de ferramentas, distribuídas pelas dores selecionadas (aleatório)
@@ -4653,23 +5836,64 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       }
 
       const esc = (t) => (t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      const cardsHtml = selectedSugestoes.map(sugestao => `
-        <div class="bg-white rounded-xl p-6 shadow-lg">
-          <h4 class="text-xl font-bold mb-3" style="color: #00608B;">${esc(sugestao.titulo)}</h4>
-          ${sugestao.desconto ? `<p class="text-base mb-3" style="color: #059669;"><strong>Desconto:</strong> <span class="text-xl font-bold" style="color: #047857;">${esc(sugestao.desconto)}</span></p>` : ''}
-          ${sugestao.descricao ? `<p class="text-gray-700 mb-4 leading-relaxed">${esc(sugestao.descricao)}</p>` : ''}
-          ${sugestao.restritivos ? `<p class="text-sm mb-2" style="color: #B45309;"><strong>Restritivos:</strong> ${esc(sugestao.restritivos)}</p>` : ''}
-          ${sugestao.link ? `
-            <a href="${esc(sugestao.link)}" target="_blank" rel="noopener noreferrer" 
-               class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg" 
-               style="background: linear-gradient(135deg, #00608B 0%, #6366F1 100%); color: white;">
-              Acessar Ferramenta →
-            </a>
-          ` : ''}
+      const cardsHtml = selectedSugestoes.map(sugestao => {
+        const ferramentaId = sugestao.id || sugestao.__backendId || sugestao.titulo || '';
+        const selecionada = ferramentasSelecionadas.has(ferramentaId);
+        return `
+        <div class="bg-white rounded-xl p-6 shadow-lg flex flex-col gap-3" data-ferramenta-card="${esc(ferramentaId)}">
+          <div>
+            <h4 class="text-xl font-bold mb-2" style="color: #00608B;">${esc(sugestao.titulo)}</h4>
+            ${sugestao.desconto ? `<p class="text-base mb-2" style="color: #059669;"><strong>Desconto:</strong> <span class="text-xl font-bold" style="color: #047857;">${esc(sugestao.desconto)}</span></p>` : ''}
+            ${sugestao.descricao ? `<p class="text-gray-700 mb-2 leading-relaxed">${esc(sugestao.descricao)}</p>` : ''}
+            ${sugestao.restritivos ? `<p class="text-sm mb-1" style="color: #B45309;"><strong>Restritivos:</strong> ${esc(sugestao.restritivos)}</p>` : ''}
+          </div>
+          <div class="flex flex-wrap items-center gap-3 mt-2">
+            ${sugestao.link ? `
+              <a href="${esc(sugestao.link)}" target="_blank" rel="noopener noreferrer" 
+                 class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg text-sm md:text-base" 
+                 style="background: linear-gradient(135deg, #00608B 0%, #6366F1 100%); color: white;">
+                Acessar Ferramenta →
+              </a>
+            ` : ''}
+            <button type="button"
+                    class="px-4 py-2 rounded-xl text-sm font-semibold border transition-all hover:scale-105 ${selecionada ? 'bg-emerald-50 border-emerald-500 text-emerald-700' : 'bg-white border-gray-300 text-gray-700'}"
+                    data-ferramenta-id="${esc(ferramentaId)}">
+              ${selecionada ? 'Remover da jornada' : 'Adicionar à jornada'}
+            </button>
+          </div>
         </div>
-      `).join('');
-
+      `;
+      }).join('');
+      
       conteudoSugestao.innerHTML = cardsHtml;
+      
+      // Permitir selecionar ferramentas como parte da jornada
+      conteudoSugestao.querySelectorAll('[data-ferramenta-id]').forEach(btn => {
+        const id = btn.getAttribute('data-ferramenta-id');
+        const atualizarVisual = (ativo) => {
+          if (ativo) {
+            btn.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+            btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-700');
+            btn.textContent = 'Remover da jornada';
+          } else {
+            btn.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-700');
+            btn.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            btn.textContent = 'Adicionar à jornada';
+          }
+        };
+        
+        atualizarVisual(ferramentasSelecionadas.has(id));
+        
+        btn.addEventListener('click', () => {
+          if (ferramentasSelecionadas.has(id)) {
+            ferramentasSelecionadas.delete(id);
+            atualizarVisual(false);
+          } else {
+            ferramentasSelecionadas.add(id);
+            atualizarVisual(true);
+          }
+        });
+      });
       if (tituloSugestao) tituloSugestao.textContent = selectedSugestoes.length > 1 ? 'Ferramentas Recomendadas' : 'Ferramenta Recomendada';
       if (subtituloSugestao) subtituloSugestao.textContent = selectedSugestoes.length > 1 ? 'Até 5 sugestões para o seu perfil' : 'Uma sugestão especial para o seu perfil';
       boxSugestao.classList.remove('hidden');
@@ -5220,36 +6444,64 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       if (etapa === 'momento') {
         document.getElementById('cards-empresarial').classList.add('hidden');
         document.getElementById('cards-crescimento').classList.add('hidden');
+        document.getElementById('step-intensidade').classList.add('hidden');
         document.getElementById('step-momento').classList.remove('hidden');
+        
+        document.getElementById('step-2').classList.remove('active', 'completed');
+        document.getElementById('line-1').classList.remove('completed');
+        document.getElementById('step-1').classList.add('active');
+        document.getElementById('step-1').classList.remove('completed');
         
         document.querySelectorAll('.card-option').forEach(card => card.classList.remove('selected'));
         document.getElementById('btn-avancar-momento').disabled = true;
         document.getElementById('btn-avancar-crescimento').disabled = true;
         
         selecao.categorias = [];
+        selecao.intensidades = {};
       } else if (etapa === 'cards') {
         document.getElementById('step-porte').classList.add('hidden');
+        const categoriasValidas = (selecao.categorias || []).filter(c => c !== 'Nenhuma');
+        
+        if (categoriasValidas.length > 0) {
+          document.getElementById('step-intensidade').classList.remove('hidden');
+        } else {
+          if (selecao.tipoMomento === 'empresarial') {
+            document.getElementById('cards-empresarial').classList.remove('hidden');
+          } else {
+            document.getElementById('cards-crescimento').classList.remove('hidden');
+          }
+        }
+        
+        document.getElementById('step-3').classList.remove('active', 'completed');
+        document.getElementById('line-2').classList.remove('completed');
+        document.getElementById('step-2').classList.add('active');
+        document.getElementById('step-2').classList.remove('completed');
+      } else if (etapa === 'intensidade') {
+        document.getElementById('step-intensidade').classList.add('hidden');
         
         if (selecao.tipoMomento === 'empresarial') {
           document.getElementById('cards-empresarial').classList.remove('hidden');
         } else {
           document.getElementById('cards-crescimento').classList.remove('hidden');
         }
-        
-        document.getElementById('step-2').classList.remove('active', 'completed');
-        document.getElementById('line-1').classList.remove('completed');
-        document.getElementById('step-1').classList.add('active');
-        document.getElementById('step-1').classList.remove('completed');
       } else if (etapa === 'porte') {
         document.getElementById('step-setor').classList.add('hidden');
         document.getElementById('step-porte').classList.remove('hidden');
         
-        document.getElementById('step-3').classList.remove('active', 'completed');
-        document.getElementById('line-2').classList.remove('completed');
-        document.getElementById('step-2').classList.add('active');
-        document.getElementById('step-2').classList.remove('completed');
+        document.getElementById('step-4').classList.remove('active', 'completed');
+        document.getElementById('line-3').classList.remove('completed');
+        document.getElementById('step-3').classList.add('active');
+        document.getElementById('step-3').classList.remove('completed');
         
         selecao.porte = null;
+      } else if (etapa === 'setor') {
+        document.getElementById('step-segmento').classList.add('hidden');
+        document.getElementById('step-setor').classList.remove('hidden');
+        
+        document.getElementById('step-5').classList.remove('active', 'completed');
+        document.getElementById('line-4').classList.remove('completed');
+        document.getElementById('step-4').classList.add('active');
+        document.getElementById('step-4').classList.remove('completed');
       }
     }
 
@@ -5258,7 +6510,9 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         tipoMomento: null,
         categorias: [],
         porte: null,
-        setor: null
+        setor: null,
+        segmentos: [],
+        intensidades: {}
       };
       
       document.getElementById('step-resultados').classList.add('hidden');
@@ -5269,6 +6523,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       
       // Limpar seleções de soluções
       solucoesSelecionadas.clear();
+      ferramentasSelecionadas.clear();
       
       // Ocultar botão flutuante ao voltar para outras etapas
       ocultarBotaoFlutuante();
@@ -5280,6 +6535,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         line.classList.remove('completed');
       });
       document.getElementById('step-1').classList.add('active');
+      document.getElementById('step-segmento').classList.add('hidden');
       
       document.querySelectorAll('.card-option').forEach(card => card.classList.remove('selected'));
     }
@@ -5390,6 +6646,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         data_validade: document.getElementById('cad-data-validade').value || null,
         valor: (function(){ var v = parseFloat(document.getElementById('cad-valor').value); return (v >= 0 && !isNaN(v)) ? v : 0; })(),
         ordem: parseInt(document.getElementById('cad-ordem').value),
+        porcentagem: (function(){ var p = document.getElementById('cad-porcentagem').value; return (p && ['baixa','media','alta'].includes(p)) ? p : null; })(),
         link_direcionamento: document.getElementById('cad-link-direcionamento').value || null,
         criado_em: new Date().toISOString()
       };
@@ -5522,6 +6779,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
             const instrumento = buscarColuna(row, ['Instrumento', 'Instrumer', 'instrumento']);
             const fornecedor = buscarColuna(row, ['Fornecedor', 'Fornecedores Executores', 'fornecedor', 'Fornecedor Executor']);
             const proximaData = buscarColuna(row, ['Próxima data', 'Proxima data', 'proxima_data', 'Próxima Data']);
+            const dataValidadeStr = buscarColuna(row, ['Data Validade', 'Data validade', 'data_validade']);
             let valor = parseFloat(buscarColuna(row, ['Valor', 'valor', 'Valor (R$)', 'Valor (R$)']));
             if (isNaN(valor) || valor < 0) { 
               const pago = buscarColuna(row, ['Pago', 'Pa', 'pago']);
@@ -5548,7 +6806,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
 
             // Determinar tipo de momento e categoria; usar sempre IDs válidos para aparecer na consulta
             // Primeiro verificar se os campos foram exportados diretamente
-            var momento_empresarial = (row['Momento Empresarial'] || row['momento_empresarial'] || '').toString().trim();
+            var momento_empresarial = (row['Momento Empresarial'] || row['Momento Empresarial'] || row['momento_empresarial'] || '').toString().trim();
             var crescimento_empresarial = (row['Foco Principal da Dor'] || row['crescimento_empresarial'] || '').toString().trim();
             
             // Se não encontrados diretamente, tentar determinar pelo tipo de momento
@@ -5721,6 +6979,18 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
               return str;
             };
             
+            // Retorna data no formato YYYY-MM-DD para o campo data_validade (Supabase date)
+            const normalizarDataValidade = (valor) => {
+              if (!valor || valor === null || valor === undefined) return null;
+              const str = String(valor).trim();
+              if (str === '') return null;
+              if (str.match(/^\d{4}-\d{2}-\d{2}/)) return str.slice(0, 10);
+              const d = normalizarData(valor);
+              if (!d || !d.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) return null;
+              const [dia, mes, ano] = d.split('/');
+              return `${ano}-${mes.padStart(2,'0')}-${dia.padStart(2,'0')}`;
+            };
+            
             const novaAssessoria = {
               id: `assess-${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${idx}`,
               codigo: normalizarTexto(codigo),
@@ -5739,7 +7009,18 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
               proxima_data: normalizarData(proximaData),
               valor: valor,
               ordem: !isNaN(ordemVal) ? ordemVal : 1,
+              porcentagem: (function(){
+                const p = (buscarColuna(row, ['Porcentagem', 'porcentagem']) || '').toLowerCase();
+                if (['baixa','media','alta'].includes(p)) return p;
+                if (p && (p.includes('25') || p.includes('50'))) {
+                  if (p.includes('abaixo') || p.includes('<')) return 'baixa';
+                  if (p.includes('acima') || p.includes('>')) return 'alta';
+                  return 'media';
+                }
+                return null;
+              })(),
               link_direcionamento: normalizarTexto(buscarColuna(row, ['Link de Direcionamento', 'Link', 'link_direcionamento'])),
+              data_validade: normalizarDataValidade(dataValidadeStr),
               criado_em: new Date().toISOString()
             };
 
@@ -5817,14 +7098,14 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
     // Função para baixar modelo de planilha
     function baixarModeloPlanilha() {
       const headers = [
-        'Cód', 'Título', 'Descr', 'Setor', 'Segmento', 'Porte', 'Públi Alvo',
-        'Área de Conhecimento', 'Temas', 'Car horária', 'Instrumer', 'Valor', 'Fornecedores Executores', 'Próxima data', 'Ordem', 'Link de Direcionamento'
+        'Código', 'Momento Empresarial', 'Foco Principal da Dor', 'Título', 'Descrição', 'Porte', 'Setor', 'Segmento',
+        'Área de Conhecimento', 'Temas', 'Carga Horária', 'Instrumento', 'Fornecedor', 'Próxima data', 'Data Validade', 'Porcentagem', 'Valor', 'Ordem', 'Link de Direcionamento'
       ];
 
       const exemplo = [
-        '6174', 'Aprenda a ajustar e reformar roupas (Presencial)',
-        'Curso do Sebrae', 'Industria', 'Vestuário', 'MEI', 'MEI, Poten',
-        'Gestão da Produção', 'Gestão da Qualidade', '14', 'Cursos Presenciais', '0', 'SENAI', '15/03/2026', '1', 'https://www.sebrae.com.br/solucao'
+        '6174', 'Gerencie', '', 'Aprenda a ajustar e reformar roupas (Presencial)',
+        'Curso do Sebrae', 'MEI', 'Industria', 'Vestuário',
+        'Gestão da Produção', 'Gestão da Qualidade', '14', 'Cursos Presenciais', 'SENAI', '15/03/2026', '2026-12-31', 'media', '0', '1', 'https://www.sebrae.com.br/solucao'
       ];
 
       const csv = [headers.join(','), exemplo.join(',')].join('\n');
@@ -5847,6 +7128,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         return;
       }
       const rows = assessoriasData.map(a => ({
+        'ID': (a.__backendId || a.id) || '',
         'Código': a.codigo || '',
         'Momento Empresarial': a.momento_empresarial || '',
         'Foco Principal da Dor': a.crescimento_empresarial || '',
@@ -5861,6 +7143,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         'Instrumento': a.instrumento || '',
         'Fornecedor': a.fornecedor || '',
         'Próxima data': a.proxima_data || '',
+        'Data Validade': (function(){ var d = a.data_validade; if (!d) return ''; if (typeof d === 'string' && d.match(/^\d{4}-\d{2}-\d{2}/)) return d; try { var dt = new Date(d); return isNaN(dt.getTime()) ? '' : dt.toISOString().slice(0,10); } catch(e){ return String(d); } })(),
+        'Porcentagem': (a.porcentagem && ['baixa','media','alta'].includes(a.porcentagem)) ? a.porcentagem : '',
         'Valor': (function(){ var v = a.valor; var n = (v != null && v !== '') ? Number(v) : NaN; return (!isNaN(n) && n >= 0) ? n : 0; })(),
         'Ordem': a.ordem || 1,
         'Link de Direcionamento': a.link_direcionamento || ''
@@ -5966,9 +7250,9 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       if (cbTodas) cbTodas.checked = false;
       
       const ordenadas = [...dadosParaExibir].sort((a, b) => {
-        const momentoA = a.momento_empresarial || a.crescimento_empresarial;
-        const momentoB = b.momento_empresarial || b.crescimento_empresarial;
-        return momentoA.localeCompare(momentoB) || a.ordem - b.ordem;
+        const momentoA = a.momento_empresarial || a.crescimento_empresarial || '';
+        const momentoB = b.momento_empresarial || b.crescimento_empresarial || '';
+        return String(momentoA).localeCompare(String(momentoB)) || (a.ordem || 0) - (b.ordem || 0);
       });
       
       lista.innerHTML = ordenadas.map(assessoria => {
@@ -6119,6 +7403,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       const navJornadas = document.getElementById('nav-jornadas');
       const navFerramentas = document.getElementById('nav-ferramentas');
       const navCalendario = document.getElementById('nav-calendario');
+      const navProjetos = document.getElementById('nav-projetos');
+      const navClientes = document.getElementById('nav-clientes');
       const navGestao = document.getElementById('nav-gestao');
       if (aba === 'consulta') {
         document.getElementById('aba-consulta').classList.add('active');
@@ -6126,6 +7412,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         if (navJornadas) navJornadas.removeAttribute('aria-current');
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
         if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'jornadas') {
         document.getElementById('aba-jornadas').classList.add('active');
@@ -6134,6 +7422,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
         if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'ferramentas') {
         document.getElementById('aba-ferramentas').classList.add('active');
@@ -6143,6 +7433,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
         if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'calendario') {
         document.getElementById('aba-calendario').classList.add('active');
@@ -6154,15 +7446,41 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
+        if (navGestao) navGestao.removeAttribute('aria-current');
+      } else if (aba === 'projetos') {
+        document.getElementById('aba-projetos').classList.add('active');
+        carregarProjetos();
+        if (navProjetos) { navProjetos.classList.add('active'); navProjetos.setAttribute('aria-current','page'); }
+        if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
+        if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
+        if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
+        if (navGestao) navGestao.removeAttribute('aria-current');
+      } else if (aba === 'clientes') {
+        document.getElementById('aba-clientes').classList.add('active');
+        carregarJornadasSalvas();
+        if (navClientes) { navClientes.classList.add('active'); navClientes.setAttribute('aria-current','page'); }
+        if (navBusca) navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current');
+        if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
+        if (navFerramentas) navFerramentas.removeAttribute('aria-current');
+        if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
         if (navGestao) navGestao.removeAttribute('aria-current');
       } else if (aba === 'gerenciamento') {
         document.getElementById('aba-gerenciamento').classList.add('active');
         atualizarListaAssessorias();
+        carregarJornadasSalvas();
+        atualizarCategoriasProjeto();
         if (navGestao) { navGestao.classList.add('active'); navGestao.setAttribute('aria-current','page'); }
         if (navBusca) { navBusca.classList.remove('active'); navBusca.removeAttribute('aria-current'); }
         if (navJornadas) navJornadas.classList.remove('active'); navJornadas.removeAttribute('aria-current');
         if (navFerramentas) navFerramentas.removeAttribute('aria-current');
         if (navCalendario) navCalendario.removeAttribute('aria-current');
+        if (navProjetos) navProjetos.removeAttribute('aria-current');
+        if (navClientes) navClientes.removeAttribute('aria-current');
       }
     }
 
@@ -6243,6 +7561,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
 
     function naoPresisoMelhorar() {
       selecao.categorias = ['Nenhuma'];
+      selecao.intensidades = {};
       
       const btnId = selecao.tipoMomento === 'empresarial' ? 'btn-avancar-momento' : 'btn-avancar-crescimento';
       document.getElementById(btnId).disabled = false;
@@ -6275,6 +7594,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       document.getElementById('cad-proxima-data').value = assessoria.proxima_data || '';
       document.getElementById('cad-valor').value = assessoria.valor || 0;
       document.getElementById('cad-ordem').value = assessoria.ordem || 1;
+      document.getElementById('cad-porcentagem').value = assessoria.porcentagem || '';
       document.getElementById('cad-link-direcionamento').value = assessoria.link_direcionamento || '';
 
       // Determinar tipo de momento e categoria
@@ -6327,6 +7647,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       document.getElementById('cad-proxima-data').value = assessoria.proxima_data || '';
       document.getElementById('cad-valor').value = assessoria.valor || 0;
       document.getElementById('cad-ordem').value = assessoria.ordem || 1;
+      document.getElementById('cad-porcentagem').value = assessoria.porcentagem || '';
       document.getElementById('cad-link-direcionamento').value = assessoria.link_direcionamento || '';
 
       // Determinar tipo de momento e categoria
@@ -6391,6 +7712,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         data_validade: document.getElementById('cad-data-validade').value || null,
         valor: parseFloat(document.getElementById('cad-valor').value) || 0,
         ordem: parseInt(document.getElementById('cad-ordem').value) || 1,
+        porcentagem: (function(){ var p = document.getElementById('cad-porcentagem').value; return (p && ['baixa','media','alta'].includes(p)) ? p : null; })(),
         link_direcionamento: document.getElementById('cad-link-direcionamento').value || null
       };
 
