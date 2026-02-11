@@ -4066,6 +4066,11 @@
       renderizarListaProjetosDisponiveisPainel();
     }
 
+    function removerFerramentaDoPainel(ferramentaId) {
+      ferramentasSelecionadas.delete(ferramentaId);
+      atualizarPreviewSelecionadas();
+    }
+
     // Função para adicionar solução ao painel
     function adicionarSolucaoAoPainel(solucaoId, index) {
       solucoesSelecionadas.add(solucaoId);
@@ -4291,7 +4296,9 @@
       const projetosArray = (projetosData || []).filter(p => projetosSelecionados.has(String(p.id)));
       const projetosOrdenados = [...projetosArray].sort((a, b) => (a.ordem || 0) - (b.ordem || 0) || String(a.titulo || '').localeCompare(b.titulo || ''));
 
-      const totalSelecionados = solucoesSelecionadas.size + projetosSelecionados.size;
+      const ferramentasArray = Array.from(ferramentasSelecionadas || []).map(id => sugestoesData.find(s => (s.id || s.__backendId || s.titulo) === id)).filter(Boolean);
+
+      const totalSelecionados = solucoesSelecionadas.size + projetosSelecionados.size + (ferramentasSelecionadas?.size || 0);
 
       if (contador) contador.textContent = totalSelecionados;
       const contadorHeader = document.getElementById('contador-painel-header');
@@ -4302,7 +4309,7 @@
       atualizarBadgeBotaoFlutuante();
 
       if (totalSelecionados === 0) {
-        preview.innerHTML = '<p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução ou projeto selecionado</p>';
+        preview.innerHTML = '<p class="text-sm text-center py-8" style="color: #999;">Nenhuma solução, projeto ou ferramenta selecionado</p>';
         const modalRelatorio = document.getElementById('modal-relatorio');
         if (modalRelatorio && !modalRelatorio.classList.contains('hidden')) fecharRelatorioModal();
         return;
@@ -4403,7 +4410,30 @@
           </div>
         `;
       }).join('');
-      preview.innerHTML = htmlSolucoes + htmlProjetos;
+      const htmlFerramentas = ferramentasArray.map((f) => {
+        numero++;
+        const ferramentaId = (f.id || f.__backendId || f.titulo || '').toString();
+        const idAttr = esc(ferramentaId).replace(/"/g, '&quot;');
+        return `
+          <div class="bg-white rounded-lg p-4 border-l-4 shadow-sm hover:shadow-md transition-all" style="border-color: #6366F1;">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-lg font-bold" style="color: #6366F1;">${numero}.</span>
+                  <h4 class="font-bold flex-1" style="color: #1F2937;">${esc(f.titulo || 'Sem título')}</h4>
+                  <span class="text-xs px-2 py-0.5 rounded" style="background: #E0E7FF; color: #4338CA;">🛠️ Ferramenta</span>
+                </div>
+                ${f.descricao ? `<p class="text-xs mb-2 line-clamp-2" style="color: #666;">${esc((f.descricao || '').substring(0, 120))}${(f.descricao || '').length > 120 ? '...' : ''}</p>` : ''}
+              </div>
+              <button onclick="removerFerramentaDoPainel(this.getAttribute('data-ferramenta-id'))" data-ferramenta-id="${idAttr}" class="ml-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-all" title="Remover">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            ${f.desconto ? `<div class="flex flex-wrap gap-2 text-xs"><span class="px-2 py-1 rounded" style="background: #D1FAE5; color: #047857;">💰 ${esc(f.desconto)}</span></div>` : ''}
+          </div>
+        `;
+      }).join('');
+      preview.innerHTML = htmlSolucoes + htmlProjetos + htmlFerramentas;
       
       // Modal de relatório só abre ao clicar em "Gerar Relatório", não ao selecionar soluções
     }
@@ -4439,6 +4469,7 @@
     function desselecionarTodasNoModal() {
       solucoesSelecionadas.clear();
       projetosSelecionados.clear();
+      ferramentasSelecionadas.clear();
       atualizarPreviewSelecionadas();
       renderizarListaDisponiveisPainel();
       renderizarListaProjetosDisponiveisPainel();
@@ -4446,9 +4477,9 @@
 
     // Função para confirmar seleção e gerar relatório
     function confirmarSelecaoERelatorio() {
-      const total = solucoesSelecionadas.size + projetosSelecionados.size;
+      const total = solucoesSelecionadas.size + projetosSelecionados.size + (ferramentasSelecionadas?.size || 0);
       if (total === 0) {
-        showToast('Selecione pelo menos uma solução ou projeto para gerar o relatório', 'error');
+        showToast('Selecione pelo menos uma solução, projeto ou ferramenta para gerar o relatório', 'error');
         return;
       }
 
@@ -4472,7 +4503,7 @@
     function atualizarBadgeBotaoFlutuante() {
       const badge = document.getElementById('badge-contador-painel');
       const botao = document.getElementById('btn-abrir-painel-relatorio');
-      const total = solucoesSelecionadas.size + projetosSelecionados.size;
+      const total = solucoesSelecionadas.size + projetosSelecionados.size + (ferramentasSelecionadas?.size || 0);
       if (badge && botao) {
         if (total > 0) {
           badge.textContent = total;
@@ -4595,6 +4626,14 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       // Cor padrão para o fluxograma
       const corPadrao = '#00608B';
       
+      // Ferramentas selecionadas na jornada
+      const ferramentasSelecionadasArray = Array.from(ferramentasSelecionadas || []).map(id => {
+        return sugestoesData.find(s => {
+          const sId = s.id || s.__backendId || s.titulo;
+          return sId === id;
+        });
+      }).filter(Boolean);
+      
       // Cabeçalho da jornada (quando aberto do histórico)
       const cabecalhoJornada = (opcoes && opcoes.tituloJornada) ? `
         <div class="mb-6 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #00608B;">
@@ -4619,6 +4658,31 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
             </p>
           </div>
         </div>
+        
+        ${ferramentasSelecionadasArray.length > 0 ? `
+        <!-- Ferramentas -->
+        <div class="mb-8">
+          <h2 class="text-xl font-bold mb-4" style="color: #00608B;">Ferramentas</h2>
+          <p class="mb-4" style="color: #4B5563;">Além das soluções de assessoria, as seguintes ferramentas fazem parte da jornada:</p>
+          <div class="space-y-4">
+            ${ferramentasSelecionadasArray.map((f, idx) => {
+              const titulo = (f.titulo || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const descricao = (f.descricao || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const link = (f.link || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+              const desconto = (f.desconto || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              return `
+              <div class="p-5 rounded-xl border-2 shadow-sm" style="border-color: #059669; background: linear-gradient(135deg, #F0FDF4 0%, #D1FAE5 100%);">
+                <div class="inline-block px-3 py-1 rounded-lg font-bold text-sm mb-3" style="background: #00608B; color: white;">Ferramenta ${idx + 1}</div>
+                <h3 class="text-lg font-bold mb-2" style="color: #047857;">${titulo}</h3>
+                ${descricao ? `<p class="mb-3 text-sm" style="color: #374151;">${descricao}</p>` : ''}
+                ${desconto ? `<p class="text-sm mb-2" style="color: #059669;"><strong>Desconto:</strong> ${desconto}</p>` : ''}
+                ${link ? `<p class="text-sm"><strong>Link:</strong> <a href="${link}" target="_blank" rel="noopener noreferrer" class="underline" style="color: #00608B;">${link}</a></p>` : ''}
+              </div>
+            `;
+            }).join('')}
+          </div>
+        </div>
+        ` : ''}
         
         <!-- Fluxograma de Soluções -->
         <div class="mb-6">
@@ -5891,6 +5955,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
             ferramentasSelecionadas.add(id);
             atualizarVisual(true);
           }
+          atualizarPreviewSelecionadas();
         });
       });
       if (tituloSugestao) tituloSugestao.textContent = selectedSugestoes.length > 1 ? 'Ferramentas Recomendadas' : 'Ferramenta Recomendada';
