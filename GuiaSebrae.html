@@ -2741,8 +2741,7 @@
       // Buscar e exibir sugestão de ferramenta
       buscarEExibirSugestao();
       
-      // Persistir jornada (incluindo intensidades por dor) no Supabase
-      salvarJornadaNoSupabase();
+      // Jornada só é salva quando o usuário clicar em "Salvar jornada" no relatório ao final da busca
       
       // Destacar a solução que mais faz sentido com este perfil
       renderMelhorSolucao(resultados);
