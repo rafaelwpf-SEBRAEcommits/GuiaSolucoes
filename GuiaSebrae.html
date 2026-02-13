@@ -1781,10 +1781,10 @@
       <div class="mt-8 pt-8 border-t-2" style="border-color: #E0E0E0;">
        <h4 class="text-xl font-bold mb-4" style="color: #00608B;">📋 Soluções Cadastradas</h4>
        
-       <!-- Filtro por Data -->
+       <!-- Filtros (Data e Dor) -->
        <div class="mb-4 p-4 rounded-xl border-2" style="background: #E3ECEE; border-color: #A0C5CF;">
-        <h5 class="text-sm font-bold mb-3" style="color: #00608B;">🔍 Filtro por Data</h5>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h5 class="text-sm font-bold mb-3" style="color: #00608B;">🔍 Filtros</h5>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
          <div>
           <label class="block text-xs font-semibold mb-2" style="color: #00608B;">Data Inicial</label>
           <input type="date" id="filtro-data-inicial" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="aplicarFiltroData()">
@@ -1793,13 +1793,33 @@
           <label class="block text-xs font-semibold mb-2" style="color: #00608B;">Data Final</label>
           <input type="date" id="filtro-data-final" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="aplicarFiltroData()">
          </div>
+         <div>
+          <label class="block text-xs font-semibold mb-2" style="color: #00608B;">Dor</label>
+          <select id="filtro-dor" class="input-modern w-full px-3 py-2 rounded-lg text-sm" onchange="atualizarListaAssessorias()">
+           <option value="">Todas</option>
+           <optgroup label="Momento Empresarial">
+            <option value="Gerencie">Gerencie</option>
+            <option value="Planeje">Planeje</option>
+            <option value="Organize">Organize</option>
+            <option value="Lidere">Lidere</option>
+            <option value="Potencialize">Potencialize</option>
+           </optgroup>
+           <optgroup label="Crescimento Empresarial">
+            <option value="Marketing e Vendas">Marketing e Vendas</option>
+            <option value="Financas">Financas</option>
+            <option value="Planejamento">Planejamento</option>
+            <option value="Pessoas">Pessoas</option>
+            <option value="Operacoes">Operacoes</option>
+           </optgroup>
+          </select>
+         </div>
          <div class="flex items-end">
           <button onclick="limparFiltroData()" class="btn-modern px-4 py-2 glass-card border-2 rounded-lg font-semibold text-sm w-full" style="border-color: #6c757d; color: #6c757d;">
            🔄 Limpar Filtro
           </button>
          </div>
         </div>
-        <p class="text-xs mt-2" style="color: #666;">Filtre soluções pela <strong>próxima data</strong>. Deixe em branco para mostrar todas.</p>
+        <p class="text-xs mt-2" style="color: #666;">Filtre por <strong>próxima data</strong> e/ou por <strong>dor</strong>. Deixe em branco para mostrar todas.</p>
        </div>
 
        <div id="barra-exclusao-massa" class="hidden flex flex-wrap items-center gap-4 mb-4 p-3 rounded-xl border-2" style="border-color: #FEE2E2; background: #FEF2F2;">
@@ -2714,17 +2734,37 @@
         const segmentoMatch = !(selecao.segmentos && selecao.segmentos.length > 0) ||
           (a.segmento && selecao.segmentos.includes(a.segmento));
         
+        // Filtro de porcentagem: exibir apenas soluções cuja porcentagem coincida com a intensidade selecionada para aquela dor/categoria
+        const intensidades = selecao.intensidades || {};
+        const intensidadeUsuario = categoriaAtual ? intensidades[categoriaAtual] : null;
+        const porcentagemMatch = !a.porcentagem || !intensidadeUsuario || a.porcentagem === intensidadeUsuario;
+        
         return categoriaMatch && 
                a.porte === selecao.porte && 
                setorA === selecao.setor &&
-               segmentoMatch;
+               segmentoMatch &&
+               porcentagemMatch;
       }).sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
-      renderResumoSelecao();
-      ultimosResultados = resultados;
+      // Remover duplicatas: mesma solução pode estar cadastrada várias vezes (por dor/porcentagem).
+      // Usar chave lógica (codigo ou nome+ordem+categoria) para exibir cada produto apenas uma vez.
+      const chaveSolucaoVista = new Set();
+      const resultadosUnicos = resultados.filter(a => {
+        const codigo = (a.codigo != null && String(a.codigo).trim() !== '') ? String(a.codigo).trim() : null;
+        const categoria = a.momento_empresarial || a.crescimento_empresarial || '';
+        const chave = codigo
+          ? codigo
+          : (a.assessoria_nome || '') + '|' + (a.ordem || 1) + '|' + categoria;
+        if (chaveSolucaoVista.has(chave)) return false;
+        chaveSolucaoVista.add(chave);
+        return true;
+      });
 
-      if (resultados.length > 0) {
-        renderResultados(resultados);
+      renderResumoSelecao();
+      ultimosResultados = resultadosUnicos;
+
+      if (resultadosUnicos.length > 0) {
+        renderResultados(resultadosUnicos);
         document.getElementById('mensagem-sem-resultados').classList.add('hidden');
         
         // Criar e exibir botão flutuante apenas quando houver resultados
@@ -2744,7 +2784,7 @@
       // Jornada só é salva quando o usuário clicar em "Salvar jornada" no relatório ao final da busca
       
       // Destacar a solução que mais faz sentido com este perfil
-      renderMelhorSolucao(resultados);
+      renderMelhorSolucao(resultadosUnicos);
     }
 
     function renderMelhorSolucao(resultados) {
@@ -7276,6 +7316,8 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
     function limparFiltroData() {
       document.getElementById('filtro-data-inicial').value = '';
       document.getElementById('filtro-data-final').value = '';
+      const filtroDor = document.getElementById('filtro-dor');
+      if (filtroDor) filtroDor.value = '';
       assessoriasFiltradas = [];
       atualizarListaAssessorias();
     }
@@ -7286,13 +7328,23 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
       const totalElement = document.getElementById('total-assessorias');
       const barraMassa = document.getElementById('barra-exclusao-massa');
       
-      // Usar dados filtrados se houver filtro ativo, senão usar todos
+      // Usar dados filtrados conforme filtros de data e dor
       const filtroInicial = document.getElementById('filtro-data-inicial');
       const filtroFinal = document.getElementById('filtro-data-final');
+      const filtroDorEl = document.getElementById('filtro-dor');
       const dataInicial = filtroInicial ? filtroInicial.value : '';
       const dataFinal = filtroFinal ? filtroFinal.value : '';
-      const temFiltro = dataInicial || dataFinal;
-      const dadosParaExibir = temFiltro ? assessoriasFiltradas : assessoriasData;
+      const dor = filtroDorEl ? filtroDorEl.value : '';
+      const temFiltroData = dataInicial || dataFinal;
+      const temFiltroDor = dor && dor.trim() !== '';
+      const temFiltro = temFiltroData || temFiltroDor;
+      let dadosParaExibir = temFiltroData ? assessoriasFiltradas : assessoriasData;
+      if (temFiltroDor) {
+        dadosParaExibir = dadosParaExibir.filter(a => {
+          const dorSolucao = a.momento_empresarial || a.crescimento_empresarial || '';
+          return dorSolucao === dor;
+        });
+      }
       
       totalElement.textContent = dadosParaExibir.length;
       
@@ -7301,7 +7353,7 @@ Estou à total disposição para conversarmos sobre este relatório, tirar qualq
         if (barraMassa) barraMassa.classList.add('hidden');
         listaVazia.classList.remove('hidden');
         if (temFiltro) {
-          listaVazia.innerHTML = '<p style="color: #999;">Nenhuma solução encontrada com os filtros de data selecionados</p>';
+          listaVazia.innerHTML = '<p style="color: #999;">Nenhuma solução encontrada com os filtros selecionados</p>';
         } else {
           listaVazia.innerHTML = '<p style="color: #999;">Nenhuma solução cadastrada ainda</p>';
         }
